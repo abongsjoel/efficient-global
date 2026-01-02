@@ -11,17 +11,20 @@ const Menu = () => {
       <ul
         className={`${
           isOpen ? "flex" : "hidden"
-        } md:flex flex-col md:flex-row gap-4 absolute md:relative top-full left-0 w-full md:w-auto bg-white md:bg-transparent p-4 md:p-0`}
+        } md:flex flex-col md:flex-row gap-4 absolute md:relative top-full right-0 md:left-auto w-64 md:w-auto bg-white md:bg-transparent p-4 md:p-0 shadow-lg md:shadow-none md:items-center`}
       >
         <li>
-          <a href="/" className="border-b-2 border-black pb-1 font-semibold">
+          <a
+            href="/"
+            className="border-b-2 border-black pb-1 font-semibold block text-center md:inline md:text-left"
+          >
             Home
           </a>
         </li>
         <li>
           <a
             href="/services"
-            className="hover:border-b-2 hover:border-black pb-1"
+            className="hover:border-b-2 hover:border-black pb-1 block text-center md:inline md:text-left"
           >
             Services
           </a>
@@ -29,7 +32,7 @@ const Menu = () => {
         <li>
           <a
             href="/services"
-            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 md:inline-block block text-center"
           >
             Opportunities
           </a>
@@ -37,7 +40,7 @@ const Menu = () => {
         <li>
           <a
             href="/services"
-            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 md:inline-block block text-center md:mt-0 mt-2"
           >
             Get In Touch
           </a>
