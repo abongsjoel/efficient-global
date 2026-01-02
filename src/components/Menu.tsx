@@ -1,22 +1,13 @@
 import { useState } from "react";
+import Hamburger from "./atoms/Hamburger";
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <nav>
-      {/* Hamburger Button - visible on mobile, hidden on desktop */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden flex flex-col gap-1 p-2"
-        aria-label="Toggle menu"
-      >
-        <span className="w-6 h-0.5 bg-black"></span>
-        <span className="w-6 h-0.5 bg-black"></span>
-        <span className="w-6 h-0.5 bg-black"></span>
-      </button>
+      <Hamburger onClick={() => setIsOpen(!isOpen)} />
 
-      {/* Menu - hidden on mobile unless open, always visible on desktop */}
       <ul
         className={`${
           isOpen ? "flex" : "hidden"
