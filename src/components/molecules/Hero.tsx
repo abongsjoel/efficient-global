@@ -4,7 +4,7 @@ import Button from "../atoms/Button";
 const Hero = () => {
   return (
     <article
-      className="h-screen bg-cover bg-center flex items-center justify-center relative"
+      className="h-[calc(100vh-7rem)] bg-cover bg-center flex items-center justify-center relative snap-start"
       style={{ backgroundImage: `url(${city})` }}
     >
       <div className="absolute inset-0 bg-black/50"></div>

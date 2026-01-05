@@ -3,11 +3,13 @@ import Hero from "./components/molecules/Hero";
 
 function App() {
   return (
-    <div>
+    <div className="h-screen overflow-hidden">
       <Header />
-      <main>
+      <main className="snap-y snap-mandatory h-[calc(100vh-7rem)] overflow-y-scroll">
         <Hero />
-        <article className="bg-white text-black">More content here...</article>
+        <article className="bg-white text-black snap-start h-full">
+          More content here...
+        </article>
       </main>
     </div>
   );
