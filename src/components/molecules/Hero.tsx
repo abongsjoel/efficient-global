@@ -1,4 +1,5 @@
 import city from "../../assets/city.jpg";
+import Button from "../atoms/Button";
 
 const Hero = () => {
   return (
@@ -14,6 +15,10 @@ const Hero = () => {
         <h2 className="text-white text-3xl">
           Delivering Your Products Fast and Securely
         </h2>
+        <h3>
+          Rapid Delivery Services Serving Maryland, DC, and Northern Virginia
+        </h3>
+        <Button className="mt-4">GET A QUOTE</Button>
       </div>
     </article>
   );
