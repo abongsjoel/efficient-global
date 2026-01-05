@@ -24,11 +24,10 @@ const WhoWeAre = () => {
 
         {/* Right side - Image */}
         <div className="flex items-center justify-center p-8 md:py-16 md:pr-16">
-          <img
-            src={boat}
-            alt="Boat"
-            className="w-full h-[500px] md:h-[600px] object-cover rounded-lg shadow-lg"
-          />
+          <div className="relative w-full h-[500px] md:h-[600px] rounded-lg shadow-lg overflow-hidden">
+            <img src={boat} alt="Boat" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/60"></div>
+          </div>
         </div>
       </div>
     </section>
