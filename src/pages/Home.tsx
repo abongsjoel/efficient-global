@@ -8,10 +8,12 @@ const Home = () => {
       <Header />
       <main className="snap-y snap-mandatory h-[calc(100vh-7rem)] overflow-y-scroll">
         <Hero />
-        <WhoWeAre />
-        <article className="bg-white text-black snap-start h-full">
-          More content here...
-        </article>
+        <div className="snap-start">
+          <WhoWeAre />
+          <article className="bg-white text-black h-full">
+            More content here...
+          </article>
+        </div>
       </main>
     </section>
   );
