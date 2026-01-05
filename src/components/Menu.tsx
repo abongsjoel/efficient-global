@@ -32,7 +32,7 @@ const Menu = () => {
         <li>
           <a
             href="/services"
-            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 md:inline-block block text-center"
+            className="bg-primary-200 text-white px-6 py-3 rounded hover:bg-primary-100 md:inline-block block text-center"
           >
             Opportunities
           </a>
@@ -40,7 +40,7 @@ const Menu = () => {
         <li>
           <a
             href="/services"
-            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 md:inline-block block text-center md:mt-0 mt-2"
+            className="bg-primary-200 text-white px-6 py-3 rounded hover:bg-primary-100 md:inline-block block text-center md:mt-0 mt-2"
           >
             Get In Touch
           </a>
