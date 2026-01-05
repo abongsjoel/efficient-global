@@ -18,7 +18,7 @@ const Hero = () => {
         <h3>
           Rapid Delivery Services Serving Maryland, DC, and Northern Virginia
         </h3>
-        <Button className="mt-4">GET A QUOTE</Button>
+        <Button className="mt-6">GET A QUOTE</Button>
       </div>
     </article>
   );
