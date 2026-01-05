@@ -1,4 +1,4 @@
-import Menu from "./Menu";
+import Menu from "./molecules/Menu";
 import logo from "../assets/logo_tans.png";
 
 const Header = () => {
