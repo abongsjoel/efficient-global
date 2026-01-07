@@ -5,6 +5,12 @@
   --color-primary-200: #6ba035;
 }
 
+@layer base {
+  .font-saira {
+    font-family: Saira, sans-serif;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
