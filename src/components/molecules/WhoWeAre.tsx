@@ -5,15 +5,15 @@ const WhoWeAre = () => {
     <section className="h-full bg-white">
       <div className="grid md:grid-cols-2 h-full">
         {/* Left side - Text content */}
-        <div className="flex flex-col justify-center p-8 md:p-16">
-          <h2 className="text-4xl font-bold text-primary-200 mb-6">
+        <div className="flex flex-col justify-center p-8 md:p-16 text-center">
+          <h2 className="text-4xl font-bold text-primary-200 mb-6 text-c">
             Who We Are
           </h2>
-          <h4 className="text-2xl text-gray-900 mb-4">
+          <h4 className="text-xl text-gray-900 mb-4">
             Premier courier company committed to making delivery easy, simple,
             and fast.
           </h4>
-          <p className="text-lg text-gray-700 mb-4">
+          <p className="text-md text-gray-700 mb-4">
             Since 2018, we’ve proudly served customers across Maryland,
             Washington, DC, and Northern Virginia. We hold ourselves to the
             highest standards of integrity in every interaction with our clients
@@ -22,7 +22,7 @@ const WhoWeAre = () => {
             package with care and ensures it arrives at the right destination,
             at the right time—every time.
           </p>
-          <p className="text-lg text-gray-700">
+          <p className="text-md text-gray-700">
             Our goal is to become the industry’s leading courier service by
             offering reliable, prompt, and courteous delivery at competitive
             rates.
