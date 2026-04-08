@@ -36,7 +36,7 @@ const Hero = () => {
         </h3>
         <div className="flex gap-4 mt-6">
           <Button>Request a Delivery</Button>
-          <Button>Contact Us</Button>
+          <Button variant="inverse">Contact Us</Button>
         </div>
       </div>
     </article>
