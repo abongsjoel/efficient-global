@@ -7,25 +7,28 @@ const WhoWeAre = () => {
         {/* Left side - Text content */}
         <div className="flex flex-col justify-center p-8 md:p-16 text-center">
           <h2 className="text-4xl font-bold text-primary-200 mb-6 text-c">
-            Who We Are
+            About Us
           </h2>
           <h4 className="text-xl text-gray-900 mb-4">
-            Premier courier company committed to making delivery easy, simple,
-            and fast.
+            About Efficient Global Enterprises
           </h4>
-          <p className="text-md text-gray-700 mb-4">
-            Since 2018, we’ve proudly served customers across Maryland,
-            Washington, DC, and Northern Virginia. We hold ourselves to the
-            highest standards of integrity in every interaction with our clients
-            and vendors. Need something important delivered right away? You’re
-            in the right place. Our team of professional couriers handles every
-            package with care and ensures it arrives at the right destination,
-            at the right time—every time.
+          <p className="text-md text-gray-700 ">
+            Efficient Global Enterprises is a Minnesota-based courier delivery
+            service dedicated to providing reliable and professional delivery
+            solutions for businesses and individuals. Our focus is on dependable
+            service, safe transportation, and timely deliveries across the Twin
+            Cities and surrounding areas.
+          </p>
+          <p className="text-md text-gray-700 my-6">
+            With years of hands-on delivery experience, we understand the
+            importance of efficiency, accuracy, and professionalism when
+            handling time-sensitive packages. Our mission is to support
+            businesses by providing courier services they can trust.
           </p>
           <p className="text-md text-gray-700">
-            Our goal is to become the industry’s leading courier service by
-            offering reliable, prompt, and courteous delivery at competitive
-            rates.
+            We take pride in maintaining high standards of safety,
+            communication, and customer service to ensure that every delivery is
+            completed with care, attention and timely manner.
           </p>
         </div>
 
