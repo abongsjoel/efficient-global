@@ -1,5 +1,5 @@
 import Badge from "../atoms/Badge";
-import city from "../../assets/images/city.jpg";
+import boat from "../../assets/images/boat.jpg";
 
 const AboutUs = () => {
   return (
@@ -43,8 +43,8 @@ const AboutUs = () => {
           <div className="relative">
             <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-2xl">
               <img
-                src={city}
-                alt="Urban delivery service"
+                src={boat}
+                alt="Delivery vehicle in service"
                 className="h-[520px] w-full object-cover object-center sm:h-[640px]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
