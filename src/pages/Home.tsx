@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import Hero from "../components/molecules/Hero";
 import AboutUs from "../components/molecules/AboutUs";
+import OurExperience from "../components/molecules/OurExperience";
 
 const Home = () => {
   return (
@@ -10,9 +11,7 @@ const Home = () => {
         <Hero />
         <div className="snap-start">
           <AboutUs />
-          <article className="bg-white text-black h-full">
-            More content here...
-          </article>
+          <OurExperience />
         </div>
       </main>
     </section>
