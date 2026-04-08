@@ -47,7 +47,7 @@ const AboutUs = () => {
                 alt="Delivery vehicle in service"
                 className="h-[520px] w-full object-cover object-center sm:h-[640px]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
             </div>
           </div>
         </div>
