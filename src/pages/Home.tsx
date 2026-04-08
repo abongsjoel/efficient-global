@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import Hero from "../components/molecules/Hero";
-import WhoWeAre from "../components/molecules/WhoWeAre";
+import AboutUs from "../components/molecules/AboutUs";
 
 const Home = () => {
   return (
@@ -9,7 +9,7 @@ const Home = () => {
       <main className="snap-y snap-mandatory h-[calc(100vh-7rem)] overflow-y-scroll">
         <Hero />
         <div className="snap-start">
-          <WhoWeAre />
+          <AboutUs />
           <article className="bg-white text-black h-full">
             More content here...
           </article>
