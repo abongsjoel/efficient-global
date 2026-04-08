@@ -1,3 +1,4 @@
+import Badge from "../atoms/Badge";
 import city from "../../assets/images/city.jpg";
 
 const experiencePoints = [
@@ -60,9 +61,7 @@ const OurExperience = () => {
 
           <div className="space-y-8">
             <div className="max-w-xl">
-              <span className="inline-flex rounded-full bg-primary-200/20 px-4 py-1 text-sm uppercase tracking-[0.24em] text-primary-100">
-                Built on experience
-              </span>
+              <Badge className="text-primary-100">Built on experience</Badge>
               <h2 className="mt-6 text-5xl font-bold leading-tight text-white md:text-6xl">
                 Our Experience
               </h2>
