@@ -1,6 +1,20 @@
 import city from "../../assets/images/city.jpg";
 import Button from "../atoms/Button";
 
+const HeroParagraph = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <h3
+    className={`text-white text-sm md:text-base text-center px-4 max-w-2xl ${className}`}
+  >
+    {children}
+  </h3>
+);
+
 const Hero = () => {
   return (
     <article
@@ -15,25 +29,25 @@ const Hero = () => {
         <h2 className="text-white text-xl md:text-3xl text-center px-4">
           Reliable Medical Courier Services You Can Trust
         </h2>
-        <h3 className="text-white text-sm md:text-base text-center px-4 max-w-2xl">
+        <HeroParagraph>
           Efficient Global Enterprises specialize in providing professional and
           dependable medical courier services for healthcare providers
           throughout Minnesota. We specialize in the secure and time-sensitive
           transportation of medical materials, laboratory specimens,
           pharmaceuticals, and healthcare documents.
-        </h3>
-        <h3 className="text-white text-sm md:text-base text-center px-4 py-6 max-w-2xl">
+        </HeroParagraph>
+        <HeroParagraph className="py-6">
           Our mission is to support hospitals, laboratories, clinics, and
           pharmacies by providing safe, compliant, and efficient delivery
           services when timing and accuracy matter most.
-        </h3>
+        </HeroParagraph>
         <h2 className="text-primary-100 text-xl md:text-2xl font-bold text-center px-4 font-saira">
           Fast. Secure. Compliant.
         </h2>
-        <h3 className="text-white text-sm md:text-base text-center px-4 max-w-2xl">
+        <HeroParagraph>
           Serving healthcare providers across the Twin Cities and surrounding
           communities.
-        </h3>
+        </HeroParagraph>
         <div className="flex gap-4 mt-6">
           <Button>Request a Delivery</Button>
           <Button variant="inverse">Contact Us</Button>
