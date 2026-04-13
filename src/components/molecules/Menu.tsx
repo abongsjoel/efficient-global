@@ -77,7 +77,7 @@ const Menu = () => {
         </li>
         <li>
           <a
-            href="/services"
+            href="#"
             className="hover:border-b-2 hover:border-black pb-1 block text-center md:inline md:text-left"
           >
             Blog
@@ -85,10 +85,10 @@ const Menu = () => {
         </li>
         <li>
           <a
-            href="/services"
+            href="#services"
             className="bg-primary-200 text-white px-6 py-3 rounded hover:bg-primary-100 md:inline-block block text-center"
           >
-            Opportunities
+            Request a Delivery
           </a>
         </li>
         <li>
