@@ -1,10 +1,10 @@
 import Header from "../components/Header";
-import Hero from "../components/molecules/Hero";
-import AboutUs from "../components/molecules/AboutUs";
-import OurExperience from "../components/molecules/OurExperience";
-import Services from "../components/molecules/Services";
-import WhoWeServe from "../components/molecules/WhoWeServe";
-import Contact from "../components/molecules/Contact";
+import Hero from "../components/organisms/Hero";
+import AboutUs from "../components/organisms/AboutUs";
+import OurExperience from "../components/organisms/OurExperience";
+import Services from "../components/organisms/Services";
+import WhoWeServe from "../components/organisms/WhoWeServe";
+import Contact from "../components/organisms/Contact";
 import ScrollIndicator from "../components/atoms/ScrollIndicator";
 
 const Home = () => {
