@@ -4,6 +4,7 @@ import AboutUs from "../components/molecules/AboutUs";
 import OurExperience from "../components/molecules/OurExperience";
 import Services from "../components/molecules/Services";
 import WhoWeServe from "../components/molecules/WhoWeServe";
+import Contact from "../components/molecules/Contact";
 
 const Home = () => {
   return (
@@ -16,6 +17,7 @@ const Home = () => {
           <OurExperience />
           <Services />
           <WhoWeServe />
+          <Contact />
         </div>
       </main>
     </section>
