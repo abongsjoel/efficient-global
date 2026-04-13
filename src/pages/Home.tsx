@@ -5,13 +5,11 @@ import OurExperience from "../components/organisms/OurExperience";
 import Services from "../components/organisms/Services";
 import WhoWeServe from "../components/organisms/WhoWeServe";
 import Contact from "../components/organisms/Contact";
-import ScrollIndicator from "../components/molecules/ScrollIndicator";
 
 const Home = () => {
   return (
     <section className="h-screen overflow-hidden">
       <Header />
-      <ScrollIndicator />
       <main className="snap-y snap-mandatory h-[calc(100vh-7rem)] overflow-y-scroll scroll-smooth">
         <div id="hero" className="snap-start">
           <Hero />
