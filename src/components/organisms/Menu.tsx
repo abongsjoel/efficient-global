@@ -51,7 +51,7 @@ const Menu = () => {
       >
         <li>
           <a
-            href="/"
+            href="#hero"
             onClick={() => setActiveSection("hero")}
             className={`${
               activeSection === "hero"
