@@ -1,8 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Hamburger from "../atoms/Hamburger";
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
+
+  useEffect(() => {
+    const sections = [
+      "hero",
+      "about",
+      "experience",
+      "services",
+      "who-we-serve",
+      "contact",
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: "-50% 0px -50% 0px", // Trigger when section is in the middle of viewport
+        threshold: 0,
+      },
+    );
+
+    sections.forEach((sectionId) => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <nav>
@@ -16,7 +52,12 @@ const Menu = () => {
         <li>
           <a
             href="/"
-            className="border-b-2 border-black pb-1 font-semibold block text-center md:inline md:text-left"
+            onClick={() => setActiveSection("hero")}
+            className={`${
+              activeSection === "hero"
+                ? "border-b-2 border-black pb-1 font-semibold"
+                : "hover:border-b-2 hover:border-black pb-1"
+            } block text-center md:inline md:text-left`}
           >
             Home
           </a>
@@ -24,7 +65,12 @@ const Menu = () => {
         <li>
           <a
             href="#services"
-            className="hover:border-b-2 hover:border-black pb-1 block text-center md:inline md:text-left"
+            onClick={() => setActiveSection("services")}
+            className={`${
+              activeSection === "services"
+                ? "border-b-2 border-black pb-1 font-semibold"
+                : "hover:border-b-2 hover:border-black pb-1"
+            } block text-center md:inline md:text-left`}
           >
             Services
           </a>
