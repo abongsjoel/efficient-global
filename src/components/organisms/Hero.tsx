@@ -26,7 +26,7 @@ const Hero = () => {
         <h1 className="text-primary-200 text-5xl md:text-7xl font-bold text-center px-4 uppercase font-saira tracking-wide">
           Efficient Global
         </h1>
-        <h2 className="text-white text-2xl md:text-4xl font-semibold text-center px-4 leading-snug max-w-2xl">
+        <h2 className="text-white text-2xl md:text-3xl font-semibold text-center px-4 leading-snug max-w-3xl">
           Reliable Medical Courier Services You Can Trust
         </h2>
         <div className="w-12 h-1 bg-gradient-to-r from-transparent via-primary-200 to-transparent rounded-full"></div>
