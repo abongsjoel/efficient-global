@@ -5,6 +5,7 @@ import OurExperience from "../components/organisms/OurExperience";
 import Services from "../components/organisms/Services";
 import WhoWeServe from "../components/organisms/WhoWeServe";
 import Contact from "../components/organisms/Contact";
+import Footer from "../components/organisms/Footer";
 
 const Home = () => {
   return (
@@ -28,6 +29,9 @@ const Home = () => {
         </div>
         <div className="snap-start">
           <Contact />
+        </div>
+        <div className="snap-start">
+          <Footer />
         </div>
       </main>
     </section>
