@@ -1,4 +1,4 @@
-import Header from "../components/Header";
+import Header from "../components/molecules/Header";
 import Hero from "../components/organisms/Hero";
 import AboutUs from "../components/organisms/AboutUs";
 import OurExperience from "../components/organisms/OurExperience";

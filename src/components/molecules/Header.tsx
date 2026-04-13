@@ -1,5 +1,5 @@
-import Menu from "./organisms/Menu";
-import logo from "../assets/logo_tans.png";
+import Menu from "../organisms/Menu";
+import logo from "../../assets/logo_tans.png";
 
 const Header = () => {
   return (
