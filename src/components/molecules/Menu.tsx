@@ -78,14 +78,15 @@ const Menu = () => {
         <li>
           <a
             href="#"
-            className="hover:border-b-2 hover:border-black pb-1 block text-center md:inline md:text-left"
+            onClick={(e) => e.preventDefault()}
+            className="hover:border-b-2 hover:border-black pb-1 block text-center md:inline md:text-left cursor-not-allowed opacity-50"
           >
             Blog
           </a>
         </li>
         <li>
           <a
-            href="#services"
+            href="#contact"
             className="bg-primary-200 text-white px-6 py-3 rounded hover:bg-primary-100 md:inline-block block text-center"
           >
             Request a Delivery

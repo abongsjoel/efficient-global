@@ -5,7 +5,7 @@ import OurExperience from "../components/molecules/OurExperience";
 import Services from "../components/molecules/Services";
 import WhoWeServe from "../components/molecules/WhoWeServe";
 import Contact from "../components/molecules/Contact";
-import ScrollIndicator from "../components/ScrollIndicator";
+import ScrollIndicator from "../components/atoms/ScrollIndicator";
 
 const Home = () => {
   return (
