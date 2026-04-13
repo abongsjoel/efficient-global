@@ -91,7 +91,10 @@ const serviceDetails: ServiceDetail[] = [
 
 const Services = () => {
   return (
-    <section className="relative overflow-hidden bg-slate-50 text-slate-950">
+    <section
+      id="services"
+      className="relative overflow-hidden bg-slate-50 text-slate-950"
+    >
       <div className="absolute left-0 top-10 h-72 w-72 rounded-full bg-primary-200/15 blur-3xl" />
       <div className="absolute right-0 bottom-0 h-72 w-72 rounded-full bg-slate-900/10 blur-3xl" />
       <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
