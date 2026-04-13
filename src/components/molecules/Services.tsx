@@ -1,5 +1,6 @@
 import Badge from "../atoms/Badge";
 import Button from "../atoms/Button";
+import ScrollReveal from "../ScrollReveal";
 
 type ServiceDetail = {
   title: string;
