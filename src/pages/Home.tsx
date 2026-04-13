@@ -3,6 +3,7 @@ import Hero from "../components/molecules/Hero";
 import AboutUs from "../components/molecules/AboutUs";
 import OurExperience from "../components/molecules/OurExperience";
 import Services from "../components/molecules/Services";
+import WhoWeServe from "../components/molecules/WhoWeServe";
 
 const Home = () => {
   return (
@@ -14,6 +15,7 @@ const Home = () => {
           <AboutUs />
           <OurExperience />
           <Services />
+          <WhoWeServe />
         </div>
       </main>
     </section>
