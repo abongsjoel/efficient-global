@@ -8,11 +8,11 @@ const HeroParagraph = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <h3
-    className={`text-white text-sm md:text-base text-center px-4 max-w-2xl ${className}`}
+  <p
+    className={`text-slate-100 text-sm md:text-base leading-relaxed text-center px-4 max-w-2xl ${className}`}
   >
     {children}
-  </h3>
+  </p>
 );
 
 const Hero = () => {
@@ -21,14 +21,15 @@ const Hero = () => {
       className="h-[calc(100vh-7rem)] bg-cover bg-center flex items-center justify-center relative snap-start"
       style={{ backgroundImage: `url(${city})` }}
     >
-      <div className="absolute inset-0 bg-black/50"></div>
-      <div className="flex flex-col gap-2 items-center relative z-10">
-        <h1 className="text-primary-200 text-3xl md:text-6xl font-bold text-center px-4 uppercase font-saira">
+      <div className="absolute inset-0 bg-black/60"></div>
+      <div className="flex flex-col gap-6 items-center relative z-10">
+        <h1 className="text-primary-200 text-5xl md:text-7xl font-bold text-center px-4 uppercase font-saira tracking-wide">
           Efficient Global
         </h1>
-        <h2 className="text-white text-xl md:text-3xl text-center px-4">
+        <h2 className="text-white text-2xl md:text-4xl font-semibold text-center px-4 leading-snug max-w-2xl">
           Reliable Medical Courier Services You Can Trust
         </h2>
+        <div className="w-12 h-1 bg-gradient-to-r from-transparent via-primary-200 to-transparent rounded-full"></div>
         <HeroParagraph>
           Efficient Global Enterprises specialize in providing professional and
           dependable medical courier services for healthcare providers
@@ -36,19 +37,19 @@ const Hero = () => {
           transportation of medical materials, laboratory specimens,
           pharmaceuticals, and healthcare documents.
         </HeroParagraph>
-        <HeroParagraph className="py-6">
+        <HeroParagraph className="py-2">
           Our mission is to support hospitals, laboratories, clinics, and
           pharmacies by providing safe, compliant, and efficient delivery
           services when timing and accuracy matter most.
         </HeroParagraph>
-        <h2 className="text-primary-100 text-xl md:text-2xl font-bold text-center px-4 font-saira">
+        <h3 className="text-primary-100 text-2xl md:text-3xl font-semibold text-center px-4 font-saira mt-4">
           Fast. Secure. Compliant.
-        </h2>
+        </h3>
         <HeroParagraph>
           Serving healthcare providers across the Twin Cities and surrounding
           communities.
         </HeroParagraph>
-        <div className="flex gap-4 mt-6">
+        <div className="flex gap-4 mt-8">
           <Button>Request a Delivery</Button>
           <Button variant="inverse">Contact Us</Button>
         </div>
