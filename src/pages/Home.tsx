@@ -5,7 +5,7 @@ import OurExperience from "../components/organisms/OurExperience";
 import Services from "../components/organisms/Services";
 import WhoWeServe from "../components/organisms/WhoWeServe";
 import Contact from "../components/organisms/Contact";
-import ScrollIndicator from "../components/atoms/ScrollIndicator";
+import ScrollIndicator from "../components/molecules/ScrollIndicator";
 
 const Home = () => {
   return (
