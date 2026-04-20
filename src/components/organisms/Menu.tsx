@@ -64,6 +64,19 @@ const Menu = () => {
         </li>
         <li>
           <a
+            href="#about"
+            onClick={() => setActiveSection("services")}
+            className={`${
+              activeSection === "about"
+                ? "border-b-2 border-black pb-1 font-semibold"
+                : "hover:border-b-2 hover:border-black pb-1"
+            } block text-center md:inline md:text-left`}
+          >
+            About
+          </a>
+        </li>
+        <li>
+          <a
             href="#services"
             onClick={() => setActiveSection("services")}
             className={`${
@@ -75,7 +88,8 @@ const Menu = () => {
             Services
           </a>
         </li>
-        <li>
+
+        {/* <li>
           <a
             href="#"
             onClick={(e) => e.preventDefault()}
@@ -83,7 +97,7 @@ const Menu = () => {
           >
             Blog
           </a>
-        </li>
+        </li> */}
         <li>
           <a
             href="#contact"
