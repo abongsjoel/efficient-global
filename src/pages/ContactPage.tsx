@@ -2,7 +2,10 @@ import { useLocation } from "react-router-dom";
 
 const ContactPage = () => {
   const location = useLocation();
-  const source = (location.state as { source?: string } | null)?.source;
+  const source =
+    (location.state as { source?: string } | null)?.source ??
+    "request-information";
+
   console.log({ source });
 
   return (
