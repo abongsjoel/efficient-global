@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Badge from "../atoms/Badge";
 import Button from "../atoms/Button";
 
@@ -90,6 +91,12 @@ const serviceDetails: ServiceDetail[] = [
 ];
 
 const Services = () => {
+  const navigate = useNavigate();
+
+  const goContact = () => {
+    navigate("/contact");
+  };
+
   return (
     <section
       id="services"
@@ -164,8 +171,10 @@ const Services = () => {
               </p>
             </div>
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-end">
-              <Button>Request a Delivery</Button>
-              <Button variant="inverse">Contact Us</Button>
+              <Button onClick={goContact}>Request a Delivery</Button>
+              <Button variant="inverse" onClick={goContact}>
+                Contact Us
+              </Button>
             </div>
           </div>
         </div>

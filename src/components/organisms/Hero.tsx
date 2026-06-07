@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import city from "../../assets/images/city.jpg";
 import Button from "../atoms/Button";
 
@@ -16,6 +17,12 @@ const HeroParagraph = ({
 );
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const goContact = () => {
+    navigate("/contact");
+  };
+
   return (
     <article
       className="h-[calc(100vh-7rem)] bg-cover bg-center flex items-center justify-center relative snap-start"
@@ -50,8 +57,10 @@ const Hero = () => {
           communities.
         </HeroParagraph>
         <div className="flex gap-4 mt-8">
-          <Button>Request a Delivery</Button>
-          <Button variant="inverse">Contact Us</Button>
+          <Button onClick={goContact}>Request a Delivery</Button>
+          <Button variant="inverse" onClick={goContact}>
+            Contact Us
+          </Button>
         </div>
       </div>
     </article>
