@@ -7,6 +7,7 @@ const Menu = () => {
   const [activeSection, setActiveSection] = useState("hero");
   const location = useLocation();
   const navigate = useNavigate();
+  const isHome = location.pathname === "/";
 
   const scrollToSection = (section: string) => {
     const element = document.getElementById(section);
@@ -90,7 +91,7 @@ const Menu = () => {
             href="#hero"
             onClick={(event) => goHome(event, "hero")}
             className={`${
-              activeSection === "hero"
+              isHome && activeSection === "hero"
                 ? "border-b-2 border-black pb-1 font-semibold"
                 : "hover:border-b-2 hover:border-black pb-1"
             } block text-center md:inline md:text-left`}
@@ -103,7 +104,7 @@ const Menu = () => {
             href="#about"
             onClick={(event) => goHome(event, "about")}
             className={`${
-              activeSection === "about"
+              isHome && activeSection === "about"
                 ? "border-b-2 border-black pb-1 font-semibold"
                 : "hover:border-b-2 hover:border-black pb-1"
             } block text-center md:inline md:text-left`}
@@ -116,7 +117,7 @@ const Menu = () => {
             href="#services"
             onClick={(event) => goHome(event, "services")}
             className={`${
-              activeSection === "services"
+              isHome && activeSection === "services"
                 ? "border-b-2 border-black pb-1 font-semibold"
                 : "hover:border-b-2 hover:border-black pb-1"
             } block text-center md:inline md:text-left`}
