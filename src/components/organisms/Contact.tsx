@@ -1,7 +1,18 @@
+import { useNavigate } from "react-router-dom";
 import Badge from "../atoms/Badge";
 import Button from "../atoms/Button";
 
 const Contact = () => {
+  const navigate = useNavigate();
+
+  const handleScheduleDelivery = () => {
+    navigate("/contact", { state: { source: "schedule-delivery" } });
+  };
+
+  const handleRequestInformation = () => {
+    navigate("/contact", { state: { source: "request-information" } });
+  };
+
   return (
     <section
       id="contact"
@@ -75,8 +86,12 @@ const Contact = () => {
 
           <div className="mt-12 text-center">
             <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
-              <Button>Schedule Delivery</Button>
-              <Button variant="inverse">Request Information</Button>
+              <Button onClick={handleScheduleDelivery}>
+                Schedule Delivery
+              </Button>
+              <Button variant="inverse" onClick={handleRequestInformation}>
+                Request Information
+              </Button>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@ const Button = ({
   const baseStyles = "px-6 py-3 rounded font-semibold transition-colors";
   const variantStyles =
     variant === "inverse"
-      ? "bg-white text-primary-200 border border-primary-200 hover:bg-primary-100"
+      ? "bg-white text-primary-200 border border-primary-200 hover:bg-primary-100 hover:text-white"
       : "bg-primary-200 text-white hover:bg-primary-100";
 
   return (

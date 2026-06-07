@@ -1,9 +1,46 @@
-import { useState, useEffect } from "react";
+import { type MouseEvent, useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Hamburger from "../atoms/Hamburger";
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHome = location.pathname === "/";
+
+  const scrollToSection = (section: string) => {
+    const element = document.getElementById(section);
+    if (!element) return;
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const goHome = (event: MouseEvent<HTMLAnchorElement>, section: string) => {
+    event.preventDefault();
+    setIsOpen(false);
+    setActiveSection(section);
+    if (location.pathname !== "/") {
+      navigate("/", { state: { scrollTo: section } });
+      return;
+    }
+    scrollToSection(section);
+  };
+
+  const goRequestDelivery = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    setIsOpen(false);
+    if (location.pathname !== "/") {
+      navigate("/", { state: { scrollTo: "contact" } });
+      return;
+    }
+    scrollToSection("contact");
+  };
+
+  const goContact = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    setIsOpen(false);
+    navigate("/contact");
+  };
 
   useEffect(() => {
     const sections = [
@@ -52,9 +89,9 @@ const Menu = () => {
         <li>
           <a
             href="#hero"
-            onClick={() => setActiveSection("hero")}
+            onClick={(event) => goHome(event, "hero")}
             className={`${
-              activeSection === "hero"
+              isHome && activeSection === "hero"
                 ? "border-b-2 border-black pb-1 font-semibold"
                 : "hover:border-b-2 hover:border-black pb-1"
             } block text-center md:inline md:text-left`}
@@ -65,9 +102,9 @@ const Menu = () => {
         <li>
           <a
             href="#about"
-            onClick={() => setActiveSection("services")}
+            onClick={(event) => goHome(event, "about")}
             className={`${
-              activeSection === "about"
+              isHome && activeSection === "about"
                 ? "border-b-2 border-black pb-1 font-semibold"
                 : "hover:border-b-2 hover:border-black pb-1"
             } block text-center md:inline md:text-left`}
@@ -78,9 +115,9 @@ const Menu = () => {
         <li>
           <a
             href="#services"
-            onClick={() => setActiveSection("services")}
+            onClick={(event) => goHome(event, "services")}
             className={`${
-              activeSection === "services"
+              isHome && activeSection === "services"
                 ? "border-b-2 border-black pb-1 font-semibold"
                 : "hover:border-b-2 hover:border-black pb-1"
             } block text-center md:inline md:text-left`}
@@ -101,6 +138,7 @@ const Menu = () => {
         <li>
           <a
             href="#contact"
+            onClick={goRequestDelivery}
             className="bg-primary-200 text-white px-6 py-3 rounded hover:bg-primary-100 md:inline-block block text-center"
           >
             Request a Delivery
@@ -108,7 +146,8 @@ const Menu = () => {
         </li>
         <li>
           <a
-            href="#contact"
+            href="/contact"
+            onClick={goContact}
             className="bg-primary-200 text-white px-6 py-3 rounded hover:bg-primary-100 md:inline-block block text-center md:mt-0 mt-2"
           >
             Get In Touch
