@@ -6,7 +6,7 @@ const ContactPage = () => {
   const location = useLocation();
   const source =
     (location.state as { source?: string } | null)?.source ??
-    "request-information";
+    "request-informations";
 
   useEffect(() => {
     const el = document.getElementById("start");
