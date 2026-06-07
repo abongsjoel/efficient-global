@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import city from "../../assets/images/city.jpg";
 import Button from "../atoms/Button";
 
@@ -18,6 +18,19 @@ const HeroParagraph = ({
 
 const Hero = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const goRequestDelivery = () => {
+    const contactSection = document.getElementById("contact");
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (location.pathname !== "/") {
+      navigate("/", { state: { scrollTo: "contact" } });
+    }
+  };
 
   const goContact = () => {
     navigate("/contact");
@@ -57,7 +70,7 @@ const Hero = () => {
           communities.
         </HeroParagraph>
         <div className="flex gap-4 mt-8">
-          <Button onClick={goContact}>Request a Delivery</Button>
+          <Button onClick={goRequestDelivery}>Request a Delivery</Button>
           <Button variant="inverse" onClick={goContact}>
             Contact Us
           </Button>
