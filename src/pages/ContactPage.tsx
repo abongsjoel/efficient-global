@@ -19,7 +19,7 @@ const ContactPage = () => {
 
   return (
     <div id="start" className="snap-start">
-      {/* <section
+      <section
         id="contact-page-top"
         className="relative overflow-hidden bg-slate-950 text-white"
       >
@@ -35,7 +35,9 @@ const ContactPage = () => {
         <div className="relative mx-auto max-w-7xl px-6 py-24 lg:px-10">
           <div className="max-w-3xl">
             <p className="text-sm uppercase tracking-[0.32em] text-primary-200">
-              Request a Quote
+              {source === "request-information"
+                ? "Get in Touch"
+                : "Schedule a Delivery"}
             </p>
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">
               Request a medical courier delivery quote
@@ -47,56 +49,9 @@ const ContactPage = () => {
             </p>
           </div>
         </div>
-      </section> */}
-
-      <section>
-        <h1>Hellooo1</h1>
-        <h1>Hellooo2</h1>
-        <h1>Hellooo3</h1>
-        <h1>Hellooo4</h1>
-        <h1>Hellooo5</h1>
-        <h1>Hellooo6</h1>
-        <h1>Hellooo7</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
-        <h1>Hellooo</h1>
       </section>
+
+      <section></section>
     </div>
   );
 };
