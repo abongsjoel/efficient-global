@@ -1,7 +1,20 @@
-// import Contact from "../components/organisms/Contact";
+import { useLocation } from "react-router-dom";
 
 const ContactPage = () => {
-  return <>Hellooo I am the ContactPage Page</>;
+  const location = useLocation();
+  const source = (location.state as { source?: string } | null)?.source;
+  console.log({ source });
+
+  return (
+    <>
+      Hellooo I am the ContactPage Page
+      {source ? (
+        <div className="mt-4 text-sm text-slate-500">
+          Navigated from: <strong>{source}</strong>
+        </div>
+      ) : null}
+    </>
+  );
 };
 
 export default ContactPage;
