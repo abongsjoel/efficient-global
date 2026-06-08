@@ -1,21 +1,20 @@
 import React from "react";
 
-interface DeliveryRequestFormProps {
-  source: string;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}
+const DeliveryRequestForm: React.FC = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const data = Object.fromEntries(fd.entries());
+    console.log("delivery request submit", data);
+  };
 
-const DeliveryRequestForm: React.FC<DeliveryRequestFormProps> = ({
-  source,
-  onSubmit,
-}) => {
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       className="mt-8 space-y-6"
       aria-label="Schedule delivery form"
     >
-      <input type="hidden" name="source" value={source} />
+      <input type="hidden" name="source" value="schedule-delivery" />
 
       <div className="grid gap-6 sm:grid-cols-2">
         <label className="block text-sm font-medium text-slate-700">

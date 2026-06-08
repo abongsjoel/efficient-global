@@ -1,21 +1,20 @@
 import React from "react";
 
-interface RequestInformationFormProps {
-  source: string;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}
+const RequestInformationForm: React.FC = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const data = Object.fromEntries(fd.entries());
+    console.log("request information submit", data);
+  };
 
-const RequestInformationForm: React.FC<RequestInformationFormProps> = ({
-  source,
-  onSubmit,
-}) => {
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       className="mt-8 space-y-6"
       aria-label="Request information form"
     >
-      <input type="hidden" name="source" value={source} />
+      <input type="hidden" name="source" value="request-information" />
 
       <div className="grid gap-6 sm:grid-cols-2">
         <label className="block text-sm font-medium text-slate-700">

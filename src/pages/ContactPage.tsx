@@ -18,13 +18,6 @@ const ContactPage = () => {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const data = Object.fromEntries(fd.entries());
-    console.log("contact submit", data);
-  };
-
   return (
     <div id="start" className="snap-start">
       <PageHero
@@ -50,9 +43,9 @@ const ContactPage = () => {
       <section id="contact-form" className="bg-slate-50 text-slate-900 py-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           {source === "request-information" ? (
-            <RequestInformationForm source={source} onSubmit={handleSubmit} />
+            <RequestInformationForm />
           ) : (
-            <DeliveryRequestForm source={source} onSubmit={handleSubmit} />
+            <DeliveryRequestForm />
           )}
         </div>
       </section>
