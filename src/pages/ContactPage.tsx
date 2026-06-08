@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import contactHero from "../assets/images/contact-hero.jpg";
 import PageHero from "../components/organisms/PageHero";
@@ -53,7 +53,7 @@ const ContactPage = () => {
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                Get Information
+                Get in Touch
               </button>
               <button
                 onClick={() => setSource("schedule-delivery")}
