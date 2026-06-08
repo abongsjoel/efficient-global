@@ -26,9 +26,23 @@ const ContactPage = () => {
   return (
     <div id="start" className="snap-start">
       <PageHero
-        source={source}
         imageSrc={contactHero}
         imageAlt="Medical courier delivery"
+        eyebrow={
+          source === "request-information"
+            ? "Get in Touch"
+            : "Schedule a Delivery"
+        }
+        title={
+          source === "request-information"
+            ? "Questions about our services?"
+            : "Schedule your medical courier delivery"
+        }
+        description={
+          source === "request-information"
+            ? "Tell us about your needs or ask a question and our team will respond promptly."
+            : "Provide pickup and delivery details, preferred time, and any handling requirements to request a delivery or get a quote."
+        }
       />
 
       <section id="contact-form" className="bg-slate-50 text-slate-900 py-10">
