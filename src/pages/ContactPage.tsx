@@ -9,7 +9,7 @@ const ContactPage = () => {
   const location = useLocation();
   const source =
     (location.state as { source?: string } | null)?.source ??
-    "request-informations";
+    "request-information";
 
   useEffect(() => {
     const el = document.getElementById("start");
