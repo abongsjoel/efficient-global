@@ -59,7 +59,6 @@ const ContactPage = () => {
           </div>
         </div>
       </section>
-      <section></section>
 
       <section id="contact-form" className="bg-slate-50 text-slate-900 py-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
