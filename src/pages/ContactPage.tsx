@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import contactHero from "../assets/images/contact-hero.jpg";
 import PageHero from "../components/organisms/PageHero";
@@ -7,9 +7,10 @@ import RequestInformationForm from "../components/organisms/RequestInformationFo
 
 const ContactPage = () => {
   const location = useLocation();
-  const source =
+  const initialSource =
     (location.state as { source?: string } | null)?.source ??
     "request-information";
+  const [source, setSource] = useState(initialSource);
 
   useEffect(() => {
     const el = document.getElementById("start");
@@ -42,6 +43,31 @@ const ContactPage = () => {
 
       <section id="contact-form" className="bg-slate-50 text-slate-900 py-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <div className="mb-10 flex items-center justify-end">
+            <div className="inline-flex gap-2 rounded-full border border-slate-300 bg-slate-100 p-1">
+              <button
+                onClick={() => setSource("request-information")}
+                className={`rounded-full px-6 py-2 text-sm font-medium transition duration-200 ${
+                  source === "request-information"
+                    ? "bg-white text-slate-950 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Get Information
+              </button>
+              <button
+                onClick={() => setSource("schedule-delivery")}
+                className={`rounded-full px-6 py-2 text-sm font-medium transition duration-200 ${
+                  source === "schedule-delivery"
+                    ? "bg-white text-slate-950 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Schedule Delivery
+              </button>
+            </div>
+          </div>
+
           {source === "request-information" ? (
             <RequestInformationForm />
           ) : (
