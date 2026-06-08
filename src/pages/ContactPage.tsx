@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import contactHero from "../assets/images/contact-hero.jpg";
 import PageHero from "../components/organisms/PageHero";
 import DeliveryRequestForm from "../components/organisms/DeliveryRequestForm";
@@ -18,19 +18,12 @@ const ContactPage = () => {
         : ((location.state as { source?: string } | null)?.source ??
           "request-information");
   const [source, setSource] = useState(initialSource);
-  const navigate = useNavigate();
 
   // keep the selected form in sync with the URL so navigating to
   // /contact?source=... while already on the page switches the form
   useEffect(() => {
     setSource(initialSource);
   }, [initialSource]);
-
-  const handleSelect = (s: "request-information" | "schedule-delivery") => {
-    setSource(s);
-    // update the URL so links can point directly to a form
-    navigate(`${location.pathname}?source=${s}`);
-  };
 
   useEffect(() => {
     const el = document.getElementById("start");
