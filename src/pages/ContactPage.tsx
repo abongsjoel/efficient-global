@@ -47,7 +47,7 @@ const ContactPage = () => {
             <div className="inline-flex gap-2 rounded-full border border-slate-300 bg-slate-100 p-1">
               <button
                 onClick={() => setSource("request-information")}
-                className={`rounded-full px-6 py-2 text-sm font-medium transition duration-200 ${
+                className={`w-40 rounded-full py-2 text-sm font-medium transition duration-200 ${
                   source === "request-information"
                     ? "bg-white text-slate-950 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -57,7 +57,7 @@ const ContactPage = () => {
               </button>
               <button
                 onClick={() => setSource("schedule-delivery")}
-                className={`rounded-full px-6 py-2 text-sm font-medium transition duration-200 ${
+                className={`w-40 rounded-full py-2 text-sm font-medium transition duration-200 ${
                   source === "schedule-delivery"
                     ? "bg-white text-slate-950 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
