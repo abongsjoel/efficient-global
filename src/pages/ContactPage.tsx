@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import contactHero from "../assets/images/contact-hero.jpg";
 import PageHero from "../components/organisms/PageHero";
 import DeliveryRequestForm from "../components/organisms/DeliveryRequestForm";
@@ -7,10 +7,24 @@ import RequestInformationForm from "../components/organisms/RequestInformationFo
 
 const ContactPage = () => {
   const location = useLocation();
+  // allow selecting the initial form via query param (e.g. ?source=schedule-delivery)
+  const params = new URLSearchParams(location.search);
+  const paramSource = params.get("source");
   const initialSource =
-    (location.state as { source?: string } | null)?.source ??
-    "request-information";
+    paramSource === "schedule-delivery" || paramSource === "delivery"
+      ? "schedule-delivery"
+      : paramSource === "request-information" || paramSource === "info"
+        ? "request-information"
+        : ((location.state as { source?: string } | null)?.source ??
+          "request-information");
   const [source, setSource] = useState(initialSource);
+  const navigate = useNavigate();
+
+  const handleSelect = (s: "request-information" | "schedule-delivery") => {
+    setSource(s);
+    // update the URL so links can point directly to a form
+    navigate(`${location.pathname}?source=${s}`);
+  };
 
   useEffect(() => {
     const el = document.getElementById("start");
@@ -46,7 +60,7 @@ const ContactPage = () => {
           <div className="mb-10 flex items-center justify-end">
             <div className="inline-flex gap-2 rounded-full border border-slate-300 bg-slate-100 p-1">
               <button
-                onClick={() => setSource("request-information")}
+                onClick={() => handleSelect("request-information")}
                 className={`w-40 rounded-full py-2 text-sm font-medium transition duration-200 ${
                   source === "request-information"
                     ? "bg-white text-slate-950 shadow-sm"
@@ -56,7 +70,7 @@ const ContactPage = () => {
                 Get in Touch
               </button>
               <button
-                onClick={() => setSource("schedule-delivery")}
+                onClick={() => handleSelect("schedule-delivery")}
                 className={`w-40 rounded-full py-2 text-sm font-medium transition duration-200 ${
                   source === "schedule-delivery"
                     ? "bg-white text-slate-950 shadow-sm"

@@ -94,7 +94,11 @@ const Services = () => {
   const navigate = useNavigate();
 
   const goContact = () => {
-    navigate("/contact");
+    navigate("/contact?source=schedule-delivery");
+  };
+
+  const goContactInfo = () => {
+    navigate("/contact?source=request-information");
   };
 
   return (
@@ -172,7 +176,7 @@ const Services = () => {
             </div>
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:justify-end">
               <Button onClick={goContact}>Request a Delivery</Button>
-              <Button variant="inverse" onClick={goContact}>
+              <Button variant="inverse" onClick={goContactInfo}>
                 Contact Us
               </Button>
             </div>

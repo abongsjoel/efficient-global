@@ -29,17 +29,14 @@ const Menu = () => {
   const goRequestDelivery = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     setIsOpen(false);
-    if (location.pathname !== "/") {
-      navigate("/", { state: { scrollTo: "contact" } });
-      return;
-    }
-    scrollToSection("contact");
+    // navigate to contact with delivery form selected
+    navigate("/contact?source=schedule-delivery");
   };
 
   const goContact = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     setIsOpen(false);
-    navigate("/contact");
+    navigate("/contact?source=request-information");
   };
 
   useEffect(() => {

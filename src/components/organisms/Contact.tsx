@@ -6,11 +6,11 @@ const Contact = () => {
   const navigate = useNavigate();
 
   const handleScheduleDelivery = () => {
-    navigate("/contact", { state: { source: "schedule-delivery" } });
+    navigate("/contact?source=schedule-delivery");
   };
 
   const handleRequestInformation = () => {
-    navigate("/contact", { state: { source: "request-information" } });
+    navigate("/contact?source=request-information");
   };
 
   return (

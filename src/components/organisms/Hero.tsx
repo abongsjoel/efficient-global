@@ -21,19 +21,12 @@ const Hero = () => {
   const location = useLocation();
 
   const goRequestDelivery = () => {
-    const contactSection = document.getElementById("contact");
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-
-    if (location.pathname !== "/") {
-      navigate("/", { state: { scrollTo: "contact" } });
-    }
+    // navigate to the Contact page with the delivery form selected
+    navigate("/contact?source=schedule-delivery");
   };
 
   const goContact = () => {
-    navigate("/contact");
+    navigate("/contact?source=request-information");
   };
 
   return (
