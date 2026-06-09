@@ -3,6 +3,7 @@
 @theme {
   --color-primary-100: #769c6c;
   --color-primary-200: #6ba035;
+  --color-primary-300: #59882c;
 }
 
 @layer base {

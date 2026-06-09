@@ -1,141 +1,172 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Field,
+  FormShell,
+  Input,
+  Select,
+  SubmitButton,
+  Textarea,
+} from "../molecules/FormFields";
+import DateTimePicker from "../molecules/DateTimePicker";
+import {
+  useFormValidation,
+  validators as v,
+} from "../../hooks/useFormValidation";
+
+// today as "YYYY-MM-DD" for the picker's minimum date
+const todayISODate = () => new Date().toISOString().slice(0, 10);
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+    {children}
+  </p>
+);
+
+const schema = {
+  pickup: [v.required("Enter a pickup location")],
+  delivery: [v.required("Enter a delivery location")],
+  datetime: [v.required("Choose when the delivery is needed")],
+  name: [v.required("Tell us your name")],
+  email: [v.required("Enter your email"), v.email()],
+  phone: [v.phone()],
+};
 
 const DeliveryRequestForm: React.FC = () => {
+  const { errors, validate, revalidate } = useFormValidation(schema);
+  const [datetime, setDatetime] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // the hidden datetime input updates on re-render, so re-check it here
+  useEffect(() => {
+    if (formRef.current) revalidate(formRef.current, "datetime");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datetime]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const data = Object.fromEntries(fd.entries());
+    const form = e.currentTarget;
+    if (!validate(form)) return;
+    const data = Object.fromEntries(new FormData(form).entries());
     console.log("delivery request submit", data);
   };
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/70">
-      <div className="border-b border-slate-200 px-6 py-8 sm:px-8">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-          Schedule a Delivery
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Share pickup and delivery details so we can prepare the right vehicle
-          and timing.
-        </p>
-      </div>
-
+    <FormShell
+      icon="🚚"
+      eyebrow="Schedule a Delivery"
+      title="Request your medical courier delivery"
+      description="Share pickup and delivery details so we can prepare the right vehicle and timing."
+    >
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
-        className="space-y-8 px-6 py-8 sm:px-8"
+        onChange={(e) =>
+          revalidate(e.currentTarget, (e.target as HTMLInputElement).name)
+        }
+        noValidate
+        className="space-y-8 px-6 py-8 sm:px-10"
         aria-label="Schedule delivery form"
       >
         <input type="hidden" name="source" value="schedule-delivery" />
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Pickup location
-            <input
-              name="pickup"
-              type="text"
-              placeholder="Facility or address"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
+        <div className="space-y-6">
+          <SectionLabel>Route &amp; timing</SectionLabel>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Field label="Pickup location" required error={errors.pickup}>
+              <Input
+                name="pickup"
+                type="text"
+                placeholder="Facility or address"
+                required
+              />
+            </Field>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Delivery location
-            <input
-              name="delivery"
-              type="text"
-              placeholder="Facility or address"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
-        </div>
+            <Field label="Delivery location" required error={errors.delivery}>
+              <Input
+                name="delivery"
+                type="text"
+                placeholder="Facility or address"
+                required
+              />
+            </Field>
+          </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Date / time needed
-            <input
+          <div className="grid gap-6 sm:grid-cols-2">
+            <DateTimePicker
               name="datetime"
-              type="datetime-local"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
+              label="Date / time needed"
+              required
+              value={datetime}
+              onChange={setDatetime}
+              minDate={todayISODate()}
+              error={errors.datetime}
             />
-          </label>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Vehicle type
-            <select
-              name="vehicle"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            >
-              <option>Medical specimen delivery</option>
-              <option>Pharmacy or medication transport</option>
-              <option>Lab documents and samples</option>
-              <option>Urgent courier / same day</option>
-            </select>
-          </label>
+            <Field label="Vehicle type">
+              <Select name="vehicle" defaultValue="Medical specimen delivery">
+                <option>Medical specimen delivery</option>
+                <option>Pharmacy or medication transport</option>
+                <option>Lab documents and samples</option>
+                <option>Urgent courier / same day</option>
+              </Select>
+            </Field>
+          </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Name
-            <input
-              name="name"
-              type="text"
-              placeholder="Your name"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
+        <div className="space-y-6 border-t border-slate-100 pt-8">
+          <SectionLabel>Your details</SectionLabel>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Field label="Name" required error={errors.name}>
+              <Input
+                name="name"
+                type="text"
+                placeholder="Your name"
+                autoComplete="name"
+                required
+              />
+            </Field>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Email
-            <input
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
+            <Field label="Email" required error={errors.email}>
+              <Input
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
+            </Field>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Field label="Phone" error={errors.phone}>
+              <Input
+                name="phone"
+                type="tel"
+                placeholder="(123) 456-7890"
+                autoComplete="tel"
+              />
+            </Field>
+
+            <Field label="Rush delivery required?">
+              <Select name="rush" defaultValue="No">
+                <option>No</option>
+                <option>Yes, rush delivery</option>
+              </Select>
+            </Field>
+          </div>
+
+          <Field label="Additional instructions">
+            <Textarea
+              name="instructions"
+              rows={5}
+              placeholder="Provide weight, dimensions, handling instructions, or any special notes"
             />
-          </label>
+          </Field>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Phone
-            <input
-              name="phone"
-              type="tel"
-              placeholder="(123) 456-7890"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
-
-          <label className="block text-sm font-medium text-slate-700">
-            Rush delivery required?
-            <select
-              name="rush"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            >
-              <option>No</option>
-              <option>Yes, rush delivery</option>
-            </select>
-          </label>
-        </div>
-
-        <label className="block text-sm font-medium text-slate-700">
-          Additional instructions
-          <textarea
-            name="instructions"
-            rows={5}
-            placeholder="Provide weight, dimensions, handling instructions, or any special notes"
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-          />
-        </label>
-
-        <button
-          type="submit"
-          className="inline-flex w-full justify-center rounded-full bg-primary-200 px-8 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-slate-950 transition duration-200 hover:bg-primary-300"
-        >
-          Submit Request
-        </button>
+        <SubmitButton>Submit Request</SubmitButton>
       </form>
-    </div>
+    </FormShell>
   );
 };
 
