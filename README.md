@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# Efficient Global
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Marketing website for **Efficient Global Enterprises**, a medical courier service providing secure, time-sensitive transportation of medical materials, laboratory specimens, pharmaceuticals, and healthcare documents for healthcare providers across Minnesota and the Twin Cities.
 
-Currently, two official plugins are available:
+The site presents the company's services, highlights its experience, and lets visitors request a delivery or get in touch through dedicated contact forms.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## React Compiler
+- **[React 19](https://react.dev/)** with **[TypeScript](https://www.typescriptlang.org/)**
+- **[Vite](https://vite.dev/)** for development and bundling
+- **[Tailwind CSS v4](https://tailwindcss.com/)** for styling
+- **[React Router v7](https://reactrouter.com/)** for client-side routing
+- **[ESLint](https://eslint.org/)** for linting
+- **[gh-pages](https://github.com/tschaub/gh-pages)** for deployment
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- [Node.js](https://nodejs.org/) 18 or later
+- npm (bundled with Node.js)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <repository-url>
+cd efficient_global
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Start the local dev server with hot module replacement:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+The app is served at the URL printed in the terminal (typically `http://localhost:5173`).
+
+## Available Scripts
+
+| Script            | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| `npm run dev`     | Start the Vite development server                    |
+| `npm run build`   | Type-check and build the production bundle to `dist` |
+| `npm run preview` | Preview the production build locally                 |
+| `npm run lint`    | Run ESLint across the project                        |
+| `npm run deploy`  | Build and publish the site to GitHub Pages           |
+
+## Project Structure
+
+The codebase follows an [atomic design](https://atomicdesign.bradfrost.com/) approach, organizing components by complexity.
+
+```
+src/
+├── assets/              # Images and static assets
+├── components/
+│   ├── atoms/           # Basic building blocks (Button, Badge, Hamburger)
+│   ├── molecules/       # Composite components (Header, ScrollReveal, ScrollIndicator)
+│   ├── organisms/       # Page sections (Hero, Services, Contact, Footer, forms)
+│   └── layout/          # Shared layout wrappers (MainLayout)
+├── pages/               # Route-level pages (HomePage, ContactPage)
+├── App.tsx              # Application routes
+├── main.tsx             # Application entry point
+└── index.css            # Global styles and Tailwind setup
+```
+
+## Deployment
+
+The site is deployed to GitHub Pages. Running the deploy script builds the project and publishes the contents of `dist`:
+
+```bash
+npm run deploy
+```
+
+## License
+
+This project is private and not licensed for public use.
