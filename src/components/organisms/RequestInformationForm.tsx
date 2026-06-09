@@ -6,12 +6,25 @@ import {
   SubmitButton,
   Textarea,
 } from "../molecules/FormFields";
+import {
+  useFormValidation,
+  validators as v,
+} from "../../hooks/useFormValidation";
+
+const schema = {
+  name: [v.required("Tell us your name")],
+  email: [v.required("Enter your email"), v.email()],
+  message: [v.required("Let us know how we can help")],
+};
 
 const RequestInformationForm: React.FC = () => {
+  const { errors, validate, revalidate } = useFormValidation(schema);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const data = Object.fromEntries(fd.entries());
+    const form = e.currentTarget;
+    if (!validate(form)) return;
+    const data = Object.fromEntries(new FormData(form).entries());
     console.log("request information submit", data);
   };
 
@@ -24,13 +37,17 @@ const RequestInformationForm: React.FC = () => {
     >
       <form
         onSubmit={handleSubmit}
+        onChange={(e) =>
+          revalidate(e.currentTarget, (e.target as HTMLInputElement).name)
+        }
+        noValidate
         className="space-y-8 px-6 py-8 sm:px-10"
         aria-label="Request information form"
       >
         <input type="hidden" name="source" value="request-information" />
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <Field label="Name" required>
+          <Field label="Name" required error={errors.name}>
             <Input
               name="name"
               type="text"
@@ -40,7 +57,7 @@ const RequestInformationForm: React.FC = () => {
             />
           </Field>
 
-          <Field label="Email" required>
+          <Field label="Email" required error={errors.email}>
             <Input
               name="email"
               type="email"
@@ -60,7 +77,7 @@ const RequestInformationForm: React.FC = () => {
           />
         </Field>
 
-        <Field label="Message" required>
+        <Field label="Message" required error={errors.message}>
           <Textarea
             name="message"
             rows={6}

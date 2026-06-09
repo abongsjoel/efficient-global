@@ -1,63 +1,123 @@
-import type {
-  InputHTMLAttributes,
-  ReactNode,
-  SelectHTMLAttributes,
-  TextareaHTMLAttributes,
+import {
+  cloneElement,
+  isValidElement,
+  type InputHTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
 } from "react";
 
-// shared control styling so every field looks and behaves the same
-const controlClasses =
-  "mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition duration-200 hover:border-slate-300 focus:border-primary-200 focus:bg-white focus:ring-4 focus:ring-primary-200/20";
+// base control styling (size, shape, typography) shared by every field
+const baseControl =
+  "mt-2 w-full rounded-xl border px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition duration-200";
+
+// color/state styles split out so error and normal states never collide
+const normalState =
+  "border-slate-200 bg-slate-50/70 hover:border-slate-300 focus:border-primary-200 focus:bg-white focus:ring-4 focus:ring-primary-200/20";
+const errorState =
+  "border-red-400 bg-red-50/40 hover:border-red-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-500/20";
+
+const controlClass = (error?: boolean) =>
+  cx(baseControl, error ? errorState : normalState);
 
 // chevron used as the custom select indicator (native arrow is hidden)
 const selectChevron =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")";
 
-const cx = (...classes: (string | undefined)[]) =>
+const cx = (...classes: (string | undefined | false)[]) =>
   classes.filter(Boolean).join(" ");
+
+// controls accept an `error` flag that switches them to the red state
+type ControlError = { error?: boolean };
 
 type FieldProps = {
   label: string;
   required?: boolean;
+  error?: string;
   className?: string;
-  children: ReactNode;
+  children: ReactElement<ControlError & { name?: string }>;
 };
 
-export const Field = ({ label, required, className, children }: FieldProps) => (
-  <label className={cx("block text-sm font-medium text-slate-700", className)}>
-    <span className="flex items-center gap-1">
-      {label}
-      {required && (
-        <span aria-hidden className="text-primary-200">
-          *
+export const Field = ({
+  label,
+  required,
+  error,
+  className,
+  children,
+}: FieldProps) => {
+  const name = isValidElement(children) ? children.props.name : undefined;
+  const errorId = error && name ? `${name}-error` : undefined;
+
+  // inject the error state (and a11y attrs) into the wrapped control
+  const control = isValidElement(children)
+    ? cloneElement(children, {
+        error: Boolean(error),
+        "aria-invalid": Boolean(error),
+        "aria-describedby": errorId,
+      } as ControlError)
+    : children;
+
+  return (
+    <label className={cx("block text-sm font-medium text-slate-700", className)}>
+      <span className="flex items-center gap-1">
+        {label}
+        {required && (
+          <span aria-hidden className="text-primary-200">
+            *
+          </span>
+        )}
+      </span>
+      {control}
+      {error && (
+        <span
+          id={errorId}
+          role="alert"
+          className="mt-2 flex items-center gap-1.5 text-sm font-normal text-red-600"
+        >
+          <svg
+            aria-hidden
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-4 w-4 shrink-0"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-8-5a.9.9 0 00-.9 1l.35 4.5a.55.55 0 001.1 0L10.9 6a.9.9 0 00-.9-1zm0 8a1 1 0 100 2 1 1 0 000-2z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {error}
         </span>
       )}
-    </span>
-    {children}
-  </label>
-);
+    </label>
+  );
+};
 
 export const Input = ({
   className,
+  error,
   ...props
-}: InputHTMLAttributes<HTMLInputElement>) => (
-  <input className={cx(controlClasses, className)} {...props} />
+}: InputHTMLAttributes<HTMLInputElement> & ControlError) => (
+  <input className={cx(controlClass(error), className)} {...props} />
 );
 
 export const Textarea = ({
   className,
+  error,
   ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-  <textarea className={cx(controlClasses, className)} {...props} />
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & ControlError) => (
+  <textarea className={cx(controlClass(error), className)} {...props} />
 );
 
 export const Select = ({
   className,
+  error,
   ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) => (
+}: SelectHTMLAttributes<HTMLSelectElement> & ControlError) => (
   <select
     className={cx(
-      controlClasses,
+      controlClass(error),
       "appearance-none bg-[length:1.15rem] bg-[right_0.85rem_center] bg-no-repeat pr-11",
       className,
     )}

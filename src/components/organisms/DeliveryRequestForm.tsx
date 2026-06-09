@@ -7,6 +7,10 @@ import {
   SubmitButton,
   Textarea,
 } from "../molecules/FormFields";
+import {
+  useFormValidation,
+  validators as v,
+} from "../../hooks/useFormValidation";
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -14,11 +18,23 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   </p>
 );
 
+const schema = {
+  pickup: [v.required("Enter a pickup location")],
+  delivery: [v.required("Enter a delivery location")],
+  datetime: [v.required("Choose when the delivery is needed")],
+  name: [v.required("Tell us your name")],
+  email: [v.required("Enter your email"), v.email()],
+  phone: [v.phone()],
+};
+
 const DeliveryRequestForm: React.FC = () => {
+  const { errors, validate, revalidate } = useFormValidation(schema);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const data = Object.fromEntries(fd.entries());
+    const form = e.currentTarget;
+    if (!validate(form)) return;
+    const data = Object.fromEntries(new FormData(form).entries());
     console.log("delivery request submit", data);
   };
 
@@ -31,6 +47,10 @@ const DeliveryRequestForm: React.FC = () => {
     >
       <form
         onSubmit={handleSubmit}
+        onChange={(e) =>
+          revalidate(e.currentTarget, (e.target as HTMLInputElement).name)
+        }
+        noValidate
         className="space-y-8 px-6 py-8 sm:px-10"
         aria-label="Schedule delivery form"
       >
@@ -39,7 +59,7 @@ const DeliveryRequestForm: React.FC = () => {
         <div className="space-y-6">
           <SectionLabel>Route &amp; timing</SectionLabel>
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Pickup location" required>
+            <Field label="Pickup location" required error={errors.pickup}>
               <Input
                 name="pickup"
                 type="text"
@@ -48,7 +68,7 @@ const DeliveryRequestForm: React.FC = () => {
               />
             </Field>
 
-            <Field label="Delivery location" required>
+            <Field label="Delivery location" required error={errors.delivery}>
               <Input
                 name="delivery"
                 type="text"
@@ -59,7 +79,7 @@ const DeliveryRequestForm: React.FC = () => {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Date / time needed" required>
+            <Field label="Date / time needed" required error={errors.datetime}>
               <Input name="datetime" type="datetime-local" required />
             </Field>
 
@@ -77,7 +97,7 @@ const DeliveryRequestForm: React.FC = () => {
         <div className="space-y-6 border-t border-slate-100 pt-8">
           <SectionLabel>Your details</SectionLabel>
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Name" required>
+            <Field label="Name" required error={errors.name}>
               <Input
                 name="name"
                 type="text"
@@ -87,7 +107,7 @@ const DeliveryRequestForm: React.FC = () => {
               />
             </Field>
 
-            <Field label="Email" required>
+            <Field label="Email" required error={errors.email}>
               <Input
                 name="email"
                 type="email"
@@ -99,7 +119,7 @@ const DeliveryRequestForm: React.FC = () => {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Phone">
+            <Field label="Phone" error={errors.phone}>
               <Input
                 name="phone"
                 type="tel"
