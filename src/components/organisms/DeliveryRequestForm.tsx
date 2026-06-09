@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Field,
   FormShell,
@@ -7,10 +7,14 @@ import {
   SubmitButton,
   Textarea,
 } from "../molecules/FormFields";
+import DateTimePicker from "../molecules/DateTimePicker";
 import {
   useFormValidation,
   validators as v,
 } from "../../hooks/useFormValidation";
+
+// today as "YYYY-MM-DD" for the picker's minimum date
+const todayISODate = () => new Date().toISOString().slice(0, 10);
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -29,6 +33,14 @@ const schema = {
 
 const DeliveryRequestForm: React.FC = () => {
   const { errors, validate, revalidate } = useFormValidation(schema);
+  const [datetime, setDatetime] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // the hidden datetime input updates on re-render, so re-check it here
+  useEffect(() => {
+    if (formRef.current) revalidate(formRef.current, "datetime");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datetime]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,6 +58,7 @@ const DeliveryRequestForm: React.FC = () => {
       description="Share pickup and delivery details so we can prepare the right vehicle and timing."
     >
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
         onChange={(e) =>
           revalidate(e.currentTarget, (e.target as HTMLInputElement).name)
@@ -79,9 +92,15 @@ const DeliveryRequestForm: React.FC = () => {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label="Date / time needed" required error={errors.datetime}>
-              <Input name="datetime" type="datetime-local" required />
-            </Field>
+            <DateTimePicker
+              name="datetime"
+              label="Date / time needed"
+              required
+              value={datetime}
+              onChange={setDatetime}
+              minDate={todayISODate()}
+              error={errors.datetime}
+            />
 
             <Field label="Vehicle type">
               <Select name="vehicle" defaultValue="Medical specimen delivery">
