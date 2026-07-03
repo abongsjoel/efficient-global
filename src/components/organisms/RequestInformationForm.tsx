@@ -1,11 +1,37 @@
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import {
+  type ContactFieldErrors,
+  validateContactFields,
+} from "../../utils/formValidation";
 
 const RequestInformationForm = () => {
+  const [errors, setErrors] = useState<ContactFieldErrors>({});
+
+  const clearFieldError = (field: keyof ContactFieldErrors) => {
+    setErrors((currentErrors) => {
+      if (!currentErrors[field]) {
+        return currentErrors;
+      }
+
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+  };
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const validationErrors = validateContactFields(fd);
+
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
     const data = Object.fromEntries(fd.entries());
     console.log("request information submit", data);
   };
@@ -24,6 +50,7 @@ const RequestInformationForm = () => {
 
       <form
         onSubmit={handleSubmit}
+        noValidate
         className="space-y-8 px-6 py-8 sm:px-8"
         aria-label="Request information form"
       >
@@ -35,8 +62,12 @@ const RequestInformationForm = () => {
           <Input
             label="Email"
             name="email"
-            type="email"
+            type="text"
+            inputMode="email"
+            autoComplete="email"
             placeholder="you@example.com"
+            error={errors.email}
+            onChange={() => clearFieldError("email")}
           />
         </div>
 
@@ -45,7 +76,11 @@ const RequestInformationForm = () => {
             label="Phone"
             name="phone"
             type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             placeholder="(123) 456-7890"
+            error={errors.phone}
+            onChange={() => clearFieldError("phone")}
           />
 
           <Input
