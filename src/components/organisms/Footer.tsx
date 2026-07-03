@@ -43,6 +43,8 @@ const Footer = () => {
                 ✉️ Email:{" "}
                 <a
                   href={`mailto:${email_primary}`}
+                  target="_blank"
+                  rel="noreferrer"
                   className="transition duration-200 hover:text-white"
                 >
                   {email_primary}
