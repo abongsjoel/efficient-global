@@ -40,12 +40,21 @@ const RequestInformationForm = () => {
           />
         </div>
 
-        <Input
-          label="Organization (optional)"
-          name="organization"
-          type="text"
-          placeholder="Hospital, clinic, lab, or company"
-        />
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Input
+            label="Phone"
+            name="phone"
+            type="tel"
+            placeholder="(123) 456-7890"
+          />
+
+          <Input
+            label="Organization (optional)"
+            name="organization"
+            type="text"
+            placeholder="Hospital, clinic, lab, or company"
+          />
+        </div>
 
         <TextArea
           label="Message"
