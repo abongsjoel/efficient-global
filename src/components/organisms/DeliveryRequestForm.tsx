@@ -61,16 +61,34 @@ const DeliveryRequestForm: React.FC = () => {
 
           <label className="block text-sm font-medium text-slate-700">
             Request type
-            <select
-              name="vehicle"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            >
-              <option>Medical specimen delivery</option>
-              <option>Pharmacy or medication transport</option>
-              <option>Lab documents and samples</option>
-              <option>Urgent courier / same day</option>
-              <option>Others</option>
-            </select>
+            <div className="relative mt-2">
+              <select
+                name="vehicle"
+                className="w-full appearance-none rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
+              >
+                <option>Medical specimen delivery</option>
+                <option>Pharmacy or medication transport</option>
+                <option>Lab documents and samples</option>
+                <option>Urgent courier / same day</option>
+                <option>Others</option>
+              </select>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-slate-500"
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </div>
           </label>
         </div>
 
@@ -109,13 +127,31 @@ const DeliveryRequestForm: React.FC = () => {
 
           <label className="block text-sm font-medium text-slate-700">
             Rush delivery required?
-            <select
-              name="rush"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            >
-              <option>No</option>
-              <option>Yes, rush delivery</option>
-            </select>
+            <div className="relative mt-2">
+              <select
+                name="rush"
+                className="w-full appearance-none rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
+              >
+                <option>No</option>
+                <option>Yes, rush delivery</option>
+              </select>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-slate-500"
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </div>
           </label>
         </div>
 
