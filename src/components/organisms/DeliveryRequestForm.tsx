@@ -2,19 +2,7 @@ import type { FormEvent } from "react";
 import Dropdown from "../atoms/Dropdown";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
-
-const requestTypeOptions = [
-  { label: "Medical specimen delivery" },
-  { label: "Pharmacy or medication transport" },
-  { label: "Lab documents and samples" },
-  { label: "Urgent courier / same day" },
-  { label: "Others" },
-];
-
-const rushDeliveryOptions = [
-  { label: "No" },
-  { label: "Yes, rush delivery" },
-];
+import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
 
 const DeliveryRequestForm = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
