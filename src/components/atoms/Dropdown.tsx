@@ -7,61 +7,57 @@ export interface DropdownOption {
   disabled?: boolean;
 }
 
-export interface DropdownProps
-  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "children"> {
+export interface DropdownProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "children"
+> {
   label: string;
   options: DropdownOption[];
   labelClassName?: string;
 }
 
-const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(
-  function Dropdown(
-    { label, options, labelClassName, className, ...props },
-    ref
-  ) {
-    return (
-      <label className={cx(formLabelStyles, labelClassName)}>
-        {label}
-        <div className="relative mt-2">
-          <select
-            ref={ref}
-            className={cx(
-              formControlStyles,
-              "appearance-none pr-12",
-              className
-            )}
-            {...props}
-          >
-            {options.map((option) => {
-              const value = option.value ?? option.label;
+const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
+  { label, options, labelClassName, className, ...props },
+  ref,
+) {
+  return (
+    <label className={cx(formLabelStyles, labelClassName)}>
+      {label}
+      <div className="relative mt-2">
+        <select
+          ref={ref}
+          className={cx(formControlStyles, "appearance-none pr-12", className)}
+          {...props}
+        >
+          {options.map((option) => {
+            const value = option.value ?? option.label;
 
-              return (
-                <option
-                  key={`${value}-${option.label}`}
-                  value={value}
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                </option>
-              );
-            })}
-          </select>
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-slate-500"
-          >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-              <path
-                fillRule="evenodd"
-                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </span>
-        </div>
-      </label>
-    );
-  }
-);
+            return (
+              <option
+                key={`${value}-${option.label}`}
+                value={value}
+                disabled={option.disabled}
+              >
+                {option.label}
+              </option>
+            );
+          })}
+        </select>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+            <path
+              fillRule="evenodd"
+              d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </span>
+      </div>
+    </label>
+  );
+});
 
 export default Dropdown;
