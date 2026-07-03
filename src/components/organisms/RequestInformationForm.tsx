@@ -1,7 +1,9 @@
-import React from "react";
+import type { FormEvent } from "react";
+import Input from "../atoms/Input";
+import TextArea from "../atoms/TextArea";
 
-const RequestInformationForm: React.FC = () => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+const RequestInformationForm = () => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget as HTMLFormElement);
     const data = Object.fromEntries(fd.entries());
@@ -28,46 +30,29 @@ const RequestInformationForm: React.FC = () => {
         <input type="hidden" name="source" value="request-information" />
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Name
-            <input
-              name="name"
-              type="text"
-              placeholder="Your name"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
+          <Input label="Name" name="name" type="text" placeholder="Your name" />
 
-          <label className="block text-sm font-medium text-slate-700">
-            Email
-            <input
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
+          <Input
+            label="Email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+          />
         </div>
 
-        <label className="block text-sm font-medium text-slate-700">
-          Organization (optional)
-          <input
-            name="organization"
-            type="text"
-            placeholder="Hospital, clinic, lab, or company"
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-          />
-        </label>
+        <Input
+          label="Organization (optional)"
+          name="organization"
+          type="text"
+          placeholder="Hospital, clinic, lab, or company"
+        />
 
-        <label className="block text-sm font-medium text-slate-700">
-          Message
-          <textarea
-            name="message"
-            rows={6}
-            placeholder="How can we help?"
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-          />
-        </label>
+        <TextArea
+          label="Message"
+          name="message"
+          rows={6}
+          placeholder="How can we help?"
+        />
 
         <button
           type="submit"
