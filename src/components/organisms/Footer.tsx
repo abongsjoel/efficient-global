@@ -1,4 +1,8 @@
+import { email_primary, phone_primary } from "../../utils/constants";
+
 const Footer = () => {
+  const phoneHref = `tel:${phone_primary.replace(/[^\d+]/g, "")}`;
+
   return (
     <footer className="bg-slate-950 text-white py-12">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -26,8 +30,24 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-lg font-medium">Contact</h4>
             <div className="space-y-2 text-slate-300 text-sm">
-              <p>📞 Phone: Call us directly</p>
-              <p>✉️ Email: Send us a message</p>
+              <p>
+                📞 Phone:{" "}
+                <a
+                  href={phoneHref}
+                  className="transition duration-200 hover:text-white"
+                >
+                  {phone_primary}
+                </a>
+              </p>
+              <p>
+                ✉️ Email:{" "}
+                <a
+                  href={`mailto:${email_primary}`}
+                  className="transition duration-200 hover:text-white"
+                >
+                  {email_primary}
+                </a>
+              </p>
               <p>📍 Twin Cities & Surrounding Areas</p>
             </div>
           </div>
