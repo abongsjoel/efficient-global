@@ -4,6 +4,7 @@ import {
   formControlStyles,
   formErrorControlStyles,
   formLabelStyles,
+  renderRequiredLabel,
 } from "./formFieldStyles";
 
 export interface DropdownOption {
@@ -34,6 +35,7 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
     id,
     "aria-describedby": ariaDescribedBy,
     "aria-invalid": ariaInvalid,
+    required,
     ...props
   },
   ref,
@@ -45,13 +47,14 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
 
   return (
     <label className={cx(formLabelStyles, labelClassName)}>
-      {label}
+      {renderRequiredLabel(label, required)}
       <div className="relative mt-2">
         <select
           ref={ref}
           id={selectId}
           aria-describedby={describedBy}
           aria-invalid={error ? true : ariaInvalid}
+          required={required}
           className={cx(
             formControlStyles,
             "appearance-none pr-12",

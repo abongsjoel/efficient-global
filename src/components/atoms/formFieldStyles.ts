@@ -1,3 +1,5 @@
+import { createElement, Fragment } from "react";
+
 export const formLabelStyles = "block text-sm font-medium text-slate-700";
 
 export const formControlStyles =
@@ -8,3 +10,18 @@ export const formErrorControlStyles =
 
 export const cx = (...classes: Array<string | undefined | false>) =>
   classes.filter(Boolean).join(" ");
+
+export const renderRequiredLabel = (label: string, required?: boolean) => (
+  createElement(
+    Fragment,
+    null,
+    label,
+    required
+      ? createElement(
+          "span",
+          { "aria-hidden": "true", className: "ml-1 text-red-500" },
+          "*",
+        )
+      : null,
+  )
+);

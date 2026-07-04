@@ -1,5 +1,10 @@
 import { forwardRef, type TextareaHTMLAttributes } from "react";
-import { cx, formControlStyles, formLabelStyles } from "./formFieldStyles";
+import {
+  cx,
+  formControlStyles,
+  formLabelStyles,
+  renderRequiredLabel,
+} from "./formFieldStyles";
 
 export interface TextAreaProps
   extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -8,12 +13,16 @@ export interface TextAreaProps
 }
 
 const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  function TextArea({ label, labelClassName, className, ...props }, ref) {
+  function TextArea(
+    { label, labelClassName, className, required, ...props },
+    ref,
+  ) {
     return (
       <label className={cx(formLabelStyles, labelClassName)}>
-        {label}
+        {renderRequiredLabel(label, required)}
         <textarea
           ref={ref}
+          required={required}
           className={cx("mt-2", formControlStyles, className)}
           {...props}
         />

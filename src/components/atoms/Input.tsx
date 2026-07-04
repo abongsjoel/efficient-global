@@ -4,6 +4,7 @@ import {
   formControlStyles,
   formErrorControlStyles,
   formLabelStyles,
+  renderRequiredLabel,
 } from "./formFieldStyles";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -21,6 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     id,
     "aria-describedby": ariaDescribedBy,
     "aria-invalid": ariaInvalid,
+    required,
     ...props
   },
   ref
@@ -32,12 +34,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 
   return (
     <label className={cx(formLabelStyles, labelClassName)}>
-      {label}
+      {renderRequiredLabel(label, required)}
       <input
         ref={ref}
         id={inputId}
         aria-describedby={describedBy}
         aria-invalid={error ? true : ariaInvalid}
+        required={required}
         className={cx(
           "mt-2",
           formControlStyles,
