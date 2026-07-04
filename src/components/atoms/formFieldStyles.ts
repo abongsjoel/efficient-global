@@ -8,6 +8,8 @@ export const formControlStyles =
 export const formErrorControlStyles =
   "!border-red-400 focus:!border-red-500 focus:!ring-red-200/60";
 
+export const formErrorMessageStyles = "mt-1.5 text-xs text-red-600";
+
 export const cx = (...classes: Array<string | undefined | false>) =>
   classes.filter(Boolean).join(" ");
 

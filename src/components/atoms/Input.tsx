@@ -3,6 +3,7 @@ import {
   cx,
   formControlStyles,
   formErrorControlStyles,
+  formErrorMessageStyles,
   formLabelStyles,
   renderRequiredLabel,
 } from "./formFieldStyles";
@@ -50,7 +51,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         {...props}
       />
       {error ? (
-        <p id={errorId} role="alert" className="mt-2 text-sm text-red-600">
+        <p id={errorId} role="alert" className={formErrorMessageStyles}>
           {error}
         </p>
       ) : null}
