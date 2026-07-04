@@ -87,6 +87,7 @@ const DeliveryRequestForm = () => {
             name="datetime"
             type="datetime-local"
             required
+            className="invalid:text-slate-400"
             error={errors.datetime}
             onChange={() => clearFieldError("datetime")}
           />
