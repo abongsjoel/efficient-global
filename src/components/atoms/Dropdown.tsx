@@ -55,13 +55,14 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
           className={cx(
             formControlStyles,
             "appearance-none pr-12",
+            placeholder && "invalid:text-slate-400",
             error && formErrorControlStyles,
             className,
           )}
           {...props}
         >
           {placeholder ? (
-            <option value="" disabled>
+            <option value="" disabled className="text-slate-400">
               {placeholder}
             </option>
           ) : null}
@@ -73,6 +74,7 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
                 key={`${value}-${option.label}`}
                 value={value}
                 disabled={option.disabled}
+                className="text-slate-900"
               >
                 {option.label}
               </option>
