@@ -1,4 +1,4 @@
-import { forwardRef, type SelectHTMLAttributes } from "react";
+import { forwardRef, useId, type SelectHTMLAttributes } from "react";
 import { cx, formControlStyles, formLabelStyles } from "./formFieldStyles";
 
 export interface DropdownOption {
@@ -13,20 +13,44 @@ export interface DropdownProps extends Omit<
 > {
   label: string;
   options: DropdownOption[];
+  error?: string;
   labelClassName?: string;
 }
 
 const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
-  { label, options, labelClassName, className, ...props },
+  {
+    label,
+    options,
+    error,
+    labelClassName,
+    className,
+    id,
+    "aria-describedby": ariaDescribedBy,
+    "aria-invalid": ariaInvalid,
+    ...props
+  },
   ref,
 ) {
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
+  const errorId = error ? `${selectId}-error` : undefined;
+  const describedBy = cx(ariaDescribedBy, errorId) || undefined;
+
   return (
     <label className={cx(formLabelStyles, labelClassName)}>
       {label}
       <div className="relative mt-2">
         <select
           ref={ref}
-          className={cx(formControlStyles, "appearance-none pr-12", className)}
+          id={selectId}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : ariaInvalid}
+          className={cx(
+            formControlStyles,
+            "appearance-none pr-12",
+            error && "border-red-300 focus:border-red-400 focus:ring-red-200/60",
+            className,
+          )}
           {...props}
         >
           {options.map((option) => {
@@ -56,6 +80,11 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
           </svg>
         </span>
       </div>
+      {error ? (
+        <p id={errorId} role="alert" className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
     </label>
   );
 });

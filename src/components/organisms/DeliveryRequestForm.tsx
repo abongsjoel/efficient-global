@@ -4,14 +4,14 @@ import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
 import {
-  type ContactFieldErrors,
-  validateContactFields,
+  type DeliveryRequestFieldErrors,
+  validateDeliveryRequestFields,
 } from "../../utils/formValidation";
 
 const DeliveryRequestForm = () => {
-  const [errors, setErrors] = useState<ContactFieldErrors>({});
+  const [errors, setErrors] = useState<DeliveryRequestFieldErrors>({});
 
-  const clearFieldError = (field: keyof ContactFieldErrors) => {
+  const clearFieldError = (field: keyof DeliveryRequestFieldErrors) => {
     setErrors((currentErrors) => {
       if (!currentErrors[field]) {
         return currentErrors;
@@ -26,7 +26,7 @@ const DeliveryRequestForm = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const validationErrors = validateContactFields(fd);
+    const validationErrors = validateDeliveryRequestFields(fd);
 
     setErrors(validationErrors);
 
@@ -64,6 +64,9 @@ const DeliveryRequestForm = () => {
             name="pickup"
             type="text"
             placeholder="Facility or address"
+            required
+            error={errors.pickup}
+            onChange={() => clearFieldError("pickup")}
           />
 
           <Input
@@ -71,6 +74,9 @@ const DeliveryRequestForm = () => {
             name="delivery"
             type="text"
             placeholder="Facility or address"
+            required
+            error={errors.delivery}
+            onChange={() => clearFieldError("delivery")}
           />
         </div>
 
@@ -79,17 +85,31 @@ const DeliveryRequestForm = () => {
             label="Date / time needed"
             name="datetime"
             type="datetime-local"
+            required
+            error={errors.datetime}
+            onChange={() => clearFieldError("datetime")}
           />
 
           <Dropdown
             label="Request type"
             name="vehicle"
             options={requestTypeOptions}
+            required
+            error={errors.vehicle}
+            onChange={() => clearFieldError("vehicle")}
           />
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <Input label="Name" name="name" type="text" placeholder="Your name" />
+          <Input
+            label="Name"
+            name="name"
+            type="text"
+            placeholder="Your name"
+            required
+            error={errors.name}
+            onChange={() => clearFieldError("name")}
+          />
 
           <Input
             label="Email"
@@ -98,6 +118,7 @@ const DeliveryRequestForm = () => {
             inputMode="email"
             autoComplete="email"
             placeholder="you@example.com"
+            required
             error={errors.email}
             onChange={() => clearFieldError("email")}
           />
@@ -111,6 +132,7 @@ const DeliveryRequestForm = () => {
             inputMode="tel"
             autoComplete="tel"
             placeholder="(123) 456-7890"
+            required
             error={errors.phone}
             onChange={() => clearFieldError("phone")}
           />
@@ -119,6 +141,9 @@ const DeliveryRequestForm = () => {
             label="Rush delivery required?"
             name="rush"
             options={rushDeliveryOptions}
+            required
+            error={errors.rush}
+            onChange={() => clearFieldError("rush")}
           />
         </div>
 

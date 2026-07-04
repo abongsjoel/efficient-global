@@ -1,5 +1,19 @@
 export type ContactFieldErrors = Partial<Record<"email" | "phone", string>>;
 
+export type DeliveryRequestFieldErrors = Partial<
+  Record<
+    | "pickup"
+    | "delivery"
+    | "datetime"
+    | "vehicle"
+    | "name"
+    | "email"
+    | "phone"
+    | "rush",
+    string
+  >
+>;
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const phoneCharacterPattern = /^\+?[0-9\s().-]+$/;
 
@@ -29,4 +43,30 @@ export const validateContactFields = (formData: FormData) => {
   }
 
   return errors;
+};
+
+export const validateDeliveryRequestFields = (formData: FormData) => {
+  const errors: DeliveryRequestFieldErrors = {};
+  const requiredFields: Array<{
+    name: keyof DeliveryRequestFieldErrors;
+    message: string;
+  }> = [
+    { name: "pickup", message: "Enter a pickup location." },
+    { name: "delivery", message: "Enter a delivery location." },
+    { name: "datetime", message: "Select a date and time." },
+    { name: "vehicle", message: "Select a request type." },
+    { name: "name", message: "Enter your name." },
+    { name: "rush", message: "Select whether rush delivery is required." },
+  ];
+
+  requiredFields.forEach(({ name, message }) => {
+    if (!getStringValue(formData.get(name))) {
+      errors[name] = message;
+    }
+  });
+
+  return {
+    ...errors,
+    ...validateContactFields(formData),
+  };
 };
