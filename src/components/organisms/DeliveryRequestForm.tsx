@@ -4,10 +4,22 @@ import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
+import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type DeliveryRequestFieldErrors,
   validateDeliveryRequestFields,
 } from "../../utils/formValidation";
+
+const deliveryRequestFieldOrder: Array<keyof DeliveryRequestFieldErrors> = [
+  "pickup",
+  "delivery",
+  "datetime",
+  "vehicle",
+  "name",
+  "email",
+  "phone",
+  "rush",
+];
 
 const DeliveryRequestForm = () => {
   const [errors, setErrors] = useState<DeliveryRequestFieldErrors>({});
@@ -26,12 +38,19 @@ const DeliveryRequestForm = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const validationErrors = validateDeliveryRequestFields(fd);
 
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
+      scrollToFirstErrorField(
+        form,
+        deliveryRequestFieldOrder.filter(
+          (fieldName) => validationErrors[fieldName],
+        ),
+      );
       return;
     }
 

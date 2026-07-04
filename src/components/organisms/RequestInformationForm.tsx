@@ -2,10 +2,16 @@ import { useState, type FormEvent } from "react";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type ContactFieldErrors,
   validateContactFields,
 } from "../../utils/formValidation";
+
+const requestInformationFieldOrder: Array<keyof ContactFieldErrors> = [
+  "email",
+  "phone",
+];
 
 const RequestInformationForm = () => {
   const [errors, setErrors] = useState<ContactFieldErrors>({});
@@ -24,12 +30,19 @@ const RequestInformationForm = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const validationErrors = validateContactFields(fd);
 
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
+      scrollToFirstErrorField(
+        form,
+        requestInformationFieldOrder.filter(
+          (fieldName) => validationErrors[fieldName],
+        ),
+      );
       return;
     }
 
