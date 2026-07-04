@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import Dropdown from "../atoms/Dropdown";
+import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
@@ -156,12 +157,9 @@ const DeliveryRequestForm = () => {
           placeholder="Provide weight, dimensions, handling instructions, or any special notes"
         />
 
-        <button
-          type="submit"
-          className="inline-flex w-full justify-center rounded-full bg-primary-100 px-8 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-slate-950 transition duration-200 hover:bg-primary-200 hover:text-white"
-        >
+        <FormSubmitButton>
           Submit Request
-        </button>
+        </FormSubmitButton>
       </form>
     </div>
   );

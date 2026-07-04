@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import {
@@ -98,12 +99,9 @@ const RequestInformationForm = () => {
           placeholder="How can we help?"
         />
 
-        <button
-          type="submit"
-          className="inline-flex w-full justify-center rounded-full bg-primary-200 px-8 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-slate-950 transition duration-200 hover:bg-primary-300"
-        >
+        <FormSubmitButton>
           Send Message
-        </button>
+        </FormSubmitButton>
       </form>
     </div>
   );
