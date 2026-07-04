@@ -1,5 +1,10 @@
 import { forwardRef, useId, type SelectHTMLAttributes } from "react";
-import { cx, formControlStyles, formLabelStyles } from "./formFieldStyles";
+import {
+  cx,
+  formControlStyles,
+  formErrorControlStyles,
+  formLabelStyles,
+} from "./formFieldStyles";
 
 export interface DropdownOption {
   label: string;
@@ -48,7 +53,7 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
           className={cx(
             formControlStyles,
             "appearance-none pr-12",
-            error && "border-red-300 focus:border-red-400 focus:ring-red-200/60",
+            error && formErrorControlStyles,
             className,
           )}
           {...props}

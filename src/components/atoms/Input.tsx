@@ -1,5 +1,10 @@
 import { forwardRef, useId, type InputHTMLAttributes } from "react";
-import { cx, formControlStyles, formLabelStyles } from "./formFieldStyles";
+import {
+  cx,
+  formControlStyles,
+  formErrorControlStyles,
+  formLabelStyles,
+} from "./formFieldStyles";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -36,7 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         className={cx(
           "mt-2",
           formControlStyles,
-          error && "border-red-300 focus:border-red-400 focus:ring-red-200/60",
+          error && formErrorControlStyles,
           className
         )}
         {...props}
