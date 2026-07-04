@@ -52,12 +52,12 @@ const RequestInformationForm = () => {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-8 px-6 py-8 sm:px-8"
+        className="space-y-6 px-6 py-7 sm:px-8"
         aria-label="Request information form"
       >
         <input type="hidden" name="source" value="request-information" />
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Input label="Name" name="name" type="text" placeholder="Your name" />
 
           <Input
@@ -72,7 +72,7 @@ const RequestInformationForm = () => {
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Input
             label="Phone"
             name="phone"

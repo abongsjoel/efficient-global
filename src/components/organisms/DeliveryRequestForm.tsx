@@ -54,12 +54,12 @@ const DeliveryRequestForm = () => {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-8 px-6 py-8 sm:px-8"
+        className="space-y-6 px-6 py-7 sm:px-8"
         aria-label="Schedule delivery form"
       >
         <input type="hidden" name="source" value="schedule-delivery" />
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Input
             label="Pickup location"
             name="pickup"
@@ -81,7 +81,7 @@ const DeliveryRequestForm = () => {
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Input
             label="Date / time needed"
             name="datetime"
@@ -104,7 +104,7 @@ const DeliveryRequestForm = () => {
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Input
             label="Name"
             name="name"
@@ -128,7 +128,7 @@ const DeliveryRequestForm = () => {
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Input
             label="Phone"
             name="phone"
