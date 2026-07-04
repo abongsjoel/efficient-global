@@ -18,6 +18,7 @@ export interface DropdownProps extends Omit<
 > {
   label: string;
   options: DropdownOption[];
+  placeholder?: string;
   error?: string;
   labelClassName?: string;
 }
@@ -26,6 +27,7 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
   {
     label,
     options,
+    placeholder,
     error,
     labelClassName,
     className,
@@ -58,6 +60,11 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
           )}
           {...props}
         >
+          {placeholder ? (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          ) : null}
           {options.map((option) => {
             const value = option.value ?? option.label;
 

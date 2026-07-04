@@ -93,6 +93,8 @@ const DeliveryRequestForm = () => {
           <Dropdown
             label="Request type"
             name="vehicle"
+            defaultValue=""
+            placeholder="Select a request type"
             options={requestTypeOptions}
             required
             error={errors.vehicle}
