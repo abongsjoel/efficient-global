@@ -1,5 +1,9 @@
 export type ContactFieldErrors = Partial<Record<"email" | "phone", string>>;
 
+export type RequestInformationFieldErrors = Partial<
+  Record<"name" | "email" | "phone" | "message", string>
+>;
+
 export type DeliveryRequestFieldErrors = Partial<
   Record<
     | "pickup"
@@ -43,6 +47,23 @@ export const validateContactFields = (formData: FormData) => {
   }
 
   return errors;
+};
+
+export const validateRequestInformationFields = (formData: FormData) => {
+  const errors: RequestInformationFieldErrors = {};
+
+  if (!getStringValue(formData.get("name"))) {
+    errors.name = "Enter your name.";
+  }
+
+  if (!getStringValue(formData.get("message"))) {
+    errors.message = "Enter a message.";
+  }
+
+  return {
+    ...errors,
+    ...validateContactFields(formData),
+  };
 };
 
 export const validateDeliveryRequestFields = (formData: FormData) => {

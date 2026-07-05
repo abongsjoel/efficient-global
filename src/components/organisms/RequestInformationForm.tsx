@@ -4,19 +4,21 @@ import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
-  type ContactFieldErrors,
-  validateContactFields,
+  type RequestInformationFieldErrors,
+  validateRequestInformationFields,
 } from "../../utils/formValidation";
 
-const requestInformationFieldOrder: Array<keyof ContactFieldErrors> = [
+const requestInformationFieldOrder: Array<keyof RequestInformationFieldErrors> = [
+  "name",
   "email",
   "phone",
+  "message",
 ];
 
 const RequestInformationForm = () => {
-  const [errors, setErrors] = useState<ContactFieldErrors>({});
+  const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
 
-  const clearFieldError = (field: keyof ContactFieldErrors) => {
+  const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
       if (!currentErrors[field]) {
         return currentErrors;
@@ -32,7 +34,7 @@ const RequestInformationForm = () => {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const validationErrors = validateContactFields(fd);
+    const validationErrors = validateRequestInformationFields(fd);
 
     setErrors(validationErrors);
 
@@ -71,7 +73,15 @@ const RequestInformationForm = () => {
         <input type="hidden" name="source" value="request-information" />
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Input label="Name" name="name" type="text" placeholder="Your name" />
+          <Input
+            label="Name"
+            name="name"
+            type="text"
+            placeholder="Your name"
+            required
+            error={errors.name}
+            onChange={() => clearFieldError("name")}
+          />
 
           <Input
             label="Email"
@@ -80,6 +90,7 @@ const RequestInformationForm = () => {
             inputMode="email"
             autoComplete="email"
             placeholder="you@example.com"
+            required
             error={errors.email}
             onChange={() => clearFieldError("email")}
           />
@@ -93,12 +104,13 @@ const RequestInformationForm = () => {
             inputMode="tel"
             autoComplete="tel"
             placeholder="(123) 456-7890"
+            required
             error={errors.phone}
             onChange={() => clearFieldError("phone")}
           />
 
           <Input
-            label="Organization (optional)"
+            label="Organization"
             name="organization"
             type="text"
             placeholder="Hospital, clinic, lab, or company"
@@ -110,11 +122,12 @@ const RequestInformationForm = () => {
           name="message"
           rows={6}
           placeholder="How can we help?"
+          required
+          error={errors.message}
+          onChange={() => clearFieldError("message")}
         />
 
-        <FormSubmitButton>
-          Send Message
-        </FormSubmitButton>
+        <FormSubmitButton>Send Message</FormSubmitButton>
       </form>
     </div>
   );
