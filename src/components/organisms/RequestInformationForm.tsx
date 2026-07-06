@@ -1,9 +1,53 @@
-import React from "react";
+import { useState, type FormEvent } from "react";
+import FormSubmitButton from "../atoms/FormSubmitButton";
+import Input from "../atoms/Input";
+import TextArea from "../atoms/TextArea";
+import { scrollToFirstErrorField } from "../../utils/formFocus";
+import {
+  type RequestInformationFieldErrors,
+  validateRequestInformationFields,
+} from "../../utils/formValidation";
 
-const RequestInformationForm: React.FC = () => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+const requestInformationFieldOrder: Array<keyof RequestInformationFieldErrors> = [
+  "name",
+  "email",
+  "phone",
+  "message",
+];
+
+const RequestInformationForm = () => {
+  const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
+
+  const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
+    setErrors((currentErrors) => {
+      if (!currentErrors[field]) {
+        return currentErrors;
+      }
+
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const validationErrors = validateRequestInformationFields(fd);
+
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      scrollToFirstErrorField(
+        form,
+        requestInformationFieldOrder.filter(
+          (fieldName) => validationErrors[fieldName],
+        ),
+      );
+      return;
+    }
+
     const data = Object.fromEntries(fd.entries());
     console.log("request information submit", data);
   };
@@ -22,59 +66,68 @@ const RequestInformationForm: React.FC = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-8 px-6 py-8 sm:px-8"
+        noValidate
+        className="space-y-6 px-6 py-7 sm:px-8"
         aria-label="Request information form"
       >
         <input type="hidden" name="source" value="request-information" />
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Name
-            <input
-              name="name"
-              type="text"
-              placeholder="Your name"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Input
+            label="Name"
+            name="name"
+            type="text"
+            placeholder="Your name"
+            required
+            error={errors.name}
+            onChange={() => clearFieldError("name")}
+          />
 
-          <label className="block text-sm font-medium text-slate-700">
-            Email
-            <input
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-            />
-          </label>
+          <Input
+            label="Email"
+            name="email"
+            type="text"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+            error={errors.email}
+            onChange={() => clearFieldError("email")}
+          />
         </div>
 
-        <label className="block text-sm font-medium text-slate-700">
-          Organization (optional)
-          <input
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Input
+            label="Phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(123) 456-7890"
+            required
+            error={errors.phone}
+            onChange={() => clearFieldError("phone")}
+          />
+
+          <Input
+            label="Organization"
             name="organization"
             type="text"
             placeholder="Hospital, clinic, lab, or company"
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
           />
-        </label>
+        </div>
 
-        <label className="block text-sm font-medium text-slate-700">
-          Message
-          <textarea
-            name="message"
-            rows={6}
-            placeholder="How can we help?"
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 focus:border-primary-200 focus:ring-2 focus:ring-primary-200/30"
-          />
-        </label>
+        <TextArea
+          label="Message"
+          name="message"
+          rows={6}
+          placeholder="How can we help?"
+          required
+          error={errors.message}
+          onChange={() => clearFieldError("message")}
+        />
 
-        <button
-          type="submit"
-          className="inline-flex w-full justify-center rounded-full bg-primary-200 px-8 py-4 text-sm font-semibold uppercase tracking-[0.24em] text-slate-950 transition duration-200 hover:bg-primary-300"
-        >
-          Send Message
-        </button>
+        <FormSubmitButton>Send Message</FormSubmitButton>
       </form>
     </div>
   );

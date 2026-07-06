@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import Badge from "../atoms/Badge";
 import Button from "../atoms/Button";
+import { email_primary, phone_primary } from "../../utils/constants";
 
 const Contact = () => {
   const navigate = useNavigate();
+  const phoneHref = `tel:${phone_primary.replace(/[^\d+]/g, "")}`;
 
   const handleScheduleDelivery = () => {
     navigate("/contact?source=schedule-delivery");
@@ -44,9 +46,12 @@ const Contact = () => {
                   <p className="text-sm uppercase tracking-[0.24em] text-primary-200">
                     Phone
                   </p>
-                  <p className="text-lg font-semibold text-slate-950">
-                    Call us directly
-                  </p>
+                  <a
+                    href={phoneHref}
+                    className="text-lg font-semibold text-slate-950 transition duration-200 hover:text-primary-300"
+                  >
+                    {phone_primary}
+                  </a>
                 </div>
               </div>
             </div>
@@ -60,9 +65,14 @@ const Contact = () => {
                   <p className="text-sm uppercase tracking-[0.24em] text-primary-200">
                     Email
                   </p>
-                  <p className="text-lg font-semibold text-slate-950">
-                    Send us a message
-                  </p>
+                  <a
+                    href={`mailto:${email_primary}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-lg font-semibold text-slate-950 transition duration-200 hover:text-primary-300"
+                  >
+                    {email_primary}
+                  </a>
                 </div>
               </div>
             </div>
