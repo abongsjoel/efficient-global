@@ -5,8 +5,27 @@
     <link rel="icon" type="image/svg+xml" href="/logo_mini.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Efficient Global</title>
-    <script type="module" crossorigin src="/assets/index-BnKEm9Sn.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-LLr6Rvan.css">
+    <script>
+      (function (location) {
+        if (location.search[1] !== "/") {
+          return;
+        }
+
+        const decodedPath = location.search
+          .slice(1)
+          .split("&")
+          .map((segment) => segment.replace(/~and~/g, "&"))
+          .join("?");
+
+        window.history.replaceState(
+          null,
+          "",
+          location.pathname.slice(0, -1) + decodedPath + location.hash,
+        );
+      })(window.location);
+    </script>
+    <script type="module" crossorigin src="/assets/index-uOjB-NbM.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-By0U190D.css">
   </head>
   <body>
     <div id="root"></div>
