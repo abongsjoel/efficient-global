@@ -14,7 +14,7 @@ const NotFoundPage = () => (
     <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-primary-200/20 blur-3xl" />
     <div className="absolute right-0 top-1/4 hidden h-96 w-96 rounded-full bg-white/10 blur-3xl md:block" />
 
-    <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+    <div className="relative z-10 mx-auto w-full max-w-7xl">
       <div className="max-w-4xl">
         <p className="text-sm font-semibold uppercase tracking-[0.32em] text-primary-200">
           Page not found
@@ -30,21 +30,21 @@ const NotFoundPage = () => (
           incorrect. Head back home or contact Efficient Global for help with a
           medical courier request.
         </p>
-      </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row lg:pb-2">
-        <Link
-          to="/"
-          className="inline-flex justify-center rounded-full bg-primary-200 px-7 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-950 transition duration-200 hover:bg-primary-100 hover:text-white"
-        >
-          Go Home
-        </Link>
-        <Link
-          to="/contact"
-          className="inline-flex justify-center rounded-full border border-white/40 bg-white/10 px-7 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition duration-200 hover:border-primary-200 hover:bg-primary-200 hover:text-slate-950"
-        >
-          Contact Us
-        </Link>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Link
+            to="/"
+            className="inline-flex justify-center rounded-full bg-primary-200 px-7 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-950 transition duration-200 hover:bg-primary-100 hover:text-white"
+          >
+            Go Home
+          </Link>
+          <Link
+            to="/contact"
+            className="inline-flex justify-center rounded-full border border-white/40 bg-white/10 px-7 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition duration-200 hover:border-primary-200 hover:bg-primary-200 hover:text-slate-950"
+          >
+            Contact Us
+          </Link>
+        </div>
       </div>
     </div>
   </section>
