@@ -9,15 +9,20 @@ const NotFoundPage = () => (
       aria-hidden="true"
       className="absolute inset-0 h-full w-full object-cover"
     />
-    <div className="absolute inset-0 bg-slate-950/75" />
+    <div className="absolute inset-0 bg-slate-950/80" />
     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent" />
+    <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-primary-200/20 blur-3xl" />
+    <div className="absolute right-0 top-1/4 hidden h-96 w-96 rounded-full bg-white/10 blur-3xl md:block" />
 
     <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
-      <div className="max-w-3xl">
+      <div className="max-w-4xl">
         <p className="text-sm font-semibold uppercase tracking-[0.32em] text-primary-200">
+          Page not found
+        </p>
+        <p className="mt-2 text-[7rem] font-black leading-none tracking-normal text-white/95 sm:text-[10rem] lg:text-[12rem]">
           404
         </p>
-        <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-6xl">
+        <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-6xl">
           This route missed its delivery window.
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-7 text-slate-200 md:text-lg">
