@@ -40,7 +40,7 @@ const NotFoundPage = () => (
           </Link>
           <Link
             to="/contact"
-            className="inline-flex justify-center rounded-full border border-white/40 bg-white/10 px-7 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition duration-200 hover:border-primary-200 hover:bg-primary-200 hover:text-slate-950"
+            className="inline-flex justify-center rounded-full border border-white/40 bg-white/10 px-7 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition duration-200 hover:border-primary-200 hover:bg-primary-200"
           >
             Contact Us
           </Link>
