@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import Dropdown from "../atoms/Dropdown";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import FormShell from "../molecules/FormShell";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
@@ -20,6 +21,12 @@ const deliveryRequestFieldOrder: Array<keyof DeliveryRequestFieldErrors> = [
   "phone",
   "rush",
 ];
+
+const SectionLabel = ({ children }: { children: ReactNode }) => (
+  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+    {children}
+  </p>
+);
 
 const DeliveryRequestForm = () => {
   const [errors, setErrors] = useState<DeliveryRequestFieldErrors>({});
@@ -59,129 +66,130 @@ const DeliveryRequestForm = () => {
   };
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/70">
-      <div className="border-b border-slate-200 px-6 py-8 sm:px-8">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-          Schedule a Delivery
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Share pickup and delivery details so we can prepare the right vehicle
-          and timing.
-        </p>
-      </div>
-
+    <FormShell
+      icon="🚚"
+      eyebrow="Schedule a Delivery"
+      title="Schedule a Delivery"
+      description="Share pickup and delivery details so we can prepare the right vehicle and timing."
+    >
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-6 px-6 py-7 sm:px-8"
+        className="space-y-8 px-6 py-8 sm:px-10"
         aria-label="Schedule delivery form"
       >
         <input type="hidden" name="source" value="schedule-delivery" />
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Input
-            label="Pickup location"
-            name="pickup"
-            type="text"
-            placeholder="Facility or address"
-            required
-            error={errors.pickup}
-            onChange={() => clearFieldError("pickup")}
-          />
+        <div className="space-y-6">
+          <SectionLabel>Route &amp; timing</SectionLabel>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Input
+              label="Pickup location"
+              name="pickup"
+              type="text"
+              placeholder="Facility or address"
+              required
+              error={errors.pickup}
+              onChange={() => clearFieldError("pickup")}
+            />
 
-          <Input
-            label="Delivery location"
-            name="delivery"
-            type="text"
-            placeholder="Facility or address"
-            required
-            error={errors.delivery}
-            onChange={() => clearFieldError("delivery")}
-          />
+            <Input
+              label="Delivery location"
+              name="delivery"
+              type="text"
+              placeholder="Facility or address"
+              required
+              error={errors.delivery}
+              onChange={() => clearFieldError("delivery")}
+            />
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Input
+              label="Date / time needed"
+              name="datetime"
+              type="datetime-local"
+              required
+              className="invalid:text-slate-400"
+              error={errors.datetime}
+              onChange={() => clearFieldError("datetime")}
+            />
+
+            <Dropdown
+              label="Request type"
+              name="vehicle"
+              defaultValue=""
+              placeholder="Select a request type"
+              options={requestTypeOptions}
+              required
+              error={errors.vehicle}
+              onChange={() => clearFieldError("vehicle")}
+            />
+          </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Input
-            label="Date / time needed"
-            name="datetime"
-            type="datetime-local"
-            required
-            className="invalid:text-slate-400"
-            error={errors.datetime}
-            onChange={() => clearFieldError("datetime")}
-          />
+        <div className="space-y-6 border-t border-slate-100 pt-8">
+          <SectionLabel>Your details</SectionLabel>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Input
+              label="Name"
+              name="name"
+              type="text"
+              placeholder="Your name"
+              required
+              error={errors.name}
+              onChange={() => clearFieldError("name")}
+            />
 
-          <Dropdown
-            label="Request type"
-            name="vehicle"
-            defaultValue=""
-            placeholder="Select a request type"
-            options={requestTypeOptions}
-            required
-            error={errors.vehicle}
-            onChange={() => clearFieldError("vehicle")}
-          />
-        </div>
+            <Input
+              label="Email"
+              name="email"
+              type="text"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              required
+              error={errors.email}
+              onChange={() => clearFieldError("email")}
+            />
+          </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Input
-            label="Name"
-            name="name"
-            type="text"
-            placeholder="Your name"
-            required
-            error={errors.name}
-            onChange={() => clearFieldError("name")}
-          />
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Input
+              label="Phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(123) 456-7890"
+              required
+              error={errors.phone}
+              onChange={() => clearFieldError("phone")}
+            />
 
-          <Input
-            label="Email"
-            name="email"
-            type="text"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            required
-            error={errors.email}
-            onChange={() => clearFieldError("email")}
-          />
-        </div>
+            <Dropdown
+              label="Rush delivery required?"
+              name="rush"
+              options={rushDeliveryOptions}
+              required
+              error={errors.rush}
+              onChange={() => clearFieldError("rush")}
+            />
+          </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Input
-            label="Phone"
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="(123) 456-7890"
-            required
-            error={errors.phone}
-            onChange={() => clearFieldError("phone")}
-          />
-
-          <Dropdown
-            label="Rush delivery required?"
-            name="rush"
-            options={rushDeliveryOptions}
-            required
-            error={errors.rush}
-            onChange={() => clearFieldError("rush")}
+          <TextArea
+            label="Additional instructions"
+            name="instructions"
+            rows={5}
+            placeholder="Provide weight, dimensions, handling instructions, or any special notes"
           />
         </div>
-
-        <TextArea
-          label="Additional instructions"
-          name="instructions"
-          rows={5}
-          placeholder="Provide weight, dimensions, handling instructions, or any special notes"
-        />
 
         <FormSubmitButton>
           Submit Request
         </FormSubmitButton>
       </form>
-    </div>
+    </FormShell>
   );
 };
 
