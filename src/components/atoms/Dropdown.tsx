@@ -3,8 +3,8 @@ import {
   cx,
   formControlStyles,
   formErrorControlStyles,
-  formErrorMessageStyles,
   formLabelStyles,
+  renderErrorMessage,
   renderRequiredLabel,
 } from "./formFieldStyles";
 
@@ -98,11 +98,7 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
           </svg>
         </span>
       </div>
-      {error ? (
-        <p id={errorId} role="alert" className={formErrorMessageStyles}>
-          {error}
-        </p>
-      ) : null}
+      {error && errorId ? renderErrorMessage(errorId, error) : null}
     </label>
   );
 });

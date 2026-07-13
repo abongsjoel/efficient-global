@@ -3,8 +3,8 @@ import {
   cx,
   formControlStyles,
   formErrorControlStyles,
-  formErrorMessageStyles,
   formLabelStyles,
+  renderErrorMessage,
   renderRequiredLabel,
 } from "./formFieldStyles";
 
@@ -52,11 +52,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           )}
           {...props}
         />
-        {error ? (
-          <p id={errorId} role="alert" className={formErrorMessageStyles}>
-            {error}
-          </p>
-        ) : null}
+        {error && errorId ? renderErrorMessage(errorId, error) : null}
       </label>
     );
   }

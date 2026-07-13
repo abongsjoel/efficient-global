@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import FormShell from "../molecules/FormShell";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type RequestInformationFieldErrors,
@@ -53,26 +54,21 @@ const RequestInformationForm = () => {
   };
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/70">
-      <div className="border-b border-slate-200 px-6 py-8 sm:px-8">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-          Request Information
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Tell us about your needs and we will respond with pricing, timelines,
-          and next steps.
-        </p>
-      </div>
-
+    <FormShell
+      icon="💬"
+      eyebrow="Get in Touch"
+      title="Request Information"
+      description="Tell us about your needs and we will respond with pricing, timelines, and next steps."
+    >
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-6 px-6 py-7 sm:px-8"
+        className="space-y-8 px-6 py-8 sm:px-10"
         aria-label="Request information form"
       >
         <input type="hidden" name="source" value="request-information" />
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           <Input
             label="Name"
             name="name"
@@ -96,7 +92,7 @@ const RequestInformationForm = () => {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           <Input
             label="Phone"
             name="phone"
@@ -129,7 +125,7 @@ const RequestInformationForm = () => {
 
         <FormSubmitButton>Send Message</FormSubmitButton>
       </form>
-    </div>
+    </FormShell>
   );
 };
 
