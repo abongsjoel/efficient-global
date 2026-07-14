@@ -2,6 +2,7 @@ import Button from "../atoms/Button";
 
 type RequestInformationSuccessModalProps = {
   isOpen: boolean;
+  name: string;
   onGoHome: () => void;
   onClose: () => void;
   onSubmitAnotherRequest: () => void;
@@ -9,6 +10,7 @@ type RequestInformationSuccessModalProps = {
 
 const RequestInformationSuccessModal = ({
   isOpen,
+  name,
   onGoHome,
   onClose,
   onSubmitAnotherRequest,
@@ -16,6 +18,8 @@ const RequestInformationSuccessModal = ({
   if (!isOpen) {
     return null;
   }
+
+  const recipientName = name.trim() || "there";
 
   return (
     <div
@@ -50,8 +54,8 @@ const RequestInformationSuccessModal = ({
           Request Received
         </h3>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Your request has been received, and an agent will get back to you
-          shortly.
+          Thanks <strong>{recipientName}</strong> for getting in touch! Your
+          request has been received, and an agent will get back to you shortly.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           <Button onClick={onGoHome} className="w-full">

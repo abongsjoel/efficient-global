@@ -32,6 +32,7 @@ const RequestInformationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -65,6 +66,7 @@ const RequestInformationForm = () => {
     }
 
     const data = Object.fromEntries(fd.entries());
+    const name = typeof data.name === "string" ? data.name.trim() : "";
 
     try {
       setIsSubmitting(true);
@@ -96,6 +98,7 @@ const RequestInformationForm = () => {
         return;
       }
 
+      setSubmittedName(name);
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);
@@ -112,6 +115,7 @@ const RequestInformationForm = () => {
     setIsConfirmationOpen(false);
     setSubmitError("");
     setErrors({});
+    setSubmittedName("");
   };
 
   return (
@@ -200,6 +204,7 @@ const RequestInformationForm = () => {
 
       <RequestInformationSuccessModal
         isOpen={isConfirmationOpen}
+        name={submittedName}
         onGoHome={() => navigate("/")}
         onClose={handleSubmitAnotherRequest}
         onSubmitAnotherRequest={handleSubmitAnotherRequest}
