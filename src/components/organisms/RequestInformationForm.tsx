@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import Button from "../atoms/Button";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
@@ -25,10 +27,11 @@ type RequestInformationResponse = {
 const requestInformationEndpoint = `${apiBaseUrl}/api/request-information`;
 
 const RequestInformationForm = () => {
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -49,7 +52,6 @@ const RequestInformationForm = () => {
     const validationErrors = validateRequestInformationFields(fd);
 
     setErrors(validationErrors);
-    setSubmitMessage("");
     setSubmitError("");
 
     if (Object.keys(validationErrors).length > 0) {
@@ -96,10 +98,7 @@ const RequestInformationForm = () => {
 
       form.reset();
       setErrors({});
-      setSubmitMessage(
-        responseData.message ||
-          "Thanks. Your request has been received and our team will respond soon.",
-      );
+      setIsConfirmationOpen(true);
     } catch {
       setSubmitError(
         "We could not reach the server. Please try again in a moment.",
@@ -107,6 +106,12 @@ const RequestInformationForm = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmitAnotherRequest = () => {
+    setIsConfirmationOpen(false);
+    setSubmitError("");
+    setErrors({});
   };
 
   return (
@@ -179,12 +184,6 @@ const RequestInformationForm = () => {
           onChange={() => clearFieldError("message")}
         />
 
-        {submitMessage ? (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-            {submitMessage}
-          </p>
-        ) : null}
-
         {submitError ? (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {submitError}
@@ -195,6 +194,43 @@ const RequestInformationForm = () => {
           {isSubmitting ? "Sending..." : "Send Message"}
         </FormSubmitButton>
       </form>
+
+      {isConfirmationOpen ? (
+        <div
+          aria-labelledby="request-information-success-title"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-6 py-10"
+          role="dialog"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-2xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-700">
+              ✓
+            </div>
+            <h3
+              id="request-information-success-title"
+              className="mt-5 text-2xl font-semibold tracking-tight text-slate-950"
+            >
+              Request Received
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Your request has been received, and an agent will get back to you
+              shortly.
+            </p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <Button onClick={() => navigate("/")} className="w-full">
+                Home
+              </Button>
+              <Button
+                variant="inverse"
+                onClick={handleSubmitAnotherRequest}
+                className="w-full"
+              >
+                Submit Another Request
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </FormShell>
   );
 };
