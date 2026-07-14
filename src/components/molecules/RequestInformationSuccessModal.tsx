@@ -3,12 +3,14 @@ import Button from "../atoms/Button";
 type RequestInformationSuccessModalProps = {
   isOpen: boolean;
   onGoHome: () => void;
+  onClose: () => void;
   onSubmitAnotherRequest: () => void;
 };
 
 const RequestInformationSuccessModal = ({
   isOpen,
   onGoHome,
+  onClose,
   onSubmitAnotherRequest,
 }: RequestInformationSuccessModalProps) => {
   if (!isOpen) {
@@ -20,9 +22,13 @@ const RequestInformationSuccessModal = ({
       aria-labelledby="request-information-success-title"
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-6 py-10"
+      onClick={onClose}
       role="dialog"
     >
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-2xl">
+      <div
+        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
           <svg
             aria-hidden="true"

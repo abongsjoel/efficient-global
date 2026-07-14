@@ -201,6 +201,7 @@ const RequestInformationForm = () => {
       <RequestInformationSuccessModal
         isOpen={isConfirmationOpen}
         onGoHome={() => navigate("/")}
+        onClose={handleSubmitAnotherRequest}
         onSubmitAnotherRequest={handleSubmitAnotherRequest}
       />
     </FormShell>
