@@ -3,6 +3,7 @@ import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import FormShell from "../molecules/FormShell";
+import { apiBaseUrl } from "../../utils/api";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type RequestInformationFieldErrors,
@@ -16,8 +17,18 @@ const requestInformationFieldOrder: Array<keyof RequestInformationFieldErrors> =
   "message",
 ];
 
+type RequestInformationResponse = {
+  message?: string;
+  errors?: RequestInformationFieldErrors;
+};
+
+const requestInformationEndpoint = `${apiBaseUrl}/api/request-information`;
+
 const RequestInformationForm = () => {
   const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -31,13 +42,15 @@ const RequestInformationForm = () => {
     });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
     const validationErrors = validateRequestInformationFields(fd);
 
     setErrors(validationErrors);
+    setSubmitMessage("");
+    setSubmitError("");
 
     if (Object.keys(validationErrors).length > 0) {
       scrollToFirstErrorField(
@@ -50,7 +63,50 @@ const RequestInformationForm = () => {
     }
 
     const data = Object.fromEntries(fd.entries());
-    console.log("request information submit", data);
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(requestInformationEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = (await response.json()) as RequestInformationResponse;
+
+      if (!response.ok) {
+        if (responseData.errors && Object.keys(responseData.errors).length > 0) {
+          setErrors(responseData.errors);
+          scrollToFirstErrorField(
+            form,
+            requestInformationFieldOrder.filter(
+              (fieldName) => responseData.errors?.[fieldName],
+            ),
+          );
+        }
+
+        setSubmitError(
+          responseData.message ||
+            "We could not send your message. Please check the form and try again.",
+        );
+        return;
+      }
+
+      form.reset();
+      setErrors({});
+      setSubmitMessage(
+        responseData.message ||
+          "Thanks. Your request has been received and our team will respond soon.",
+      );
+    } catch {
+      setSubmitError(
+        "We could not reach the server. Please try again in a moment.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,7 +179,21 @@ const RequestInformationForm = () => {
           onChange={() => clearFieldError("message")}
         />
 
-        <FormSubmitButton>Send Message</FormSubmitButton>
+        {submitMessage ? (
+          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            {submitMessage}
+          </p>
+        ) : null}
+
+        {submitError ? (
+          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {submitError}
+          </p>
+        ) : null}
+
+        <FormSubmitButton disabled={isSubmitting}>
+          {isSubmitting ? "Sending..." : "Send Message"}
+        </FormSubmitButton>
       </form>
     </FormShell>
   );
