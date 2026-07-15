@@ -24,6 +24,9 @@ cpSync(distDirectory, logisticsDirectory, {
   recursive: true,
 });
 
+// GitHub Pages uses the root-level 404 page for direct SPA routes.
+cpSync(`${distDirectory}/404.html`, `${deployDirectory}/404.html`);
+
 // Leave the root domain visually empty.
 writeFileSync(
   `${deployDirectory}/index.html`,
