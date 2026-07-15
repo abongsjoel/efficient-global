@@ -1,8 +1,11 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
+import { apiBaseUrl } from "../../utils/api";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type RequestInformationFieldErrors,
@@ -16,8 +19,20 @@ const requestInformationFieldOrder: Array<keyof RequestInformationFieldErrors> =
   "message",
 ];
 
+type RequestInformationResponse = {
+  message?: string;
+  errors?: RequestInformationFieldErrors;
+};
+
+const requestInformationEndpoint = `${apiBaseUrl}/api/request-information`;
+
 const RequestInformationForm = () => {
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -31,13 +46,14 @@ const RequestInformationForm = () => {
     });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
     const validationErrors = validateRequestInformationFields(fd);
 
     setErrors(validationErrors);
+    setSubmitError("");
 
     if (Object.keys(validationErrors).length > 0) {
       scrollToFirstErrorField(
@@ -50,8 +66,59 @@ const RequestInformationForm = () => {
     }
 
     const data = Object.fromEntries(fd.entries());
-    console.log("request information submit", data);
+    const name = typeof data.name === "string" ? data.name.trim() : "";
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(requestInformationEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = (await response.json()) as RequestInformationResponse;
+
+      if (!response.ok) {
+        if (responseData.errors && Object.keys(responseData.errors).length > 0) {
+          setErrors(responseData.errors);
+          scrollToFirstErrorField(
+            form,
+            requestInformationFieldOrder.filter(
+              (fieldName) => responseData.errors?.[fieldName],
+            ),
+          );
+        }
+
+        setSubmitError(
+          responseData.message ||
+            "We could not send your message. Please check the form and try again.",
+        );
+        return;
+      }
+
+      setSubmittedName(name);
+      form.reset();
+      setErrors({});
+      setIsConfirmationOpen(true);
+    } catch {
+      setSubmitError(
+        "We could not reach the server. Please try again in a moment.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleSubmitAnotherRequest = () => {
+    setIsConfirmationOpen(false);
+    setSubmitError("");
+    setErrors({});
+    setSubmittedName("");
+  };
+
+  const submittedDisplayName = submittedName.trim() || "there";
 
   return (
     <FormShell
@@ -123,8 +190,32 @@ const RequestInformationForm = () => {
           onChange={() => clearFieldError("message")}
         />
 
-        <FormSubmitButton>Send Message</FormSubmitButton>
+        {submitError ? (
+          <p
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
+            {submitError}
+          </p>
+        ) : null}
+
+        <FormSubmitButton disabled={isSubmitting}>
+          {isSubmitting ? "Sending..." : "Send Message"}
+        </FormSubmitButton>
       </form>
+
+      <FormSuccessModal
+        isOpen={isConfirmationOpen}
+        title="Request Received"
+        titleId="request-information-success-title"
+        onGoHome={() => navigate("/")}
+        onClose={handleSubmitAnotherRequest}
+        onContinue={handleSubmitAnotherRequest}
+      >
+        Thanks <strong>{submittedDisplayName}</strong> for getting in touch!
+        Your request has been received, and an agent will get back to you
+        shortly.
+      </FormSuccessModal>
     </FormShell>
   );
 };

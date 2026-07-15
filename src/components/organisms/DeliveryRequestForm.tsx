@@ -1,9 +1,12 @@
 import { useState, type FormEvent, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import Dropdown from "../atoms/Dropdown";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
+import { apiBaseUrl } from "../../utils/api";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
@@ -22,6 +25,13 @@ const deliveryRequestFieldOrder: Array<keyof DeliveryRequestFieldErrors> = [
   "rush",
 ];
 
+type DeliveryRequestResponse = {
+  message?: string;
+  errors?: DeliveryRequestFieldErrors;
+};
+
+const deliveryRequestEndpoint = `${apiBaseUrl}/api/delivery-request`;
+
 const SectionLabel = ({ children }: { children: ReactNode }) => (
   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
     {children}
@@ -29,7 +39,12 @@ const SectionLabel = ({ children }: { children: ReactNode }) => (
 );
 
 const DeliveryRequestForm = () => {
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<DeliveryRequestFieldErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
 
   const clearFieldError = (field: keyof DeliveryRequestFieldErrors) => {
     setErrors((currentErrors) => {
@@ -43,13 +58,14 @@ const DeliveryRequestForm = () => {
     });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
     const validationErrors = validateDeliveryRequestFields(fd);
 
     setErrors(validationErrors);
+    setSubmitError("");
 
     if (Object.keys(validationErrors).length > 0) {
       scrollToFirstErrorField(
@@ -62,8 +78,59 @@ const DeliveryRequestForm = () => {
     }
 
     const data = Object.fromEntries(fd.entries());
-    console.log("delivery request submit", data);
+    const name = typeof data.name === "string" ? data.name.trim() : "";
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(deliveryRequestEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const responseData = (await response.json()) as DeliveryRequestResponse;
+
+      if (!response.ok) {
+        if (responseData.errors && Object.keys(responseData.errors).length > 0) {
+          setErrors(responseData.errors);
+          scrollToFirstErrorField(
+            form,
+            deliveryRequestFieldOrder.filter(
+              (fieldName) => responseData.errors?.[fieldName],
+            ),
+          );
+        }
+
+        setSubmitError(
+          responseData.message ||
+            "We could not send your delivery request. Please check the form and try again.",
+        );
+        return;
+      }
+
+      setSubmittedName(name);
+      form.reset();
+      setErrors({});
+      setIsConfirmationOpen(true);
+    } catch {
+      setSubmitError(
+        "We could not reach the server. Please try again in a moment.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleSubmitAnotherRequest = () => {
+    setIsConfirmationOpen(false);
+    setSubmitError("");
+    setErrors({});
+    setSubmittedName("");
+  };
+
+  const submittedDisplayName = submittedName.trim() || "there";
 
   return (
     <FormShell
@@ -185,10 +252,32 @@ const DeliveryRequestForm = () => {
           />
         </div>
 
-        <FormSubmitButton>
-          Submit Request
+        {submitError ? (
+          <p
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
+            {submitError}
+          </p>
+        ) : null}
+
+        <FormSubmitButton disabled={isSubmitting}>
+          {isSubmitting ? "Sending..." : "Submit Request"}
         </FormSubmitButton>
       </form>
+
+      <FormSuccessModal
+        isOpen={isConfirmationOpen}
+        title="Delivery Request Received"
+        titleId="delivery-request-success-title"
+        onGoHome={() => navigate("/")}
+        onClose={handleSubmitAnotherRequest}
+        onContinue={handleSubmitAnotherRequest}
+      >
+        Thanks <strong>{submittedDisplayName}</strong> for scheduling a
+        delivery! Your request has been received, and an agent will get back to
+        you shortly.
+      </FormSuccessModal>
     </FormShell>
   );
 };
