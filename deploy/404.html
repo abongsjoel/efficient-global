@@ -4,13 +4,15 @@
     <meta charset="utf-8" />
     <title>Efficient Global</title>
     <script>
-      const pathSegmentsToKeep = 0;
+      const pathSegmentsToKeep = 1;
       const locationData = window.location;
+
       const preservedPath = locationData.pathname
         .slice(1)
         .split("/")
         .slice(pathSegmentsToKeep)
         .join("/");
+
       const query = locationData.search
         ? `&${locationData.search.slice(1).replace(/&/g, "~and~")}`
         : "";
