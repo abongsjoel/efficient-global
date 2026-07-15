@@ -6,7 +6,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/logistics">
       <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Home />} />

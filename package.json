@@ -8,8 +8,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build": "vite build",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "prepare-deploy": "node scripts/prepare-deploy.mjs",
+    "predeploy": "npm run build && npm run prepare-deploy",
+    "deploy": "gh-pages -d deploy"
   },
   "dependencies": {
     "@fontsource/saira": "^5.2.11",
