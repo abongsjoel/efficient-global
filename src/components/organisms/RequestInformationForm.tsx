@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
-import RequestInformationSuccessModal from "../molecules/RequestInformationSuccessModal";
 import { apiBaseUrl } from "../../utils/api";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
@@ -118,6 +118,8 @@ const RequestInformationForm = () => {
     setSubmittedName("");
   };
 
+  const submittedDisplayName = submittedName.trim() || "there";
+
   return (
     <FormShell
       icon="💬"
@@ -202,13 +204,18 @@ const RequestInformationForm = () => {
         </FormSubmitButton>
       </form>
 
-      <RequestInformationSuccessModal
+      <FormSuccessModal
         isOpen={isConfirmationOpen}
-        name={submittedName}
+        title="Request Received"
+        titleId="request-information-success-title"
         onGoHome={() => navigate("/")}
         onClose={handleSubmitAnotherRequest}
-        onSubmitAnotherRequest={handleSubmitAnotherRequest}
-      />
+        onContinue={handleSubmitAnotherRequest}
+      >
+        Thanks <strong>{submittedDisplayName}</strong> for getting in touch!
+        Your request has been received, and an agent will get back to you
+        shortly.
+      </FormSuccessModal>
     </FormShell>
   );
 };

@@ -1,29 +1,36 @@
+import type { ReactNode } from "react";
 import Button from "../atoms/Button";
 
-type RequestInformationSuccessModalProps = {
+type FormSuccessModalProps = {
   isOpen: boolean;
-  name: string;
+  title: string;
+  titleId: string;
+  children: ReactNode;
   onGoHome: () => void;
   onClose: () => void;
-  onSubmitAnotherRequest: () => void;
+  onContinue: () => void;
+  continueLabel?: string;
+  homeLabel?: string;
 };
 
-const RequestInformationSuccessModal = ({
+const FormSuccessModal = ({
   isOpen,
-  name,
+  title,
+  titleId,
+  children,
   onGoHome,
   onClose,
-  onSubmitAnotherRequest,
-}: RequestInformationSuccessModalProps) => {
+  onContinue,
+  continueLabel = "Continue",
+  homeLabel = "Back to Home",
+}: FormSuccessModalProps) => {
   if (!isOpen) {
     return null;
   }
 
-  const recipientName = name.trim() || "there";
-
   return (
     <div
-      aria-labelledby="request-information-success-title"
+      aria-labelledby={titleId}
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-6 py-10"
       onClick={onClose}
@@ -48,25 +55,18 @@ const RequestInformationSuccessModal = ({
           </svg>
         </div>
         <h3
-          id="request-information-success-title"
+          id={titleId}
           className="mt-5 text-2xl font-semibold tracking-tight text-slate-950"
         >
-          Request Received
+          {title}
         </h3>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
-          Thanks <strong>{recipientName}</strong> for getting in touch! Your
-          request has been received, and an agent will get back to you shortly.
-        </p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">{children}</p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           <Button onClick={onGoHome} className="w-full">
-            Back to Home
+            {homeLabel}
           </Button>
-          <Button
-            variant="inverse"
-            onClick={onSubmitAnotherRequest}
-            className="w-full"
-          >
-            Continue
+          <Button variant="inverse" onClick={onContinue} className="w-full">
+            {continueLabel}
           </Button>
         </div>
       </div>
@@ -74,4 +74,4 @@ const RequestInformationSuccessModal = ({
   );
 };
 
-export default RequestInformationSuccessModal;
+export default FormSuccessModal;

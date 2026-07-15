@@ -4,8 +4,8 @@ import Dropdown from "../atoms/Dropdown";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
+import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
-import DeliveryRequestSuccessModal from "../molecules/DeliveryRequestSuccessModal";
 import { apiBaseUrl } from "../../utils/api";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
@@ -129,6 +129,8 @@ const DeliveryRequestForm = () => {
     setErrors({});
     setSubmittedName("");
   };
+
+  const submittedDisplayName = submittedName.trim() || "there";
 
   return (
     <FormShell
@@ -264,13 +266,18 @@ const DeliveryRequestForm = () => {
         </FormSubmitButton>
       </form>
 
-      <DeliveryRequestSuccessModal
+      <FormSuccessModal
         isOpen={isConfirmationOpen}
-        name={submittedName}
+        title="Delivery Request Received"
+        titleId="delivery-request-success-title"
         onGoHome={() => navigate("/")}
         onClose={handleSubmitAnotherRequest}
-        onSubmitAnotherRequest={handleSubmitAnotherRequest}
-      />
+        onContinue={handleSubmitAnotherRequest}
+      >
+        Thanks <strong>{submittedDisplayName}</strong> for scheduling a
+        delivery! Your request has been received, and an agent will get back to
+        you shortly.
+      </FormSuccessModal>
     </FormShell>
   );
 };
