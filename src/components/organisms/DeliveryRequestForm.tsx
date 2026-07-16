@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import Dropdown from "../atoms/Dropdown";
+import FieldSuggestions from "../atoms/FieldSuggestions";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
@@ -7,6 +8,10 @@ import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
 import { apiBaseUrl } from "../../utils/api";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
+import {
+  getFormSuggestions,
+  saveFormSuggestions,
+} from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type DeliveryRequestFieldErrors,
@@ -23,6 +28,14 @@ const deliveryRequestFieldOrder: Array<keyof DeliveryRequestFieldErrors> = [
   "phone",
   "rush",
 ];
+
+const deliveryRequestSuggestionFields = [
+  "pickup",
+  "delivery",
+  "name",
+  "email",
+  "phone",
+] as const;
 
 type DeliveryRequestResponse = {
   message?: string;
@@ -43,6 +56,9 @@ const DeliveryRequestForm = () => {
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
+  const [suggestions, setSuggestions] = useState(() =>
+    getFormSuggestions(deliveryRequestSuggestionFields),
+  );
 
   const clearFieldError = (field: keyof DeliveryRequestFieldErrors) => {
     setErrors((currentErrors) => {
@@ -109,6 +125,8 @@ const DeliveryRequestForm = () => {
       }
 
       setSubmittedName(name);
+      saveFormSuggestions(deliveryRequestSuggestionFields, data);
+      setSuggestions(getFormSuggestions(deliveryRequestSuggestionFields));
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);
@@ -144,6 +162,26 @@ const DeliveryRequestForm = () => {
         aria-label="Schedule delivery form"
       >
         <input type="hidden" name="source" value="schedule-delivery" />
+        <FieldSuggestions
+          id="delivery-request-pickup-suggestions"
+          values={suggestions.pickup}
+        />
+        <FieldSuggestions
+          id="delivery-request-delivery-suggestions"
+          values={suggestions.delivery}
+        />
+        <FieldSuggestions
+          id="delivery-request-name-suggestions"
+          values={suggestions.name}
+        />
+        <FieldSuggestions
+          id="delivery-request-email-suggestions"
+          values={suggestions.email}
+        />
+        <FieldSuggestions
+          id="delivery-request-phone-suggestions"
+          values={suggestions.phone}
+        />
 
         <div className="space-y-6">
           <SectionLabel>Route &amp; timing</SectionLabel>
@@ -152,6 +190,7 @@ const DeliveryRequestForm = () => {
               label="Pickup location"
               name="pickup"
               type="text"
+              list="delivery-request-pickup-suggestions"
               placeholder="Facility or address"
               required
               error={errors.pickup}
@@ -162,6 +201,7 @@ const DeliveryRequestForm = () => {
               label="Delivery location"
               name="delivery"
               type="text"
+              list="delivery-request-delivery-suggestions"
               placeholder="Facility or address"
               required
               error={errors.delivery}
@@ -200,6 +240,8 @@ const DeliveryRequestForm = () => {
               label="Name"
               name="name"
               type="text"
+              autoComplete="name"
+              list="delivery-request-name-suggestions"
               placeholder="Your name"
               required
               error={errors.name}
@@ -212,6 +254,7 @@ const DeliveryRequestForm = () => {
               type="text"
               inputMode="email"
               autoComplete="email"
+              list="delivery-request-email-suggestions"
               placeholder="you@example.com"
               required
               error={errors.email}
@@ -226,6 +269,7 @@ const DeliveryRequestForm = () => {
               type="tel"
               inputMode="tel"
               autoComplete="tel"
+              list="delivery-request-phone-suggestions"
               placeholder="(123) 456-7890"
               required
               error={errors.phone}

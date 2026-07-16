@@ -1,10 +1,15 @@
 import { useState, type FormEvent } from "react";
+import FieldSuggestions from "../atoms/FieldSuggestions";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
 import { apiBaseUrl } from "../../utils/api";
+import {
+  getFormSuggestions,
+  saveFormSuggestions,
+} from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type RequestInformationFieldErrors,
@@ -17,6 +22,13 @@ const requestInformationFieldOrder: Array<keyof RequestInformationFieldErrors> =
   "phone",
   "message",
 ];
+
+const requestInformationSuggestionFields = [
+  "name",
+  "email",
+  "phone",
+  "organization",
+] as const;
 
 type RequestInformationResponse = {
   message?: string;
@@ -31,6 +43,9 @@ const RequestInformationForm = () => {
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
+  const [suggestions, setSuggestions] = useState(() =>
+    getFormSuggestions(requestInformationSuggestionFields),
+  );
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -97,6 +112,8 @@ const RequestInformationForm = () => {
       }
 
       setSubmittedName(name);
+      saveFormSuggestions(requestInformationSuggestionFields, data);
+      setSuggestions(getFormSuggestions(requestInformationSuggestionFields));
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);
@@ -132,12 +149,30 @@ const RequestInformationForm = () => {
         aria-label="Request information form"
       >
         <input type="hidden" name="source" value="request-information" />
+        <FieldSuggestions
+          id="request-information-name-suggestions"
+          values={suggestions.name}
+        />
+        <FieldSuggestions
+          id="request-information-email-suggestions"
+          values={suggestions.email}
+        />
+        <FieldSuggestions
+          id="request-information-phone-suggestions"
+          values={suggestions.phone}
+        />
+        <FieldSuggestions
+          id="request-information-organization-suggestions"
+          values={suggestions.organization}
+        />
 
         <div className="grid gap-6 sm:grid-cols-2">
           <Input
             label="Name"
             name="name"
             type="text"
+            autoComplete="name"
+            list="request-information-name-suggestions"
             placeholder="Your name"
             required
             error={errors.name}
@@ -150,6 +185,7 @@ const RequestInformationForm = () => {
             type="text"
             inputMode="email"
             autoComplete="email"
+            list="request-information-email-suggestions"
             placeholder="you@example.com"
             required
             error={errors.email}
@@ -164,6 +200,7 @@ const RequestInformationForm = () => {
             type="tel"
             inputMode="tel"
             autoComplete="tel"
+            list="request-information-phone-suggestions"
             placeholder="(123) 456-7890"
             required
             error={errors.phone}
@@ -174,6 +211,8 @@ const RequestInformationForm = () => {
             label="Organization"
             name="organization"
             type="text"
+            autoComplete="organization"
+            list="request-information-organization-suggestions"
             placeholder="Hospital, clinic, lab, or company"
           />
         </div>
