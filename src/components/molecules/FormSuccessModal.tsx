@@ -13,6 +13,13 @@ type FormSuccessModalProps = {
   homeLabel?: string;
 };
 
+const MailSuccessIcon = () => (
+  <span aria-hidden="true" className="mail-success-icon">
+    <span className="mail-success-card" />
+    <span className="mail-success-envelope" />
+  </span>
+);
+
 const FormSuccessModal = ({
   isOpen,
   title,
@@ -46,18 +53,7 @@ const FormSuccessModal = ({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-          <svg
-            aria-hidden="true"
-            className="h-7 w-7"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2.5"
-            viewBox="0 0 24 24"
-          >
-            <path d="m5 13 4 4L19 7" />
-          </svg>
+          <MailSuccessIcon />
         </div>
         <h3
           id={titleId}
