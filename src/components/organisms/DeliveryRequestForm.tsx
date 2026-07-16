@@ -14,6 +14,7 @@ import {
 import { scrollToFirstErrorField } from "../../utils/formFocus";
 import {
   type DeliveryRequestFieldErrors,
+  getCurrentDateTimeLocalValue,
   validateDeliveryRequestFields,
 } from "../../utils/formValidation";
 
@@ -55,6 +56,9 @@ const DeliveryRequestForm = () => {
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
+  const [minimumDateTime, setMinimumDateTime] = useState(
+    getCurrentDateTimeLocalValue,
+  );
   const [suggestions, setSuggestions] = useState(() =>
     getFormSuggestions(deliveryRequestSuggestionFields),
   );
@@ -194,8 +198,10 @@ const DeliveryRequestForm = () => {
               name="datetime"
               type="datetime-local"
               required
+              min={minimumDateTime}
               className="invalid:text-slate-400"
               error={errors.datetime}
+              onFocus={() => setMinimumDateTime(getCurrentDateTimeLocalValue())}
               onChange={() => clearFieldError("datetime")}
             />
 
