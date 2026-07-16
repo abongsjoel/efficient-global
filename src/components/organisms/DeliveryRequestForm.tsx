@@ -259,8 +259,8 @@ const DeliveryRequestForm = () => {
           </p>
         ) : null}
 
-        <FormSubmitButton disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : "Submit Request"}
+        <FormSubmitButton disabled={isSubmitting} isLoading={isSubmitting}>
+          Submit Request
         </FormSubmitButton>
       </form>
 

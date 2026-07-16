@@ -197,8 +197,8 @@ const RequestInformationForm = () => {
           </p>
         ) : null}
 
-        <FormSubmitButton disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : "Send Message"}
+        <FormSubmitButton disabled={isSubmitting} isLoading={isSubmitting}>
+          Send Message
         </FormSubmitButton>
       </form>
 
