@@ -1,4 +1,4 @@
-const maxSuggestionsPerField = 6;
+const maxSuggestionsPerField = 3;
 const storageKeyPrefix = "efficient-global-form-suggestions";
 
 const getStorageKey = (field: string) => `${storageKeyPrefix}:${field}`;
@@ -12,9 +12,11 @@ const getStoredSuggestions = (field: string) => {
     const storedValue = window.localStorage.getItem(getStorageKey(field));
     const parsedValue = storedValue ? JSON.parse(storedValue) : [];
 
-    return Array.isArray(parsedValue)
+    const suggestions = Array.isArray(parsedValue)
       ? parsedValue.filter((value): value is string => typeof value === "string")
       : [];
+
+    return suggestions.slice(0, maxSuggestionsPerField);
   } catch {
     return [];
   }
