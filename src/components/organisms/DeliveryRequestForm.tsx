@@ -270,7 +270,7 @@ const DeliveryRequestForm = () => {
         isOpen={isConfirmationOpen}
         title="Delivery Request Received"
         titleId="delivery-request-success-title"
-        onGoHome={() => navigate("/")}
+        onGoHome={() => navigate("/", { state: { scrollTo: "hero" } })}
         onClose={handleSubmitAnotherRequest}
         onContinue={handleSubmitAnotherRequest}
       >

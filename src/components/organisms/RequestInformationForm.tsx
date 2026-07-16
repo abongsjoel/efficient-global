@@ -208,7 +208,7 @@ const RequestInformationForm = () => {
         isOpen={isConfirmationOpen}
         title="Request Received"
         titleId="request-information-success-title"
-        onGoHome={() => navigate("/")}
+        onGoHome={() => navigate("/", { state: { scrollTo: "hero" } })}
         onClose={handleSubmitAnotherRequest}
         onContinue={handleSubmitAnotherRequest}
       >
