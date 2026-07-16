@@ -1,6 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import Dropdown from "../atoms/Dropdown";
-import FieldSuggestions from "../atoms/FieldSuggestions";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
@@ -162,26 +161,6 @@ const DeliveryRequestForm = () => {
         aria-label="Schedule delivery form"
       >
         <input type="hidden" name="source" value="schedule-delivery" />
-        <FieldSuggestions
-          id="delivery-request-pickup-suggestions"
-          values={suggestions.pickup}
-        />
-        <FieldSuggestions
-          id="delivery-request-delivery-suggestions"
-          values={suggestions.delivery}
-        />
-        <FieldSuggestions
-          id="delivery-request-name-suggestions"
-          values={suggestions.name}
-        />
-        <FieldSuggestions
-          id="delivery-request-email-suggestions"
-          values={suggestions.email}
-        />
-        <FieldSuggestions
-          id="delivery-request-phone-suggestions"
-          values={suggestions.phone}
-        />
 
         <div className="space-y-6">
           <SectionLabel>Route &amp; timing</SectionLabel>
@@ -190,10 +169,10 @@ const DeliveryRequestForm = () => {
               label="Pickup location"
               name="pickup"
               type="text"
-              list="delivery-request-pickup-suggestions"
               placeholder="Facility or address"
               required
               error={errors.pickup}
+              suggestions={suggestions.pickup}
               onChange={() => clearFieldError("pickup")}
             />
 
@@ -201,10 +180,10 @@ const DeliveryRequestForm = () => {
               label="Delivery location"
               name="delivery"
               type="text"
-              list="delivery-request-delivery-suggestions"
               placeholder="Facility or address"
               required
               error={errors.delivery}
+              suggestions={suggestions.delivery}
               onChange={() => clearFieldError("delivery")}
             />
           </div>
@@ -241,10 +220,10 @@ const DeliveryRequestForm = () => {
               name="name"
               type="text"
               autoComplete="name"
-              list="delivery-request-name-suggestions"
               placeholder="Your name"
               required
               error={errors.name}
+              suggestions={suggestions.name}
               onChange={() => clearFieldError("name")}
             />
 
@@ -254,10 +233,10 @@ const DeliveryRequestForm = () => {
               type="text"
               inputMode="email"
               autoComplete="email"
-              list="delivery-request-email-suggestions"
               placeholder="you@example.com"
               required
               error={errors.email}
+              suggestions={suggestions.email}
               onChange={() => clearFieldError("email")}
             />
           </div>
@@ -269,10 +248,10 @@ const DeliveryRequestForm = () => {
               type="tel"
               inputMode="tel"
               autoComplete="tel"
-              list="delivery-request-phone-suggestions"
               placeholder="(123) 456-7890"
               required
               error={errors.phone}
+              suggestions={suggestions.phone}
               onChange={() => clearFieldError("phone")}
             />
 

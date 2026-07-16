@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import FieldSuggestions from "../atoms/FieldSuggestions";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
@@ -149,22 +148,6 @@ const RequestInformationForm = () => {
         aria-label="Request information form"
       >
         <input type="hidden" name="source" value="request-information" />
-        <FieldSuggestions
-          id="request-information-name-suggestions"
-          values={suggestions.name}
-        />
-        <FieldSuggestions
-          id="request-information-email-suggestions"
-          values={suggestions.email}
-        />
-        <FieldSuggestions
-          id="request-information-phone-suggestions"
-          values={suggestions.phone}
-        />
-        <FieldSuggestions
-          id="request-information-organization-suggestions"
-          values={suggestions.organization}
-        />
 
         <div className="grid gap-6 sm:grid-cols-2">
           <Input
@@ -172,10 +155,10 @@ const RequestInformationForm = () => {
             name="name"
             type="text"
             autoComplete="name"
-            list="request-information-name-suggestions"
             placeholder="Your name"
             required
             error={errors.name}
+            suggestions={suggestions.name}
             onChange={() => clearFieldError("name")}
           />
 
@@ -185,10 +168,10 @@ const RequestInformationForm = () => {
             type="text"
             inputMode="email"
             autoComplete="email"
-            list="request-information-email-suggestions"
             placeholder="you@example.com"
             required
             error={errors.email}
+            suggestions={suggestions.email}
             onChange={() => clearFieldError("email")}
           />
         </div>
@@ -200,10 +183,10 @@ const RequestInformationForm = () => {
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            list="request-information-phone-suggestions"
             placeholder="(123) 456-7890"
             required
             error={errors.phone}
+            suggestions={suggestions.phone}
             onChange={() => clearFieldError("phone")}
           />
 
@@ -212,8 +195,8 @@ const RequestInformationForm = () => {
             name="organization"
             type="text"
             autoComplete="organization"
-            list="request-information-organization-suggestions"
             placeholder="Hospital, clinic, lab, or company"
+            suggestions={suggestions.organization}
           />
         </div>
 
