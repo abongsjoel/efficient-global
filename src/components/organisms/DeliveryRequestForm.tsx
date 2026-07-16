@@ -1,10 +1,16 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import Dropdown from "../atoms/Dropdown";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
+import UserInfoPrefillToggle from "../molecules/UserInfoPrefillToggle";
 import { apiBaseUrl } from "../../utils/api";
 import { requestTypeOptions, rushDeliveryOptions } from "../../utils/constants";
 import {
@@ -12,6 +18,15 @@ import {
   saveFormSuggestions,
 } from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
+import {
+  applySavedUserInfoValues,
+  clearSavedUserInfoValues,
+  createEmptyUserInfoValues,
+  getSavedUserInfo,
+  hasSavedUserInfo,
+  saveUserInfo,
+  type UserInfoField,
+} from "../../utils/userInfoPrefill";
 import {
   type DeliveryRequestFieldErrors,
   getCurrentDateTimeLocalValue,
@@ -37,6 +52,12 @@ const deliveryRequestSuggestionFields = [
   "phone",
 ] as const;
 
+const deliveryRequestUserInfoFields = [
+  "name",
+  "email",
+  "phone",
+] as const satisfies readonly UserInfoField[];
+
 type DeliveryRequestResponse = {
   message?: string;
   errors?: DeliveryRequestFieldErrors;
@@ -56,6 +77,11 @@ const DeliveryRequestForm = () => {
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
+  const [savedUserInfo, setSavedUserInfo] = useState(getSavedUserInfo);
+  const [isUsingSavedUserInfo, setIsUsingSavedUserInfo] = useState(false);
+  const [userInfoValues, setUserInfoValues] = useState(() =>
+    createEmptyUserInfoValues(deliveryRequestUserInfoFields),
+  );
   const [minimumDateTime, setMinimumDateTime] = useState(
     getCurrentDateTimeLocalValue,
   );
@@ -73,6 +99,35 @@ const DeliveryRequestForm = () => {
       delete nextErrors[field];
       return nextErrors;
     });
+  };
+
+  const updateUserInfoValue =
+    (field: (typeof deliveryRequestUserInfoFields)[number]) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.value;
+
+      setUserInfoValues((currentValues) => ({
+        ...currentValues,
+        [field]: value,
+      }));
+      clearFieldError(field);
+    };
+
+  const handleUserInfoPrefillToggle = (checked: boolean) => {
+    setIsUsingSavedUserInfo(checked);
+    setUserInfoValues((currentValues) =>
+      checked
+        ? applySavedUserInfoValues(
+            currentValues,
+            savedUserInfo,
+            deliveryRequestUserInfoFields,
+          )
+        : clearSavedUserInfoValues(
+            currentValues,
+            savedUserInfo,
+            deliveryRequestUserInfoFields,
+          ),
+    );
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -129,7 +184,11 @@ const DeliveryRequestForm = () => {
 
       setSubmittedName(name);
       saveFormSuggestions(deliveryRequestSuggestionFields, data);
+      saveUserInfo(data);
       setSuggestions(getFormSuggestions(deliveryRequestSuggestionFields));
+      setSavedUserInfo(getSavedUserInfo());
+      setIsUsingSavedUserInfo(false);
+      setUserInfoValues(createEmptyUserInfoValues(deliveryRequestUserInfoFields));
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);
@@ -150,6 +209,10 @@ const DeliveryRequestForm = () => {
   };
 
   const submittedDisplayName = submittedName.trim() || "there";
+  const canUseSavedUserInfo = hasSavedUserInfo(
+    savedUserInfo,
+    deliveryRequestUserInfoFields,
+  );
 
   return (
     <FormShell
@@ -219,31 +282,41 @@ const DeliveryRequestForm = () => {
         </div>
 
         <div className="space-y-6 border-t border-slate-100 pt-8">
-          <SectionLabel>Your details</SectionLabel>
+          <div className="flex min-h-8 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <SectionLabel>Your details</SectionLabel>
+            {canUseSavedUserInfo ? (
+              <UserInfoPrefillToggle
+                checked={isUsingSavedUserInfo}
+                onChange={handleUserInfoPrefillToggle}
+              />
+            ) : null}
+          </div>
           <div className="grid gap-6 sm:grid-cols-2">
             <Input
               label="Name"
               name="name"
               type="text"
+              value={userInfoValues.name}
               autoComplete="name"
               placeholder="Your name"
               required
               error={errors.name}
               suggestions={suggestions.name}
-              onChange={() => clearFieldError("name")}
+              onChange={updateUserInfoValue("name")}
             />
 
             <Input
               label="Email"
               name="email"
               type="text"
+              value={userInfoValues.email}
               inputMode="email"
               autoComplete="email"
               placeholder="you@example.com"
               required
               error={errors.email}
               suggestions={suggestions.email}
-              onChange={() => clearFieldError("email")}
+              onChange={updateUserInfoValue("email")}
             />
           </div>
 
@@ -252,13 +325,14 @@ const DeliveryRequestForm = () => {
               label="Phone"
               name="phone"
               type="tel"
+              value={userInfoValues.phone}
               inputMode="tel"
               autoComplete="tel"
               placeholder="(123) 456-7890"
               required
               error={errors.phone}
               suggestions={suggestions.phone}
-              onChange={() => clearFieldError("phone")}
+              onChange={updateUserInfoValue("phone")}
             />
 
             <Dropdown

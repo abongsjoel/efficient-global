@@ -1,15 +1,25 @@
-import { useState, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
+import UserInfoPrefillToggle from "../molecules/UserInfoPrefillToggle";
 import { apiBaseUrl } from "../../utils/api";
 import {
   getFormSuggestions,
   saveFormSuggestions,
 } from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
+import {
+  applySavedUserInfoValues,
+  clearSavedUserInfoValues,
+  createEmptyUserInfoValues,
+  getSavedUserInfo,
+  hasSavedUserInfo,
+  saveUserInfo,
+  type UserInfoField,
+} from "../../utils/userInfoPrefill";
 import {
   type RequestInformationFieldErrors,
   validateRequestInformationFields,
@@ -29,6 +39,13 @@ const requestInformationSuggestionFields = [
   "organization",
 ] as const;
 
+const requestInformationUserInfoFields = [
+  "name",
+  "email",
+  "phone",
+  "organization",
+] as const satisfies readonly UserInfoField[];
+
 type RequestInformationResponse = {
   message?: string;
   errors?: RequestInformationFieldErrors;
@@ -42,6 +59,11 @@ const RequestInformationForm = () => {
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
+  const [savedUserInfo, setSavedUserInfo] = useState(getSavedUserInfo);
+  const [isUsingSavedUserInfo, setIsUsingSavedUserInfo] = useState(false);
+  const [userInfoValues, setUserInfoValues] = useState(() =>
+    createEmptyUserInfoValues(requestInformationUserInfoFields),
+  );
   const [suggestions, setSuggestions] = useState(() =>
     getFormSuggestions(requestInformationSuggestionFields),
   );
@@ -56,6 +78,38 @@ const RequestInformationForm = () => {
       delete nextErrors[field];
       return nextErrors;
     });
+  };
+
+  const updateUserInfoValue =
+    (field: (typeof requestInformationUserInfoFields)[number]) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.value;
+
+      setUserInfoValues((currentValues) => ({
+        ...currentValues,
+        [field]: value,
+      }));
+
+      if (field !== "organization") {
+        clearFieldError(field);
+      }
+    };
+
+  const handleUserInfoPrefillToggle = (checked: boolean) => {
+    setIsUsingSavedUserInfo(checked);
+    setUserInfoValues((currentValues) =>
+      checked
+        ? applySavedUserInfoValues(
+            currentValues,
+            savedUserInfo,
+            requestInformationUserInfoFields,
+          )
+        : clearSavedUserInfoValues(
+            currentValues,
+            savedUserInfo,
+            requestInformationUserInfoFields,
+          ),
+    );
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -112,7 +166,13 @@ const RequestInformationForm = () => {
 
       setSubmittedName(name);
       saveFormSuggestions(requestInformationSuggestionFields, data);
+      saveUserInfo(data);
       setSuggestions(getFormSuggestions(requestInformationSuggestionFields));
+      setSavedUserInfo(getSavedUserInfo());
+      setIsUsingSavedUserInfo(false);
+      setUserInfoValues(
+        createEmptyUserInfoValues(requestInformationUserInfoFields),
+      );
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);
@@ -133,6 +193,10 @@ const RequestInformationForm = () => {
   };
 
   const submittedDisplayName = submittedName.trim() || "there";
+  const canUseSavedUserInfo = hasSavedUserInfo(
+    savedUserInfo,
+    requestInformationUserInfoFields,
+  );
 
   return (
     <FormShell
@@ -149,30 +213,41 @@ const RequestInformationForm = () => {
       >
         <input type="hidden" name="source" value="request-information" />
 
+        {canUseSavedUserInfo ? (
+          <div className="flex justify-end">
+            <UserInfoPrefillToggle
+              checked={isUsingSavedUserInfo}
+              onChange={handleUserInfoPrefillToggle}
+            />
+          </div>
+        ) : null}
+
         <div className="grid gap-6 sm:grid-cols-2">
           <Input
             label="Name"
             name="name"
             type="text"
+            value={userInfoValues.name}
             autoComplete="name"
             placeholder="Your name"
             required
             error={errors.name}
             suggestions={suggestions.name}
-            onChange={() => clearFieldError("name")}
+            onChange={updateUserInfoValue("name")}
           />
 
           <Input
             label="Email"
             name="email"
             type="text"
+            value={userInfoValues.email}
             inputMode="email"
             autoComplete="email"
             placeholder="you@example.com"
             required
             error={errors.email}
             suggestions={suggestions.email}
-            onChange={() => clearFieldError("email")}
+            onChange={updateUserInfoValue("email")}
           />
         </div>
 
@@ -181,22 +256,25 @@ const RequestInformationForm = () => {
             label="Phone"
             name="phone"
             type="tel"
+            value={userInfoValues.phone}
             inputMode="tel"
             autoComplete="tel"
             placeholder="(123) 456-7890"
             required
             error={errors.phone}
             suggestions={suggestions.phone}
-            onChange={() => clearFieldError("phone")}
+            onChange={updateUserInfoValue("phone")}
           />
 
           <Input
             label="Organization"
             name="organization"
             type="text"
+            value={userInfoValues.organization}
             autoComplete="organization"
             placeholder="Hospital, clinic, lab, or company"
             suggestions={suggestions.organization}
+            onChange={updateUserInfoValue("organization")}
           />
         </div>
 
