@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "../atoms/Button";
 
 type FormSuccessModalProps = {
@@ -6,7 +7,6 @@ type FormSuccessModalProps = {
   title: string;
   titleId: string;
   children: ReactNode;
-  onGoHome: () => void;
   onClose: () => void;
   onContinue: () => void;
   continueLabel?: string;
@@ -18,15 +18,20 @@ const FormSuccessModal = ({
   title,
   titleId,
   children,
-  onGoHome,
   onClose,
   onContinue,
   continueLabel = "Continue",
   homeLabel = "Back to Home",
 }: FormSuccessModalProps) => {
+  const navigate = useNavigate();
+
   if (!isOpen) {
     return null;
   }
+
+  const handleGoHome = () => {
+    navigate("/", { state: { scrollTo: "hero" } });
+  };
 
   return (
     <div
@@ -62,7 +67,7 @@ const FormSuccessModal = ({
         </h3>
         <p className="mt-3 text-sm leading-6 text-slate-600">{children}</p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <Button onClick={onGoHome} className="w-full">
+          <Button onClick={handleGoHome} className="w-full">
             {homeLabel}
           </Button>
           <Button variant="inverse" onClick={onContinue} className="w-full">

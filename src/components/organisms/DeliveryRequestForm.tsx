@@ -1,5 +1,4 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import Dropdown from "../atoms/Dropdown";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
@@ -39,7 +38,6 @@ const SectionLabel = ({ children }: { children: ReactNode }) => (
 );
 
 const DeliveryRequestForm = () => {
-  const navigate = useNavigate();
   const [errors, setErrors] = useState<DeliveryRequestFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -270,7 +268,6 @@ const DeliveryRequestForm = () => {
         isOpen={isConfirmationOpen}
         title="Delivery Request Received"
         titleId="delivery-request-success-title"
-        onGoHome={() => navigate("/", { state: { scrollTo: "hero" } })}
         onClose={handleSubmitAnotherRequest}
         onContinue={handleSubmitAnotherRequest}
       >

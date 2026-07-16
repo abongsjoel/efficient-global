@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
@@ -27,7 +26,6 @@ type RequestInformationResponse = {
 const requestInformationEndpoint = `${apiBaseUrl}/api/request-information`;
 
 const RequestInformationForm = () => {
-  const navigate = useNavigate();
   const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -208,7 +206,6 @@ const RequestInformationForm = () => {
         isOpen={isConfirmationOpen}
         title="Request Received"
         titleId="request-information-success-title"
-        onGoHome={() => navigate("/", { state: { scrollTo: "hero" } })}
         onClose={handleSubmitAnotherRequest}
         onContinue={handleSubmitAnotherRequest}
       >
