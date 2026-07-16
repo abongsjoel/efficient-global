@@ -22,8 +22,10 @@ import {
   applySavedUserInfoValues,
   clearSavedUserInfoValues,
   createEmptyUserInfoValues,
-  getSavedUserInfo,
+  getInitialUserInfoPrefillState,
   hasSavedUserInfo,
+  saveUserInfoPrefillPreference,
+  getSavedUserInfo,
   saveUserInfo,
   type UserInfoField,
 } from "../../utils/userInfoPrefill";
@@ -72,15 +74,22 @@ const SectionLabel = ({ children }: { children: ReactNode }) => (
 );
 
 const DeliveryRequestForm = () => {
+  const [initialUserInfoPrefillState] = useState(() =>
+    getInitialUserInfoPrefillState(deliveryRequestUserInfoFields),
+  );
   const [errors, setErrors] = useState<DeliveryRequestFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
-  const [savedUserInfo, setSavedUserInfo] = useState(getSavedUserInfo);
-  const [isUsingSavedUserInfo, setIsUsingSavedUserInfo] = useState(false);
-  const [userInfoValues, setUserInfoValues] = useState(() =>
-    createEmptyUserInfoValues(deliveryRequestUserInfoFields),
+  const [savedUserInfo, setSavedUserInfo] = useState(
+    initialUserInfoPrefillState.savedUserInfo,
+  );
+  const [isUsingSavedUserInfo, setIsUsingSavedUserInfo] = useState(
+    initialUserInfoPrefillState.isUsingSavedUserInfo,
+  );
+  const [userInfoValues, setUserInfoValues] = useState(
+    initialUserInfoPrefillState.userInfoValues,
   );
   const [minimumDateTime, setMinimumDateTime] = useState(
     getCurrentDateTimeLocalValue,
@@ -114,6 +123,7 @@ const DeliveryRequestForm = () => {
     };
 
   const handleUserInfoPrefillToggle = (checked: boolean) => {
+    saveUserInfoPrefillPreference(checked);
     setIsUsingSavedUserInfo(checked);
     setUserInfoValues((currentValues) =>
       checked
@@ -185,10 +195,21 @@ const DeliveryRequestForm = () => {
       setSubmittedName(name);
       saveFormSuggestions(deliveryRequestSuggestionFields, data);
       saveUserInfo(data);
+      const nextSavedUserInfo = getSavedUserInfo();
+      const nextEmptyUserInfoValues = createEmptyUserInfoValues(
+        deliveryRequestUserInfoFields,
+      );
+      const nextUserInfoValues = isUsingSavedUserInfo
+        ? applySavedUserInfoValues(
+            nextEmptyUserInfoValues,
+            nextSavedUserInfo,
+            deliveryRequestUserInfoFields,
+          )
+        : nextEmptyUserInfoValues;
+
       setSuggestions(getFormSuggestions(deliveryRequestSuggestionFields));
-      setSavedUserInfo(getSavedUserInfo());
-      setIsUsingSavedUserInfo(false);
-      setUserInfoValues(createEmptyUserInfoValues(deliveryRequestUserInfoFields));
+      setSavedUserInfo(nextSavedUserInfo);
+      setUserInfoValues(nextUserInfoValues);
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);

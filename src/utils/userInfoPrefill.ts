@@ -6,6 +6,8 @@ export type UserInfoValues<Field extends UserInfoField = UserInfoField> =
   Record<Field, string>;
 
 const userInfoStorageKey = "efficient-global-user-info";
+const userInfoPrefillPreferenceStorageKey =
+  "efficient-global-user-info-prefill-enabled";
 const userInfoFields: UserInfoField[] = [
   "name",
   "email",
@@ -70,6 +72,27 @@ export const saveUserInfo = (values: Record<string, FormDataEntryValue>) => {
   window.localStorage.setItem(userInfoStorageKey, JSON.stringify(nextUserInfo));
 };
 
+export const getUserInfoPrefillPreference = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return (
+    window.localStorage.getItem(userInfoPrefillPreferenceStorageKey) === "true"
+  );
+};
+
+export const saveUserInfoPrefillPreference = (isEnabled: boolean) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(
+    userInfoPrefillPreferenceStorageKey,
+    String(isEnabled),
+  );
+};
+
 export const hasSavedUserInfo = (
   userInfo: SavedUserInfo,
   fields: readonly UserInfoField[],
@@ -100,3 +123,20 @@ export const clearSavedUserInfoValues = <Field extends UserInfoField>(
 
     return { ...nextValues, [field]: "" };
   }, values);
+
+export const getInitialUserInfoPrefillState = <Field extends UserInfoField>(
+  fields: readonly Field[],
+) => {
+  const savedUserInfo = getSavedUserInfo();
+  const emptyUserInfoValues = createEmptyUserInfoValues(fields);
+  const isUsingSavedUserInfo =
+    getUserInfoPrefillPreference() && hasSavedUserInfo(savedUserInfo, fields);
+
+  return {
+    savedUserInfo,
+    isUsingSavedUserInfo,
+    userInfoValues: isUsingSavedUserInfo
+      ? applySavedUserInfoValues(emptyUserInfoValues, savedUserInfo, fields)
+      : emptyUserInfoValues,
+  };
+};
