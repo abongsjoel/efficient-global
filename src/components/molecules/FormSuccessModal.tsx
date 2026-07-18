@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "../atoms/Button";
 
 type FormSuccessModalProps = {
@@ -6,27 +7,38 @@ type FormSuccessModalProps = {
   title: string;
   titleId: string;
   children: ReactNode;
-  onGoHome: () => void;
   onClose: () => void;
   onContinue: () => void;
   continueLabel?: string;
   homeLabel?: string;
 };
 
+const MailSuccessIcon = () => (
+  <span aria-hidden="true" className="mail-success-icon">
+    <span className="mail-success-card" />
+    <span className="mail-success-envelope" />
+  </span>
+);
+
 const FormSuccessModal = ({
   isOpen,
   title,
   titleId,
   children,
-  onGoHome,
   onClose,
   onContinue,
   continueLabel = "Continue",
   homeLabel = "Back to Home",
 }: FormSuccessModalProps) => {
+  const navigate = useNavigate();
+
   if (!isOpen) {
     return null;
   }
+
+  const handleGoHome = () => {
+    navigate("/", { state: { scrollTo: "hero" } });
+  };
 
   return (
     <div
@@ -41,18 +53,7 @@ const FormSuccessModal = ({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-          <svg
-            aria-hidden="true"
-            className="h-7 w-7"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2.5"
-            viewBox="0 0 24 24"
-          >
-            <path d="m5 13 4 4L19 7" />
-          </svg>
+          <MailSuccessIcon />
         </div>
         <h3
           id={titleId}
@@ -62,7 +63,7 @@ const FormSuccessModal = ({
         </h3>
         <p className="mt-3 text-sm leading-6 text-slate-600">{children}</p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <Button onClick={onGoHome} className="w-full">
+          <Button onClick={handleGoHome} className="w-full">
             {homeLabel}
           </Button>
           <Button variant="inverse" onClick={onContinue} className="w-full">

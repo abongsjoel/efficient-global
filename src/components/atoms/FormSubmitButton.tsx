@@ -3,11 +3,15 @@ import { cx } from "./formFieldStyles";
 
 interface FormSubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
+  isLoading?: boolean;
+  loadingLabel?: string;
 }
 
 const FormSubmitButton = ({
   children,
   className,
+  isLoading = false,
+  loadingLabel = "Sending",
   type = "submit",
   ...props
 }: FormSubmitButtonProps) => (
@@ -19,7 +23,17 @@ const FormSubmitButton = ({
     )}
     {...props}
   >
-    {children}
+    {isLoading ? (
+      <>
+        <span
+          aria-hidden="true"
+          className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950 group-hover:border-white/30 group-hover:border-t-white"
+        />
+        <span className="sr-only">{loadingLabel}</span>
+      </>
+    ) : (
+      children
+    )}
   </button>
 );
 

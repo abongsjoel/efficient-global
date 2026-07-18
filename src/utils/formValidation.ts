@@ -24,6 +24,31 @@ const phoneCharacterPattern = /^\+?[0-9\s().-]+$/;
 const getStringValue = (value: FormDataEntryValue | null) =>
   typeof value === "string" ? value.trim() : "";
 
+const padDatePart = (value: number) => String(value).padStart(2, "0");
+
+const getCurrentMinuteStart = () => {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  return now;
+};
+
+export const getCurrentDateTimeLocalValue = () => {
+  const now = getCurrentMinuteStart();
+  const year = now.getFullYear();
+  const month = padDatePart(now.getMonth() + 1);
+  const day = padDatePart(now.getDate());
+  const hours = padDatePart(now.getHours());
+  const minutes = padDatePart(now.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const getDateTimeLocalValueDate = (value: string) => {
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 export const validateContactFields = (formData: FormData) => {
   const email = getStringValue(formData.get("email"));
   const phone = getStringValue(formData.get("phone"));
@@ -68,6 +93,7 @@ export const validateRequestInformationFields = (formData: FormData) => {
 
 export const validateDeliveryRequestFields = (formData: FormData) => {
   const errors: DeliveryRequestFieldErrors = {};
+  const datetime = getStringValue(formData.get("datetime"));
   const requiredFields: Array<{
     name: keyof DeliveryRequestFieldErrors;
     message: string;
@@ -85,6 +111,16 @@ export const validateDeliveryRequestFields = (formData: FormData) => {
       errors[name] = message;
     }
   });
+
+  if (datetime) {
+    const requestedDate = getDateTimeLocalValueDate(datetime);
+
+    if (!requestedDate) {
+      errors.datetime = "Enter a valid date and time.";
+    } else if (requestedDate < getCurrentMinuteStart()) {
+      errors.datetime = "Select a date and time that is not in the past.";
+    }
+  }
 
   return {
     ...errors,

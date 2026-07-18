@@ -1,12 +1,27 @@
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import FormSubmitButton from "../atoms/FormSubmitButton";
 import Input from "../atoms/Input";
 import TextArea from "../atoms/TextArea";
 import FormSuccessModal from "../molecules/FormSuccessModal";
 import FormShell from "../molecules/FormShell";
+import UserInfoPrefillToggle from "../molecules/UserInfoPrefillToggle";
 import { apiBaseUrl } from "../../utils/api";
+import {
+  getFormSuggestions,
+  saveFormSuggestions,
+} from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
+import {
+  applySavedUserInfoValues,
+  clearSavedUserInfoValues,
+  createEmptyUserInfoValues,
+  getInitialUserInfoPrefillState,
+  hasSavedUserInfo,
+  saveUserInfoPrefillPreference,
+  getSavedUserInfo,
+  saveUserInfo,
+  type UserInfoField,
+} from "../../utils/userInfoPrefill";
 import {
   type RequestInformationFieldErrors,
   validateRequestInformationFields,
@@ -19,6 +34,20 @@ const requestInformationFieldOrder: Array<keyof RequestInformationFieldErrors> =
   "message",
 ];
 
+const requestInformationSuggestionFields = [
+  "name",
+  "email",
+  "phone",
+  "organization",
+] as const;
+
+const requestInformationUserInfoFields = [
+  "name",
+  "email",
+  "phone",
+  "organization",
+] as const satisfies readonly UserInfoField[];
+
 type RequestInformationResponse = {
   message?: string;
   errors?: RequestInformationFieldErrors;
@@ -27,12 +56,26 @@ type RequestInformationResponse = {
 const requestInformationEndpoint = `${apiBaseUrl}/api/request-information`;
 
 const RequestInformationForm = () => {
-  const navigate = useNavigate();
+  const [initialUserInfoPrefillState] = useState(() =>
+    getInitialUserInfoPrefillState(requestInformationUserInfoFields),
+  );
   const [errors, setErrors] = useState<RequestInformationFieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
+  const [savedUserInfo, setSavedUserInfo] = useState(
+    initialUserInfoPrefillState.savedUserInfo,
+  );
+  const [isUsingSavedUserInfo, setIsUsingSavedUserInfo] = useState(
+    initialUserInfoPrefillState.isUsingSavedUserInfo,
+  );
+  const [userInfoValues, setUserInfoValues] = useState(
+    initialUserInfoPrefillState.userInfoValues,
+  );
+  const [suggestions, setSuggestions] = useState(() =>
+    getFormSuggestions(requestInformationSuggestionFields),
+  );
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -44,6 +87,39 @@ const RequestInformationForm = () => {
       delete nextErrors[field];
       return nextErrors;
     });
+  };
+
+  const updateUserInfoValue =
+    (field: (typeof requestInformationUserInfoFields)[number]) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.value;
+
+      setUserInfoValues((currentValues) => ({
+        ...currentValues,
+        [field]: value,
+      }));
+
+      if (field !== "organization") {
+        clearFieldError(field);
+      }
+    };
+
+  const handleUserInfoPrefillToggle = (checked: boolean) => {
+    saveUserInfoPrefillPreference(checked);
+    setIsUsingSavedUserInfo(checked);
+    setUserInfoValues((currentValues) =>
+      checked
+        ? applySavedUserInfoValues(
+            currentValues,
+            savedUserInfo,
+            requestInformationUserInfoFields,
+          )
+        : clearSavedUserInfoValues(
+            currentValues,
+            savedUserInfo,
+            requestInformationUserInfoFields,
+          ),
+    );
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -99,6 +175,23 @@ const RequestInformationForm = () => {
       }
 
       setSubmittedName(name);
+      saveFormSuggestions(requestInformationSuggestionFields, data);
+      saveUserInfo(data);
+      const nextSavedUserInfo = getSavedUserInfo();
+      const nextEmptyUserInfoValues = createEmptyUserInfoValues(
+        requestInformationUserInfoFields,
+      );
+      const nextUserInfoValues = isUsingSavedUserInfo
+        ? applySavedUserInfoValues(
+            nextEmptyUserInfoValues,
+            nextSavedUserInfo,
+            requestInformationUserInfoFields,
+          )
+        : nextEmptyUserInfoValues;
+
+      setSuggestions(getFormSuggestions(requestInformationSuggestionFields));
+      setSavedUserInfo(nextSavedUserInfo);
+      setUserInfoValues(nextUserInfoValues);
       form.reset();
       setErrors({});
       setIsConfirmationOpen(true);
@@ -119,6 +212,10 @@ const RequestInformationForm = () => {
   };
 
   const submittedDisplayName = submittedName.trim() || "there";
+  const canUseSavedUserInfo = hasSavedUserInfo(
+    savedUserInfo,
+    requestInformationUserInfoFields,
+  );
 
   return (
     <FormShell
@@ -135,27 +232,41 @@ const RequestInformationForm = () => {
       >
         <input type="hidden" name="source" value="request-information" />
 
+        {canUseSavedUserInfo ? (
+          <div className="flex justify-end">
+            <UserInfoPrefillToggle
+              checked={isUsingSavedUserInfo}
+              onChange={handleUserInfoPrefillToggle}
+            />
+          </div>
+        ) : null}
+
         <div className="grid gap-6 sm:grid-cols-2">
           <Input
             label="Name"
             name="name"
             type="text"
+            value={userInfoValues.name}
+            autoComplete="name"
             placeholder="Your name"
             required
             error={errors.name}
-            onChange={() => clearFieldError("name")}
+            suggestions={suggestions.name}
+            onChange={updateUserInfoValue("name")}
           />
 
           <Input
             label="Email"
             name="email"
             type="text"
+            value={userInfoValues.email}
             inputMode="email"
             autoComplete="email"
             placeholder="you@example.com"
             required
             error={errors.email}
-            onChange={() => clearFieldError("email")}
+            suggestions={suggestions.email}
+            onChange={updateUserInfoValue("email")}
           />
         </div>
 
@@ -164,19 +275,25 @@ const RequestInformationForm = () => {
             label="Phone"
             name="phone"
             type="tel"
+            value={userInfoValues.phone}
             inputMode="tel"
             autoComplete="tel"
             placeholder="(123) 456-7890"
             required
             error={errors.phone}
-            onChange={() => clearFieldError("phone")}
+            suggestions={suggestions.phone}
+            onChange={updateUserInfoValue("phone")}
           />
 
           <Input
             label="Organization"
             name="organization"
             type="text"
+            value={userInfoValues.organization}
+            autoComplete="organization"
             placeholder="Hospital, clinic, lab, or company"
+            suggestions={suggestions.organization}
+            onChange={updateUserInfoValue("organization")}
           />
         </div>
 
@@ -199,8 +316,8 @@ const RequestInformationForm = () => {
           </p>
         ) : null}
 
-        <FormSubmitButton disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : "Send Message"}
+        <FormSubmitButton disabled={isSubmitting} isLoading={isSubmitting}>
+          Send Message
         </FormSubmitButton>
       </form>
 
@@ -208,7 +325,6 @@ const RequestInformationForm = () => {
         isOpen={isConfirmationOpen}
         title="Request Received"
         titleId="request-information-success-title"
-        onGoHome={() => navigate("/")}
         onClose={handleSubmitAnotherRequest}
         onContinue={handleSubmitAnotherRequest}
       >
