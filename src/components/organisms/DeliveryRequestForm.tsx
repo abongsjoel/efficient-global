@@ -2,6 +2,7 @@ import {
   useState,
   type ChangeEvent,
   type FormEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import Dropdown from "../atoms/Dropdown";
@@ -91,7 +92,7 @@ const DeliveryRequestForm = () => {
   const [userInfoValues, setUserInfoValues] = useState(
     initialUserInfoPrefillState.userInfoValues,
   );
-  const [minimumDateTime, setMinimumDateTime] = useState(
+  const [minimumDateTime] = useState(
     getCurrentDateTimeLocalValue,
   );
   const [suggestions, setSuggestions] = useState(() =>
@@ -138,6 +139,18 @@ const DeliveryRequestForm = () => {
             deliveryRequestUserInfoFields,
           ),
     );
+  };
+
+  const handleDateTimePickerClick = (event: MouseEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+
+    input.min = getCurrentDateTimeLocalValue();
+
+    try {
+      input.showPicker?.();
+    } catch {
+      // Some browsers either do not support showPicker or restrict it.
+    }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -283,9 +296,9 @@ const DeliveryRequestForm = () => {
               type="datetime-local"
               required
               min={minimumDateTime}
-              className="invalid:text-slate-400"
+              className="invalid:text-slate-400 [color-scheme:light]"
               error={errors.datetime}
-              onFocus={() => setMinimumDateTime(getCurrentDateTimeLocalValue())}
+              onClick={handleDateTimePickerClick}
               onChange={() => clearFieldError("datetime")}
             />
 
