@@ -1,5 +1,9 @@
 export type ContactFieldErrors = Partial<Record<"email" | "phone", string>>;
 
+export type AdminLoginFieldErrors = Partial<
+  Record<"email" | "password", string>
+>;
+
 export type RequestInformationFieldErrors = Partial<
   Record<"name" | "email" | "phone" | "message", string>
 >;
@@ -69,6 +73,23 @@ export const validateContactFields = (formData: FormData) => {
     phoneDigits.length > 15
   ) {
     errors.phone = "Enter a valid phone number.";
+  }
+
+  return errors;
+};
+
+export const validateAdminLoginFields = (formData: FormData) => {
+  const errors: AdminLoginFieldErrors = {};
+  const email = getStringValue(formData.get("email"));
+
+  if (!email) {
+    errors.email = "Enter an email address.";
+  } else if (!emailPattern.test(email)) {
+    errors.email = "Enter a valid email address.";
+  }
+
+  if (!getStringValue(formData.get("password"))) {
+    errors.password = "Enter your password.";
   }
 
   return errors;

@@ -3,6 +3,7 @@ interface ButtonProps {
   onClick?: () => void;
   type?: "button" | "submit" | "reset";
   className?: string;
+  disabled?: boolean;
   variant?: "primary" | "inverse";
 }
 
@@ -11,9 +12,11 @@ const Button = ({
   onClick,
   type = "button",
   className = "",
+  disabled = false,
   variant = "primary",
 }: ButtonProps) => {
-  const baseStyles = "px-6 py-3 rounded font-semibold transition-colors";
+  const baseStyles =
+    "px-6 py-3 rounded font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
   const variantStyles =
     variant === "inverse"
       ? "bg-white text-primary-200 border border-primary-200 hover:bg-primary-100 hover:text-white"
@@ -23,6 +26,7 @@ const Button = ({
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`${baseStyles} ${variantStyles} ${className}`}
     >
       {children}

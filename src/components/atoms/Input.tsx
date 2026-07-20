@@ -7,6 +7,7 @@ import {
   type ChangeEvent,
   type FocusEvent,
   type InputHTMLAttributes,
+  type ReactNode,
 } from "react";
 import {
   cx,
@@ -22,6 +23,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   labelClassName?: string;
   suggestions?: string[];
+  trailingElement?: ReactNode;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -35,6 +37,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     "aria-invalid": ariaInvalid,
     required,
     suggestions = [],
+    trailingElement,
     onBlur,
     onChange,
     onFocus,
@@ -133,6 +136,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className={cx(
             formControlStyles,
             error && formErrorControlStyles,
+            trailingElement && "pr-12",
             className
           )}
           onBlur={handleBlur}
@@ -140,6 +144,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           onFocus={handleFocus}
           {...props}
         />
+
+        {trailingElement ? (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {trailingElement}
+          </div>
+        ) : null}
 
         {showSuggestions ? (
           <div
