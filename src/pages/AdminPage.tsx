@@ -1,10 +1,12 @@
 import Button from "../components/atoms/Button";
+import type { Admin } from "../utils/adminAuth";
 
 type AdminPageProps = {
+  admin?: Admin;
   onLogout?: () => void;
 };
 
-const AdminPage = ({ onLogout }: AdminPageProps) => (
+const AdminPage = ({ admin, onLogout }: AdminPageProps) => (
   <section className="min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-16 text-slate-950 lg:px-10">
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
@@ -18,6 +20,11 @@ const AdminPage = ({ onLogout }: AdminPageProps) => (
           <p className="mt-5 text-base leading-7 text-slate-600">
             This area is reserved for Efficient Global administrators.
           </p>
+          {admin ? (
+            <p className="mt-3 text-sm text-slate-500">
+              Signed in as {admin.name} ({admin.role.replace(/_/g, " ")}).
+            </p>
+          ) : null}
         </div>
 
         {onLogout ? (

@@ -1,21 +1,57 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminLoginPage from "../../pages/AdminLoginPage";
 import AdminPage from "../../pages/AdminPage";
-import { isAdminAuthenticated, logoutAdmin } from "../../utils/adminAuth";
+import {
+  getCurrentAdmin,
+  logoutAdmin,
+  type Admin,
+} from "../../utils/adminAuth";
 
 const AdminRoute = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(isAdminAuthenticated);
+  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-  if (!isLoggedIn) {
-    return <AdminLoginPage onLogin={() => setIsLoggedIn(true)} />;
-  }
+  useEffect(() => {
+    let isMounted = true;
 
-  const handleLogout = () => {
-    logoutAdmin();
-    setIsLoggedIn(false);
+    const restoreSession = async () => {
+      const currentAdmin = await getCurrentAdmin();
+
+      if (isMounted) {
+        setAdmin(currentAdmin);
+        setIsCheckingSession(false);
+      }
+    };
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await logoutAdmin();
+    setAdmin(null);
   };
 
-  return <AdminPage onLogout={handleLogout} />;
+  if (isCheckingSession) {
+    return (
+      <section className="min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-16 text-slate-950 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-slate-600 shadow-xl shadow-slate-900/5">
+            Checking admin session...
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!admin) {
+    return <AdminLoginPage onLogin={setAdmin} />;
+  }
+
+  return <AdminPage admin={admin} onLogout={handleLogout} />;
 };
 
 export default AdminRoute;

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
-import Button from "../components/atoms/Button";
+import FormSubmitButton from "../components/atoms/FormSubmitButton";
 import Input from "../components/atoms/Input";
-import { loginAdmin } from "../utils/adminAuth";
+import { loginAdmin, type Admin } from "../utils/adminAuth";
 import { scrollToFirstErrorField } from "../utils/formFocus";
 import {
   type AdminLoginFieldErrors,
@@ -9,11 +9,11 @@ import {
 } from "../utils/formValidation";
 
 type AdminLoginPageProps = {
-  onLogin: () => void;
+  onLogin: (admin: Admin) => void;
 };
 
 const adminLoginFieldOrder: Array<keyof AdminLoginFieldErrors> = [
-  "username",
+  "email",
   "password",
 ];
 
@@ -45,9 +45,10 @@ const EyeIcon = ({ isVisible }: { isVisible: boolean }) => (
 );
 
 const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<AdminLoginFieldErrors>({});
   const [loginError, setLoginError] = useState("");
 
@@ -63,7 +64,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
     });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -82,14 +83,26 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
       return;
     }
 
-    const result = loginAdmin({ username, password });
+    setIsSubmitting(true);
+    const result = await loginAdmin({ email, password });
+    setIsSubmitting(false);
 
     if (!result.success) {
+      if (result.errors) {
+        setErrors(result.errors);
+        scrollToFirstErrorField(
+          form,
+          adminLoginFieldOrder.filter(
+            (fieldName) => result.errors?.[fieldName],
+          ),
+        );
+      }
+
       setLoginError(result.message || "We could not sign you in.");
       return;
     }
 
-    onLogin();
+    onLogin(result.admin);
   };
 
   return (
@@ -106,15 +119,17 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
             <Input
-              label="Username"
-              name="username"
+              label="Email"
+              name="email"
               type="text"
-              autoComplete="username"
-              value={username}
-              error={errors.username}
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              error={errors.email}
               onChange={(event) => {
-                setUsername(event.currentTarget.value);
-                clearFieldError("username");
+                setEmail(event.currentTarget.value);
+                clearFieldError("email");
+                setLoginError("");
               }}
               required
             />
@@ -129,6 +144,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
               onChange={(event) => {
                 setPassword(event.currentTarget.value);
                 clearFieldError("password");
+                setLoginError("");
               }}
               trailingElement={
                 <button
@@ -157,9 +173,13 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
               </p>
             ) : null}
 
-            <Button type="submit" className="w-full rounded-full">
+            <FormSubmitButton
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
+              loadingLabel="Signing in"
+            >
               Sign in
-            </Button>
+            </FormSubmitButton>
           </form>
         </div>
       </div>

@@ -1,42 +1,111 @@
-const adminSessionStorageKey = "efficient-global-admin-session";
+import { apiBaseUrl } from "./api";
+import type { AdminLoginFieldErrors } from "./formValidation";
 
-type AdminLoginCredentials = {
-  username: string;
+export type Admin = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+};
+
+export type AdminLoginCredentials = {
+  email: string;
   password: string;
 };
 
-type AdminLoginResult = {
-  success: boolean;
+type AdminAuthResponse = {
+  admin?: Admin;
+  errors?: AdminLoginFieldErrors;
   message?: string;
 };
 
-export const isAdminAuthenticated = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
+export type AdminLoginResult =
+  | {
+      success: true;
+      admin: Admin;
+    }
+  | {
+      success: false;
+      errors?: AdminLoginFieldErrors;
+      message: string;
+    };
 
-  return window.localStorage.getItem(adminSessionStorageKey) === "true";
+const adminEndpoint = `${apiBaseUrl}/api/admin`;
+
+const parseAdminResponse = async (response: Response) => {
+  try {
+    return (await response.json()) as AdminAuthResponse;
+  } catch {
+    return {};
+  }
 };
 
-export const loginAdmin = ({
-  username,
+const getFallbackErrorMessage = (status: number) =>
+  status === 401
+    ? "Invalid email or password."
+    : "We could not sign you in right now. Please try again.";
+
+export const loginAdmin = async ({
+  email,
   password,
-}: AdminLoginCredentials): AdminLoginResult => {
-  if (!username.trim() || !password.trim()) {
+}: AdminLoginCredentials): Promise<AdminLoginResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        errors: data.errors,
+        message: data.message || getFallbackErrorMessage(response.status),
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+    };
+  } catch {
     return {
       success: false,
-      message: "Enter a username and password.",
+      message: "We could not reach the server. Please try again in a moment.",
     };
   }
-
-  window.localStorage.setItem(adminSessionStorageKey, "true");
-  return { success: true };
 };
 
-export const logoutAdmin = () => {
-  if (typeof window === "undefined") {
-    return;
-  }
+export const getCurrentAdmin = async () => {
+  try {
+    const response = await fetch(`${adminEndpoint}/me`, {
+      credentials: "include",
+    });
 
-  window.localStorage.removeItem(adminSessionStorageKey);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await parseAdminResponse(response);
+
+    return data.admin || null;
+  } catch {
+    return null;
+  }
+};
+
+export const logoutAdmin = async () => {
+  try {
+    await fetch(`${adminEndpoint}/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    // The local UI should still return to the login screen if logout fails.
+  }
 };

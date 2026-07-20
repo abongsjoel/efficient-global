@@ -1,7 +1,7 @@
 export type ContactFieldErrors = Partial<Record<"email" | "phone", string>>;
 
 export type AdminLoginFieldErrors = Partial<
-  Record<"username" | "password", string>
+  Record<"email" | "password", string>
 >;
 
 export type RequestInformationFieldErrors = Partial<
@@ -80,9 +80,12 @@ export const validateContactFields = (formData: FormData) => {
 
 export const validateAdminLoginFields = (formData: FormData) => {
   const errors: AdminLoginFieldErrors = {};
+  const email = getStringValue(formData.get("email"));
 
-  if (!getStringValue(formData.get("username"))) {
-    errors.username = "Enter your username.";
+  if (!email) {
+    errors.email = "Enter an email address.";
+  } else if (!emailPattern.test(email)) {
+    errors.email = "Enter a valid email address.";
   }
 
   if (!getStringValue(formData.get("password"))) {
