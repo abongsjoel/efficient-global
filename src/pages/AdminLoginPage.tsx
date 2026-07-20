@@ -1,12 +1,6 @@
 import { useState, type FormEvent } from "react";
 import Button from "../components/atoms/Button";
-import {
-  cx,
-  formControlStyles,
-  formErrorControlStyles,
-  formLabelStyles,
-  renderErrorMessage,
-} from "../components/atoms/formFieldStyles";
+import Input from "../components/atoms/Input";
 import { loginAdmin } from "../utils/adminAuth";
 import { scrollToFirstErrorField } from "../utils/formFocus";
 import {
@@ -70,9 +64,6 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
     onLogin();
   };
 
-  const usernameErrorId = errors.username ? "admin-username-error" : undefined;
-  const passwordErrorId = errors.password ? "admin-password-error" : undefined;
-
   return (
     <section className="min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-16 text-slate-950 lg:px-10">
       <div className="mx-auto flex max-w-7xl justify-center">
@@ -86,57 +77,33 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
-            <div className={formLabelStyles}>
-              <label htmlFor="admin-username">Username</label>
-              <input
-                id="admin-username"
-                aria-describedby={usernameErrorId}
-                aria-invalid={errors.username ? true : undefined}
-                className={cx(
-                  formControlStyles,
-                  errors.username && formErrorControlStyles,
-                  "mt-2",
-                )}
-                name="username"
-                type="text"
-                autoComplete="username"
-                value={username}
-                onChange={(event) => {
-                  setUsername(event.currentTarget.value);
-                  clearFieldError("username");
-                }}
-                required
-              />
-              {errors.username && usernameErrorId
-                ? renderErrorMessage(usernameErrorId, errors.username)
-                : null}
-            </div>
+            <Input
+              label="Username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              value={username}
+              error={errors.username}
+              onChange={(event) => {
+                setUsername(event.currentTarget.value);
+                clearFieldError("username");
+              }}
+              required
+            />
 
-            <div className={formLabelStyles}>
-              <label htmlFor="admin-password">Password</label>
-              <input
-                id="admin-password"
-                aria-describedby={passwordErrorId}
-                aria-invalid={errors.password ? true : undefined}
-                className={cx(
-                  formControlStyles,
-                  errors.password && formErrorControlStyles,
-                  "mt-2",
-                )}
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.currentTarget.value);
-                  clearFieldError("password");
-                }}
-                required
-              />
-              {errors.password && passwordErrorId
-                ? renderErrorMessage(passwordErrorId, errors.password)
-                : null}
-            </div>
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              error={errors.password}
+              onChange={(event) => {
+                setPassword(event.currentTarget.value);
+                clearFieldError("password");
+              }}
+              required
+            />
 
             {loginError ? (
               <p
