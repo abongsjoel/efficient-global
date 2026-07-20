@@ -17,9 +17,37 @@ const adminLoginFieldOrder: Array<keyof AdminLoginFieldErrors> = [
   "password",
 ];
 
+const EyeIcon = ({ isVisible }: { isVisible: boolean }) => (
+  <svg
+    aria-hidden="true"
+    className="h-5 w-5"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    {isVisible ? (
+      <>
+        <path d="M3 3l18 18" />
+        <path d="M10.58 10.58a2 2 0 002.83 2.83" />
+        <path d="M9.88 4.24A10.7 10.7 0 0112 4c5 0 8.5 4 10 8a14 14 0 01-2.09 3.54" />
+        <path d="M6.61 6.61A13.1 13.1 0 002 12c1.5 4 5 8 10 8a10.6 10.6 0 005.39-1.48" />
+      </>
+    ) : (
+      <>
+        <path d="M2 12s3.5-8 10-8 10 8 10 8-3.5 8-10 8S2 12 2 12z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    )}
+  </svg>
+);
+
 const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errors, setErrors] = useState<AdminLoginFieldErrors>({});
   const [loginError, setLoginError] = useState("");
 
@@ -94,7 +122,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
             <Input
               label="Password"
               name="password"
-              type="password"
+              type={isPasswordVisible ? "text" : "password"}
               autoComplete="current-password"
               value={password}
               error={errors.password}
@@ -102,6 +130,21 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
                 setPassword(event.currentTarget.value);
                 clearFieldError("password");
               }}
+              trailingElement={
+                <button
+                  type="button"
+                  aria-label={
+                    isPasswordVisible ? "Hide password" : "Show password"
+                  }
+                  aria-pressed={isPasswordVisible}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
+                  onClick={() =>
+                    setIsPasswordVisible((currentValue) => !currentValue)
+                  }
+                >
+                  <EyeIcon isVisible={isPasswordVisible} />
+                </button>
+              }
               required
             />
 
