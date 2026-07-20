@@ -4,7 +4,7 @@ import {
   formControlStyles,
   formLabelStyles,
 } from "../components/atoms/formFieldStyles";
-import { isAdminLoginConfigured, loginAdmin } from "../utils/adminAuth";
+import { loginAdmin } from "../utils/adminAuth";
 
 type AdminLoginPageProps = {
   onLogin: () => void;
@@ -14,7 +14,6 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const isLoginConfigured = isAdminLoginConfigured();
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -78,11 +77,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
               </p>
             ) : null}
 
-            <Button
-              type="submit"
-              className="w-full rounded-full"
-              disabled={!isLoginConfigured}
-            >
+            <Button type="submit" className="w-full rounded-full">
               Sign in
             </Button>
           </form>
