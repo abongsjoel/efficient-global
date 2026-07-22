@@ -233,12 +233,12 @@ const Menu = () => {
                   <p className="text-sm font-semibold text-slate-950">
                     {admin.name}
                   </p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-primary-200">
+                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                    {admin.email}
+                  </p>
+                  <p className="mt-3 text-xs uppercase tracking-[0.2em] text-primary-200">
                     {admin.role.replace(/_/g, " ")}
                   </p>
-                  <div className="mt-3 space-y-1 text-sm">
-                    <p className="truncate text-slate-500">{admin.email}</p>
-                  </div>
                 </div>
 
                 <div className="space-y-1 border-b border-slate-100 py-3 text-sm">
