@@ -1,10 +1,26 @@
 import { type MouseEvent, useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAdminAuth } from "../../contexts/useAdminAuth";
 import Hamburger from "../atoms/Hamburger";
+import type { Admin } from "../../utils/adminAuth";
+
+const getAdminInitials = (admin: Admin) => {
+  const displayName = admin.name || admin.username || admin.email;
+  const nameParts = displayName.trim().split(/\s+/).filter(Boolean);
+
+  if (nameParts.length > 1) {
+    return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+  }
+
+  const fallback = nameParts[0] || admin.email.split("@")[0] || "A";
+
+  return fallback.slice(0, 2).toUpperCase();
+};
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
+  const { admin } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
@@ -150,6 +166,19 @@ const Menu = () => {
             Get In Touch
           </a>
         </li>
+        {admin ? (
+          <li className="flex justify-center md:block">
+            <Link
+              to="/admin"
+              aria-label={`Open admin dashboard for ${admin.name}`}
+              title={admin.name}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-950 text-sm font-bold uppercase text-white shadow-sm ring-2 ring-primary-200/25 transition hover:bg-primary-200 hover:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30"
+              onClick={() => setIsOpen(false)}
+            >
+              {getAdminInitials(admin)}
+            </Link>
+          </li>
+        ) : null}
       </ul>
     </nav>
   );
