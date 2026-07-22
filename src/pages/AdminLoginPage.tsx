@@ -13,7 +13,7 @@ type AdminLoginPageProps = {
 };
 
 const adminLoginFieldOrder: Array<keyof AdminLoginFieldErrors> = [
-  "email",
+  "identifier",
   "password",
 ];
 
@@ -45,7 +45,7 @@ const EyeIcon = ({ isVisible }: { isVisible: boolean }) => (
 );
 
 const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [keepMeLoggedIn, setKeepMeLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -83,7 +83,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
     }
 
     setIsSubmitting(true);
-    const result = await loginAdmin({ email, keepMeLoggedIn, password });
+    const result = await loginAdmin({ identifier, keepMeLoggedIn, password });
     setIsSubmitting(false);
 
     if (!result.success) {
@@ -118,16 +118,15 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
             <Input
-              label="Email"
-              name="email"
+              label="Username/Email"
+              name="identifier"
               type="text"
-              inputMode="email"
-              autoComplete="email"
-              value={email}
-              error={errors.email}
+              autoComplete="username"
+              value={identifier}
+              error={errors.identifier}
               onChange={(event) => {
-                setEmail(event.currentTarget.value);
-                clearFieldError("email");
+                setIdentifier(event.currentTarget.value);
+                clearFieldError("identifier");
                 setLoginError("");
               }}
               required

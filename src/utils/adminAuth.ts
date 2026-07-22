@@ -7,10 +7,11 @@ export type Admin = {
   email: string;
   role: string;
   status: string;
+  username?: string;
 };
 
 export type AdminLoginCredentials = {
-  email: string;
+  identifier: string;
   keepMeLoggedIn?: boolean;
   password: string;
 };
@@ -48,7 +49,7 @@ const getFallbackErrorMessage = (status: number) =>
     : "We could not sign you in right now. Please try again.";
 
 export const loginAdmin = async ({
-  email,
+  identifier,
   keepMeLoggedIn = false,
   password,
 }: AdminLoginCredentials): Promise<AdminLoginResult> => {
@@ -59,7 +60,7 @@ export const loginAdmin = async ({
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ email, keepMeLoggedIn, password }),
+      body: JSON.stringify({ identifier, keepMeLoggedIn, password }),
     });
     const data = await parseAdminResponse(response);
 
