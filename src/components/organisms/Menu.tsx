@@ -239,32 +239,19 @@ const Menu = () => {
                   <p className="mt-1 text-xs uppercase tracking-[0.2em] text-primary-200">
                     {admin.role.replace(/_/g, " ")}
                   </p>
-                </div>
-
-                <div className="space-y-3 py-4 text-sm">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      Username
-                    </p>
-                    <p className="mt-1 truncate font-medium text-slate-700">
+                  <div className="mt-3 space-y-1 text-sm">
+                    <p className="truncate font-medium text-slate-700">
                       {getAdminUsername(admin)}
                     </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      Email
-                    </p>
-                    <p className="mt-1 truncate font-medium text-slate-700">
-                      {admin.email}
-                    </p>
+                    <p className="truncate text-slate-500">{admin.email}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
+                <div className="space-y-1 border-b border-slate-100 py-3 text-sm">
                   <Link
                     to="/admin"
                     role="menuitem"
-                    className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
+                    className="block rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
                     onClick={() => {
                       setIsAdminMenuOpen(false);
                       setIsOpen(false);
@@ -272,10 +259,24 @@ const Menu = () => {
                   >
                     Dashboard
                   </Link>
+                  <Link
+                    to="/admin"
+                    role="menuitem"
+                    className="block rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
+                    onClick={() => {
+                      setIsAdminMenuOpen(false);
+                      setIsOpen(false);
+                    }}
+                  >
+                    Profile
+                  </Link>
+                </div>
+
+                <div className="pt-3">
                   <button
                     type="button"
                     role="menuitem"
-                    className="flex-1 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200"
+                    className="w-full rounded-lg bg-red-50 px-3 py-2 text-left text-sm font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200"
                     onClick={handleLogout}
                   >
                     Logout
