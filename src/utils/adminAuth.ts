@@ -11,6 +11,7 @@ export type Admin = {
 
 export type AdminLoginCredentials = {
   email: string;
+  keepMeLoggedIn?: boolean;
   password: string;
 };
 
@@ -48,6 +49,7 @@ const getFallbackErrorMessage = (status: number) =>
 
 export const loginAdmin = async ({
   email,
+  keepMeLoggedIn = false,
   password,
 }: AdminLoginCredentials): Promise<AdminLoginResult> => {
   try {
@@ -57,7 +59,7 @@ export const loginAdmin = async ({
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, keepMeLoggedIn, password }),
     });
     const data = await parseAdminResponse(response);
 
