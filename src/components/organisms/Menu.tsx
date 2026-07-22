@@ -5,7 +5,7 @@ import Hamburger from "../atoms/Hamburger";
 import type { Admin } from "../../utils/adminAuth";
 
 const getAdminInitials = (admin: Admin) => {
-  const displayName = admin.name || admin.username || admin.email;
+  const displayName = admin.name || admin.email;
   const nameParts = displayName.trim().split(/\s+/).filter(Boolean);
 
   if (nameParts.length > 1) {
@@ -16,9 +16,6 @@ const getAdminInitials = (admin: Admin) => {
 
   return fallback.slice(0, 2).toUpperCase();
 };
-
-const getAdminUsername = (admin: Admin) =>
-  admin.username || admin.email.split("@")[0] || admin.name;
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -240,9 +237,6 @@ const Menu = () => {
                     {admin.role.replace(/_/g, " ")}
                   </p>
                   <div className="mt-3 space-y-1 text-sm">
-                    <p className="truncate font-medium text-slate-700">
-                      {getAdminUsername(admin)}
-                    </p>
                     <p className="truncate text-slate-500">{admin.email}</p>
                   </div>
                 </div>

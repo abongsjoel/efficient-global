@@ -7,7 +7,6 @@ export type Admin = {
   email: string;
   role: string;
   status: string;
-  username?: string;
 };
 
 export type AdminLoginCredentials = {
