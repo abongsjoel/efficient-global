@@ -254,7 +254,7 @@ const Menu = () => {
                     Dashboard
                   </Link>
                   <Link
-                    to="/admin"
+                    to="/admin/profile"
                     role="menuitem"
                     className="block rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
                     onClick={() => {

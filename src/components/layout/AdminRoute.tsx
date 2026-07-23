@@ -1,8 +1,13 @@
 import AdminLoginPage from "../../pages/AdminLoginPage";
 import AdminPage from "../../pages/AdminPage";
+import AdminProfilePage from "../../pages/AdminProfilePage";
 import { useAdminAuth } from "../../contexts/useAdminAuth";
 
-const AdminRoute = () => {
+type AdminRouteProps = {
+  view?: "dashboard" | "profile";
+};
+
+const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
   const {
     admin,
     isCheckingSession,
@@ -24,6 +29,12 @@ const AdminRoute = () => {
 
   if (!admin) {
     return <AdminLoginPage onLogin={loginAdminSession} />;
+  }
+
+  if (view === "profile") {
+    return (
+      <AdminProfilePage admin={admin} onLogout={logoutAdminSession} />
+    );
   }
 
   return <AdminPage admin={admin} onLogout={logoutAdminSession} />;
