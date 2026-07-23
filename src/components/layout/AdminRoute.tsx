@@ -12,7 +12,6 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
     admin,
     isCheckingSession,
     loginAdminSession,
-    logoutAdminSession,
   } = useAdminAuth();
 
   if (isCheckingSession) {
@@ -32,12 +31,10 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
   }
 
   if (view === "profile") {
-    return (
-      <AdminProfilePage admin={admin} onLogout={logoutAdminSession} />
-    );
+    return <AdminProfilePage admin={admin} />;
   }
 
-  return <AdminPage admin={admin} onLogout={logoutAdminSession} />;
+  return <AdminPage admin={admin} />;
 };
 
 export default AdminRoute;
