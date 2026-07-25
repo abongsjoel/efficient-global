@@ -13,7 +13,7 @@ type AdminLoginPageProps = {
 };
 
 const adminLoginFieldOrder: Array<keyof AdminLoginFieldErrors> = [
-  "email",
+  "identifier",
   "password",
 ];
 
@@ -45,7 +45,8 @@ const EyeIcon = ({ isVisible }: { isVisible: boolean }) => (
 );
 
 const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [keepMeLoggedIn, setKeepMeLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,15 +77,13 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
     if (Object.keys(validationErrors).length > 0) {
       scrollToFirstErrorField(
         form,
-        adminLoginFieldOrder.filter(
-          (fieldName) => validationErrors[fieldName],
-        ),
+        adminLoginFieldOrder.filter((fieldName) => validationErrors[fieldName]),
       );
       return;
     }
 
     setIsSubmitting(true);
-    const result = await loginAdmin({ email, password });
+    const result = await loginAdmin({ identifier, keepMeLoggedIn, password });
     setIsSubmitting(false);
 
     if (!result.success) {
@@ -119,16 +118,15 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
             <Input
-              label="Email"
-              name="email"
+              label="Username/Email"
+              name="identifier"
               type="text"
-              inputMode="email"
-              autoComplete="email"
-              value={email}
-              error={errors.email}
+              autoComplete="username"
+              value={identifier}
+              error={errors.identifier}
               onChange={(event) => {
-                setEmail(event.currentTarget.value);
-                clearFieldError("email");
+                setIdentifier(event.currentTarget.value);
+                clearFieldError("identifier");
                 setLoginError("");
               }}
               required
@@ -163,6 +161,18 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
               }
               required
             />
+
+            <label className="flex items-center gap-3 text-sm font-medium text-slate-600">
+              <input
+                type="checkbox"
+                checked={keepMeLoggedIn}
+                className="h-4 w-4 accent-primary-200"
+                onChange={(event) =>
+                  setKeepMeLoggedIn(event.currentTarget.checked)
+                }
+              />
+              Keep me logged in
+            </label>
 
             {loginError ? (
               <p

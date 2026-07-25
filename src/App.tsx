@@ -15,6 +15,10 @@ function App() {
             <Route index element={<Home />} />
             <Route path="contact" element={<Contact />} />
             <Route path="admin" element={<AdminRoute />} />
+            <Route
+              path="admin/profile"
+              element={<AdminRoute view="profile" />}
+            />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

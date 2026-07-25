@@ -1,39 +1,18 @@
-import { useEffect, useState } from "react";
 import AdminLoginPage from "../../pages/AdminLoginPage";
 import AdminPage from "../../pages/AdminPage";
-import {
-  getCurrentAdmin,
-  logoutAdmin,
-  type Admin,
-} from "../../utils/adminAuth";
+import AdminProfilePage from "../../pages/AdminProfilePage";
+import { useAdminAuth } from "../../contexts/useAdminAuth";
 
-const AdminRoute = () => {
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
+type AdminRouteProps = {
+  view?: "dashboard" | "profile";
+};
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const restoreSession = async () => {
-      const currentAdmin = await getCurrentAdmin();
-
-      if (isMounted) {
-        setAdmin(currentAdmin);
-        setIsCheckingSession(false);
-      }
-    };
-
-    restoreSession();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleLogout = async () => {
-    await logoutAdmin();
-    setAdmin(null);
-  };
+const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
+  const {
+    admin,
+    isCheckingSession,
+    loginAdminSession,
+  } = useAdminAuth();
 
   if (isCheckingSession) {
     return (
@@ -48,10 +27,14 @@ const AdminRoute = () => {
   }
 
   if (!admin) {
-    return <AdminLoginPage onLogin={setAdmin} />;
+    return <AdminLoginPage onLogin={loginAdminSession} />;
   }
 
-  return <AdminPage admin={admin} onLogout={handleLogout} />;
+  if (view === "profile") {
+    return <AdminProfilePage admin={admin} />;
+  }
+
+  return <AdminPage admin={admin} />;
 };
 
 export default AdminRoute;

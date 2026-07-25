@@ -1,12 +1,10 @@
-import Button from "../components/atoms/Button";
 import type { Admin } from "../utils/adminAuth";
 
 type AdminPageProps = {
   admin?: Admin;
-  onLogout?: () => void;
 };
 
-const AdminPage = ({ admin, onLogout }: AdminPageProps) => (
+const AdminPage = ({ admin }: AdminPageProps) => (
   <section className="min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-16 text-slate-950 lg:px-10">
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
@@ -26,16 +24,6 @@ const AdminPage = ({ admin, onLogout }: AdminPageProps) => (
             </p>
           ) : null}
         </div>
-
-        {onLogout ? (
-          <Button
-            variant="inverse"
-            className="shrink-0 rounded-full"
-            onClick={onLogout}
-          >
-            Sign out
-          </Button>
-        ) : null}
       </div>
     </div>
   </section>
