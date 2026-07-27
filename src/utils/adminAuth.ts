@@ -7,6 +7,7 @@ export type Admin = {
   email: string;
   role: string;
   status: string;
+  profileImage?: string;
 };
 
 export type AdminLoginCredentials = {
@@ -29,6 +30,17 @@ export type AdminLoginResult =
   | {
       success: false;
       errors?: AdminLoginFieldErrors;
+      message: string;
+    };
+
+export type AdminProfileImageResult =
+  | {
+      success: true;
+      admin: Admin;
+      message?: string;
+    }
+  | {
+      success: false;
       message: string;
     };
 
@@ -111,3 +123,70 @@ export const logoutAdmin = async () => {
     // The local UI should still return to the login screen if logout fails.
   }
 };
+
+export const updateAdminProfileImage = async (
+  profileImage: string,
+): Promise<AdminProfileImageResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/profile-image`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ profileImage }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        message:
+          data.message ||
+          "We could not update your profile image right now.",
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+      message: data.message,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "We could not reach the server. Please try again in a moment.",
+    };
+  }
+};
+
+export const removeAdminProfileImage =
+  async (): Promise<AdminProfileImageResult> => {
+    try {
+      const response = await fetch(`${adminEndpoint}/profile-image`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.admin) {
+        return {
+          success: false,
+          message:
+            data.message ||
+            "We could not remove your profile image right now.",
+        };
+      }
+
+      return {
+        success: true,
+        admin: data.admin,
+        message: data.message,
+      };
+    } catch {
+      return {
+        success: false,
+        message: "We could not reach the server. Please try again in a moment.",
+      };
+    }
+  };

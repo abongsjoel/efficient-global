@@ -8,7 +8,9 @@ import {
 import {
   getCurrentAdmin,
   logoutAdmin as requestAdminLogout,
+  removeAdminProfileImage as requestAdminProfileImageRemoval,
   type Admin,
+  updateAdminProfileImage as requestAdminProfileImageUpdate,
 } from "../utils/adminAuth";
 import { AdminAuthContext } from "./adminAuthContext";
 
@@ -48,14 +50,46 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
     setAdmin(null);
   }, []);
 
+  const updateAdminProfileImageSession = useCallback(
+    async (profileImage: string) => {
+      const result = await requestAdminProfileImageUpdate(profileImage);
+
+      if (result.success) {
+        setAdmin(result.admin);
+      }
+
+      return result;
+    },
+    [],
+  );
+
+  const removeAdminProfileImageSession = useCallback(async () => {
+    const result = await requestAdminProfileImageRemoval();
+
+    if (result.success) {
+      setAdmin(result.admin);
+    }
+
+    return result;
+  }, []);
+
   const value = useMemo(
     () => ({
       admin,
       isCheckingSession,
       loginAdminSession,
       logoutAdminSession,
+      removeAdminProfileImageSession,
+      updateAdminProfileImageSession,
     }),
-    [admin, isCheckingSession, loginAdminSession, logoutAdminSession],
+    [
+      admin,
+      isCheckingSession,
+      loginAdminSession,
+      logoutAdminSession,
+      removeAdminProfileImageSession,
+      updateAdminProfileImageSession,
+    ],
   );
 
   return (
