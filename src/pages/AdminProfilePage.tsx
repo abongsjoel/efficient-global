@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
+import Button from "../components/atoms/Button";
 import type { Admin, AdminProfileImageResult } from "../utils/adminAuth";
 
 type AdminProfilePageProps = {
@@ -281,13 +282,10 @@ const AdminProfilePage = ({
               <p className="mt-1 text-sm text-slate-500">{admin.email}</p>
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
-                <button
+                <Button
                   type="button"
-                  className={
-                    admin.profileImage
-                      ? "inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-primary-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20 disabled:cursor-not-allowed disabled:opacity-60"
-                      : "inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-primary-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20 disabled:cursor-not-allowed disabled:opacity-60"
-                  }
+                  size="sm"
+                  variant="link"
                   disabled={isSavingImage}
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -297,18 +295,19 @@ const AdminProfilePage = ({
                     : admin.profileImage
                       ? "Change photo"
                       : "Upload photo"}
-                </button>
+                </Button>
 
                 {admin.profileImage ? (
-                  <button
+                  <Button
                     type="button"
-                    className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-xs font-semibold text-red-700 transition hover:text-red-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                    size="sm"
+                    variant="dangerLink"
                     disabled={isSavingImage}
                     onClick={handleProfileImageRemove}
                   >
                     <TrashIcon />
                     Remove
-                  </button>
+                  </Button>
                 ) : null}
               </div>
 
