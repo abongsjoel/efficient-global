@@ -286,7 +286,7 @@ const AdminProfilePage = ({
                   className={
                     admin.profileImage
                       ? "inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-primary-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20 disabled:cursor-not-allowed disabled:opacity-60"
-                      : "inline-flex items-center gap-2 rounded-full bg-primary-200 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-sm shadow-primary-200/20 transition hover:bg-primary-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      : "inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-primary-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20 disabled:cursor-not-allowed disabled:opacity-60"
                   }
                   disabled={isSavingImage}
                   onClick={() => fileInputRef.current?.click()}
