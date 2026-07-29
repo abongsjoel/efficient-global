@@ -418,6 +418,13 @@ const ProfileImageCropModal = ({
               }}
             >
               <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-full"
+              >
+                <span className="absolute left-1/2 top-3 bottom-3 w-px -translate-x-1/2 bg-white/80 shadow-[0_0_3px_rgba(15,23,42,0.65)]" />
+                <span className="absolute left-3 right-3 top-1/2 h-px -translate-y-1/2 bg-white/80 shadow-[0_0_3px_rgba(15,23,42,0.65)]" />
+              </div>
+              <div
                 aria-label="Move crop area"
                 className="absolute inset-0 cursor-move rounded-full"
                 role="button"
