@@ -17,6 +17,8 @@ type PendingProfileImageCrop = {
   imageUrl: string;
 };
 
+type ProfileImageOperation = "remove" | "save" | null;
+
 const formatRole = (role: string) => role.replace(/_/g, " ");
 
 const formatStatus = (status: string) => roleStatusLabels[status] || status;
@@ -122,11 +124,15 @@ const AdminProfilePage = ({
   onProfileImageUpdate,
 }: AdminProfilePageProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [isSavingImage, setIsSavingImage] = useState(false);
+  const [profileImageOperation, setProfileImageOperation] =
+    useState<ProfileImageOperation>(null);
   const [pendingProfileImageCrop, setPendingProfileImageCrop] =
     useState<PendingProfileImageCrop | null>(null);
   const [profileImageError, setProfileImageError] = useState("");
   const [profileImageMessage, setProfileImageMessage] = useState("");
+  const isProcessingProfileImage = Boolean(profileImageOperation);
+  const isRemovingProfileImage = profileImageOperation === "remove";
+  const isSavingProfileImage = profileImageOperation === "save";
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -162,18 +168,18 @@ const AdminProfilePage = ({
   };
 
   const handleProfileImageCropCancel = () => {
-    if (!isSavingImage) {
+    if (!isProcessingProfileImage) {
       setPendingProfileImageCrop(null);
     }
   };
 
   const handleProfileImageCrop = async (profileImage: string) => {
-    setIsSavingImage(true);
+    setProfileImageOperation("save");
     setProfileImageError("");
     setProfileImageMessage("");
 
     if (getBase64ByteLength(profileImage) > maxStoredProfileImageBytes) {
-      setIsSavingImage(false);
+      setProfileImageOperation(null);
       setPendingProfileImageCrop(null);
       setProfileImageError("Profile image must be 1 MB or smaller.");
       return;
@@ -181,7 +187,7 @@ const AdminProfilePage = ({
 
     const result = await onProfileImageUpdate(profileImage);
 
-    setIsSavingImage(false);
+    setProfileImageOperation(null);
     setPendingProfileImageCrop(null);
 
     if (!result.success) {
@@ -193,13 +199,13 @@ const AdminProfilePage = ({
   };
 
   const handleProfileImageRemove = async () => {
-    setIsSavingImage(true);
+    setProfileImageOperation("remove");
     setProfileImageError("");
     setProfileImageMessage("");
 
     const result = await onProfileImageRemove();
 
-    setIsSavingImage(false);
+    setProfileImageOperation(null);
 
     if (!result.success) {
       setProfileImageError(result.message);
@@ -266,11 +272,11 @@ const AdminProfilePage = ({
                   type="button"
                   size="sm"
                   variant="link"
-                  disabled={isSavingImage}
+                  disabled={isProcessingProfileImage}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  {isSavingImage ? <LoadingSpinner /> : <UploadIcon />}
-                  {isSavingImage
+                  {isSavingProfileImage ? <LoadingSpinner /> : <UploadIcon />}
+                  {isSavingProfileImage
                     ? "Saving"
                     : admin.profileImage
                       ? "Change photo"
@@ -282,11 +288,11 @@ const AdminProfilePage = ({
                     type="button"
                     size="sm"
                     variant="dangerLink"
-                    disabled={isSavingImage}
+                    disabled={isProcessingProfileImage}
                     onClick={handleProfileImageRemove}
                   >
-                    <TrashIcon />
-                    Remove
+                    {isRemovingProfileImage ? <LoadingSpinner /> : <TrashIcon />}
+                    {isRemovingProfileImage ? "Removing" : "Remove"}
                   </Button>
                 ) : null}
               </div>
@@ -335,7 +341,7 @@ const AdminProfilePage = ({
       {pendingProfileImageCrop ? (
         <ProfileImageCropModal
           imageUrl={pendingProfileImageCrop.imageUrl}
-          isSaving={isSavingImage}
+          isSaving={isProcessingProfileImage}
           onCancel={handleProfileImageCropCancel}
           onCrop={handleProfileImageCrop}
         />
