@@ -216,7 +216,11 @@ const Menu = () => {
               aria-haspopup="menu"
               aria-label={`Open account menu for ${admin.name}`}
               title={admin.name}
-              className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-sm font-bold uppercase text-white shadow-sm ring-2 ring-primary-200/25 transition hover:bg-primary-200 hover:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30"
+              className={`flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-sm font-bold uppercase shadow-sm transition focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30 ${
+                admin.profileImage
+                  ? "border border-slate-200 bg-white hover:border-primary-200/50"
+                  : "bg-slate-950 text-white ring-2 ring-primary-200/25 hover:bg-primary-200 hover:text-slate-950"
+              }`}
               onClick={() =>
                 setIsAdminMenuOpen((currentValue) => !currentValue)
               }

@@ -256,7 +256,13 @@ const AdminProfilePage = ({
 
         <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-2xl font-bold uppercase text-white ring-4 ring-primary-200/20">
+            <div
+              className={`flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full text-2xl font-bold uppercase ${
+                admin.profileImage
+                  ? "border border-slate-200 bg-white shadow-sm"
+                  : "bg-slate-950 text-white ring-4 ring-primary-200/20"
+              }`}
+            >
               {admin.profileImage ? (
                 <img
                   src={admin.profileImage}
