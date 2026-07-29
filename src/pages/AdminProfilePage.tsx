@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/atoms/Button";
 import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
+import Toast from "../components/molecules/Toast";
 import type { Admin, AdminProfileImageResult } from "../utils/adminAuth";
 
 type AdminProfilePageProps = {
@@ -307,14 +308,6 @@ const AdminProfilePage = ({
                 </p>
               ) : null}
 
-              {profileImageMessage ? (
-                <p
-                  role="status"
-                  className="mt-3 rounded-xl border border-primary-200/30 bg-primary-200/10 px-4 py-3 text-sm font-medium text-primary-300"
-                >
-                  {profileImageMessage}
-                </p>
-              ) : null}
             </div>
           </div>
 
@@ -345,6 +338,13 @@ const AdminProfilePage = ({
           isSaving={isSavingImage}
           onCancel={handleProfileImageCropCancel}
           onCrop={handleProfileImageCrop}
+        />
+      ) : null}
+
+      {profileImageMessage ? (
+        <Toast
+          message={profileImageMessage}
+          onDismiss={() => setProfileImageMessage("")}
         />
       ) : null}
     </section>
