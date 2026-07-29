@@ -16,7 +16,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseStyles =
-    "inline-flex items-center justify-center font-semibold transition-colors focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60";
+    "inline-flex cursor-pointer items-center justify-center font-semibold transition-colors focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60";
   const sizeStyles = {
     sm: "gap-1.5 rounded-md px-1 py-1 text-xs",
     md: "gap-2 rounded px-6 py-3",
