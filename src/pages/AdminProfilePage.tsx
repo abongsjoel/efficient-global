@@ -1,6 +1,7 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/atoms/Button";
+import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
 import type { Admin, AdminProfileImageResult } from "../utils/adminAuth";
 
 type AdminProfilePageProps = {
@@ -9,6 +10,10 @@ type AdminProfilePageProps = {
   onProfileImageUpdate: (
     profileImage: string,
   ) => Promise<AdminProfileImageResult>;
+};
+
+type PendingProfileImageCrop = {
+  imageUrl: string;
 };
 
 const formatRole = (role: string) => role.replace(/_/g, " ");
@@ -30,7 +35,6 @@ const profileImageAcceptValue = Array.from(supportedProfileImageTypes).join(
 );
 const maxSourceImageBytes = 8 * 1024 * 1024;
 const maxStoredProfileImageBytes = 1_000_000;
-const maxProfileImageDimension = 512;
 
 const UploadIcon = () => (
   <svg
@@ -111,62 +115,6 @@ const validateProfileImageFile = (file: File) => {
   return "";
 };
 
-const loadImage = (imageUrl: string) =>
-  new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image();
-
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("We could not read that image."));
-    image.src = imageUrl;
-  });
-
-const createProfileImageDataUrl = async (file: File) => {
-  const validationMessage = validateProfileImageFile(file);
-
-  if (validationMessage) {
-    throw new Error(validationMessage);
-  }
-
-  const imageUrl = URL.createObjectURL(file);
-
-  try {
-    const image = await loadImage(imageUrl);
-    const sourceWidth = image.naturalWidth || image.width;
-    const sourceHeight = image.naturalHeight || image.height;
-
-    if (!sourceWidth || !sourceHeight) {
-      throw new Error("We could not read that image.");
-    }
-
-    const scale = Math.min(
-      1,
-      maxProfileImageDimension / Math.max(sourceWidth, sourceHeight),
-    );
-    const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
-    const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      throw new Error("We could not prepare that image.");
-    }
-
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-    context.drawImage(image, 0, 0, targetWidth, targetHeight);
-
-    const profileImage = canvas.toDataURL("image/jpeg", 0.86);
-
-    if (getBase64ByteLength(profileImage) > maxStoredProfileImageBytes) {
-      throw new Error("Profile image must be 1 MB or smaller.");
-    }
-
-    return profileImage;
-  } finally {
-    URL.revokeObjectURL(imageUrl);
-  }
-};
-
 const AdminProfilePage = ({
   admin,
   onProfileImageRemove,
@@ -174,10 +122,20 @@ const AdminProfilePage = ({
 }: AdminProfilePageProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSavingImage, setIsSavingImage] = useState(false);
+  const [pendingProfileImageCrop, setPendingProfileImageCrop] =
+    useState<PendingProfileImageCrop | null>(null);
   const [profileImageError, setProfileImageError] = useState("");
   const [profileImageMessage, setProfileImageMessage] = useState("");
 
-  const handleProfileImageChange = async (
+  useEffect(() => {
+    if (!pendingProfileImageCrop) {
+      return;
+    }
+
+    return () => URL.revokeObjectURL(pendingProfileImageCrop.imageUrl);
+  }, [pendingProfileImageCrop]);
+
+  const handleProfileImageChange = (
     event: ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.currentTarget.files?.[0];
@@ -187,29 +145,50 @@ const AdminProfilePage = ({
       return;
     }
 
+    setProfileImageError("");
+    setProfileImageMessage("");
+
+    const validationMessage = validateProfileImageFile(file);
+
+    if (validationMessage) {
+      setProfileImageError(validationMessage);
+      return;
+    }
+
+    setPendingProfileImageCrop({
+      imageUrl: URL.createObjectURL(file),
+    });
+  };
+
+  const handleProfileImageCropCancel = () => {
+    if (!isSavingImage) {
+      setPendingProfileImageCrop(null);
+    }
+  };
+
+  const handleProfileImageCrop = async (profileImage: string) => {
     setIsSavingImage(true);
     setProfileImageError("");
     setProfileImageMessage("");
 
-    try {
-      const profileImage = await createProfileImageDataUrl(file);
-      const result = await onProfileImageUpdate(profileImage);
-
-      if (!result.success) {
-        setProfileImageError(result.message);
-        return;
-      }
-
-      setProfileImageMessage("Profile image updated.");
-    } catch (error) {
-      setProfileImageError(
-        error instanceof Error
-          ? error.message
-          : "We could not update your profile image.",
-      );
-    } finally {
+    if (getBase64ByteLength(profileImage) > maxStoredProfileImageBytes) {
       setIsSavingImage(false);
+      setPendingProfileImageCrop(null);
+      setProfileImageError("Profile image must be 1 MB or smaller.");
+      return;
     }
+
+    const result = await onProfileImageUpdate(profileImage);
+
+    setIsSavingImage(false);
+    setPendingProfileImageCrop(null);
+
+    if (!result.success) {
+      setProfileImageError(result.message);
+      return;
+    }
+
+    setProfileImageMessage("Profile image updated.");
   };
 
   const handleProfileImageRemove = async () => {
@@ -359,6 +338,15 @@ const AdminProfilePage = ({
           </dl>
         </div>
       </div>
+
+      {pendingProfileImageCrop ? (
+        <ProfileImageCropModal
+          imageUrl={pendingProfileImageCrop.imageUrl}
+          isSaving={isSavingImage}
+          onCancel={handleProfileImageCropCancel}
+          onCrop={handleProfileImageCrop}
+        />
+      ) : null}
     </section>
   );
 };
