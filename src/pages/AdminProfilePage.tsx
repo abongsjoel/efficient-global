@@ -1,9 +1,20 @@
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { Link } from "react-router-dom";
 import Button from "../components/atoms/Button";
+import Input from "../components/atoms/Input";
 import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
 import Toast from "../components/molecules/Toast";
-import type { Admin, AdminProfileImageResult } from "../utils/adminAuth";
+import type {
+  Admin,
+  AdminProfileImageResult,
+  AdminProfileUpdateResult,
+} from "../utils/adminAuth";
 
 type AdminProfilePageProps = {
   admin: Admin;
@@ -11,6 +22,9 @@ type AdminProfilePageProps = {
   onProfileImageUpdate: (
     profileImage: string,
   ) => Promise<AdminProfileImageResult>;
+  onProfileUpdate: (profile: {
+    name: string;
+  }) => Promise<AdminProfileUpdateResult>;
 };
 
 type PendingProfileImageCrop = {
@@ -18,6 +32,7 @@ type PendingProfileImageCrop = {
 };
 
 type ProfileImageOperation = "remove" | "save" | null;
+type ProfileOperation = "displayName" | null;
 
 const formatRole = (role: string) => role.replace(/_/g, " ");
 
@@ -75,6 +90,22 @@ const TrashIcon = () => (
   </svg>
 );
 
+const EditIcon = () => (
+  <svg
+    aria-hidden="true"
+    className="h-4 w-4"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+
 const LoadingSpinner = () => (
   <span
     aria-hidden="true"
@@ -122,17 +153,24 @@ const AdminProfilePage = ({
   admin,
   onProfileImageRemove,
   onProfileImageUpdate,
+  onProfileUpdate,
 }: AdminProfilePageProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [displayNameDraft, setDisplayNameDraft] = useState(admin.name);
+  const [displayNameError, setDisplayNameError] = useState("");
+  const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
   const [profileImageOperation, setProfileImageOperation] =
     useState<ProfileImageOperation>(null);
+  const [profileOperation, setProfileOperation] =
+    useState<ProfileOperation>(null);
   const [pendingProfileImageCrop, setPendingProfileImageCrop] =
     useState<PendingProfileImageCrop | null>(null);
   const [profileImageError, setProfileImageError] = useState("");
-  const [profileImageMessage, setProfileImageMessage] = useState("");
+  const [profileToastMessage, setProfileToastMessage] = useState("");
   const isProcessingProfileImage = Boolean(profileImageOperation);
   const isRemovingProfileImage = profileImageOperation === "remove";
   const isSavingProfileImage = profileImageOperation === "save";
+  const isSavingDisplayName = profileOperation === "displayName";
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -153,7 +191,7 @@ const AdminProfilePage = ({
     }
 
     setProfileImageError("");
-    setProfileImageMessage("");
+    setProfileToastMessage("");
 
     const validationMessage = validateProfileImageFile(file);
 
@@ -167,6 +205,60 @@ const AdminProfilePage = ({
     });
   };
 
+  const handleDisplayNameEdit = () => {
+    setDisplayNameDraft(admin.name);
+    setDisplayNameError("");
+    setIsEditingDisplayName(true);
+  };
+
+  const handleDisplayNameCancel = () => {
+    if (isSavingDisplayName) {
+      return;
+    }
+
+    setDisplayNameDraft(admin.name);
+    setDisplayNameError("");
+    setIsEditingDisplayName(false);
+  };
+
+  const handleDisplayNameSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+    const nextDisplayName = displayNameDraft.trim().replace(/\s+/g, " ");
+
+    setDisplayNameError("");
+    setProfileToastMessage("");
+
+    if (!nextDisplayName) {
+      setDisplayNameError("Enter your display name.");
+      return;
+    }
+
+    if (nextDisplayName === admin.name) {
+      setIsEditingDisplayName(false);
+      setDisplayNameDraft(admin.name);
+      return;
+    }
+
+    setProfileOperation("displayName");
+    const result = await onProfileUpdate({ name: nextDisplayName });
+    setProfileOperation(null);
+
+    if (!result.success) {
+      setDisplayNameError(
+        result.errors?.name ||
+          result.message ||
+          "We could not update your display name.",
+      );
+      return;
+    }
+
+    setDisplayNameDraft(result.admin.name);
+    setIsEditingDisplayName(false);
+    setProfileToastMessage("Display name updated.");
+  };
+
   const handleProfileImageCropCancel = () => {
     if (!isProcessingProfileImage) {
       setPendingProfileImageCrop(null);
@@ -176,7 +268,7 @@ const AdminProfilePage = ({
   const handleProfileImageCrop = async (profileImage: string) => {
     setProfileImageOperation("save");
     setProfileImageError("");
-    setProfileImageMessage("");
+    setProfileToastMessage("");
 
     if (getBase64ByteLength(profileImage) > maxStoredProfileImageBytes) {
       setProfileImageOperation(null);
@@ -195,13 +287,13 @@ const AdminProfilePage = ({
       return;
     }
 
-    setProfileImageMessage("Profile image updated.");
+    setProfileToastMessage("Profile image updated.");
   };
 
   const handleProfileImageRemove = async () => {
     setProfileImageOperation("remove");
     setProfileImageError("");
-    setProfileImageMessage("");
+    setProfileToastMessage("");
 
     const result = await onProfileImageRemove();
 
@@ -212,7 +304,7 @@ const AdminProfilePage = ({
       return;
     }
 
-    setProfileImageMessage("Profile image removed.");
+    setProfileToastMessage("Profile image removed.");
   };
 
   return (
@@ -262,10 +354,68 @@ const AdminProfilePage = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <h2 className="text-2xl font-bold tracking-tight">
-                {admin.name}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">{admin.email}</p>
+              {isEditingDisplayName ? (
+                <form
+                  className="max-w-sm"
+                  onSubmit={handleDisplayNameSubmit}
+                  noValidate
+                >
+                  <Input
+                    label="Display name"
+                    name="displayName"
+                    type="text"
+                    autoComplete="name"
+                    value={displayNameDraft}
+                    error={displayNameError}
+                    maxLength={80}
+                    onChange={(event) => {
+                      setDisplayNameDraft(event.currentTarget.value);
+                      setDisplayNameError("");
+                    }}
+                    required
+                  />
+
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <Button
+                      disabled={isSavingDisplayName}
+                      size="sm"
+                      type="submit"
+                      variant="link"
+                    >
+                      {isSavingDisplayName ? <LoadingSpinner /> : null}
+                      {isSavingDisplayName ? "Saving" : "Save"}
+                    </Button>
+                    <Button
+                      disabled={isSavingDisplayName}
+                      size="sm"
+                      type="button"
+                      variant="link"
+                      onClick={handleDisplayNameCancel}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h2 className="text-2xl font-bold tracking-tight">
+                      {admin.name}
+                    </h2>
+                    <Button
+                      aria-label="Edit display name"
+                      size="sm"
+                      type="button"
+                      variant="link"
+                      onClick={handleDisplayNameEdit}
+                    >
+                      <EditIcon />
+                      Edit
+                    </Button>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-500">{admin.email}</p>
+                </>
+              )}
 
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Button
@@ -347,10 +497,10 @@ const AdminProfilePage = ({
         />
       ) : null}
 
-      {profileImageMessage ? (
+      {profileToastMessage ? (
         <Toast
-          message={profileImageMessage}
-          onDismiss={() => setProfileImageMessage("")}
+          message={profileToastMessage}
+          onDismiss={() => setProfileToastMessage("")}
         />
       ) : null}
     </section>

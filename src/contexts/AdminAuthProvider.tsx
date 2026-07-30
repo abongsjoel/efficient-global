@@ -10,6 +10,7 @@ import {
   logoutAdmin as requestAdminLogout,
   removeAdminProfileImage as requestAdminProfileImageRemoval,
   type Admin,
+  updateAdminProfile as requestAdminProfileUpdate,
   updateAdminProfileImage as requestAdminProfileImageUpdate,
 } from "../utils/adminAuth";
 import { AdminAuthContext } from "./adminAuthContext";
@@ -50,6 +51,19 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
     setAdmin(null);
   }, []);
 
+  const updateAdminProfileSession = useCallback(
+    async (profile: { name: string }) => {
+      const result = await requestAdminProfileUpdate(profile);
+
+      if (result.success) {
+        setAdmin(result.admin);
+      }
+
+      return result;
+    },
+    [],
+  );
+
   const updateAdminProfileImageSession = useCallback(
     async (profileImage: string) => {
       const result = await requestAdminProfileImageUpdate(profileImage);
@@ -80,6 +94,7 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
       loginAdminSession,
       logoutAdminSession,
       removeAdminProfileImageSession,
+      updateAdminProfileSession,
       updateAdminProfileImageSession,
     }),
     [
@@ -88,6 +103,7 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
       loginAdminSession,
       logoutAdminSession,
       removeAdminProfileImageSession,
+      updateAdminProfileSession,
       updateAdminProfileImageSession,
     ],
   );

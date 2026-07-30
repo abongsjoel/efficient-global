@@ -18,7 +18,9 @@ export type AdminLoginCredentials = {
 
 type AdminAuthResponse = {
   admin?: Admin;
-  errors?: AdminLoginFieldErrors;
+  errors?: AdminLoginFieldErrors & {
+    name?: string;
+  };
   message?: string;
 };
 
@@ -41,6 +43,22 @@ export type AdminProfileImageResult =
     }
   | {
       success: false;
+      message: string;
+    };
+
+export type AdminProfileFieldErrors = {
+  name?: string;
+};
+
+export type AdminProfileUpdateResult =
+  | {
+      success: true;
+      admin: Admin;
+      message?: string;
+    }
+  | {
+      success: false;
+      errors?: AdminProfileFieldErrors;
       message: string;
     };
 
@@ -121,6 +139,45 @@ export const logoutAdmin = async () => {
     });
   } catch {
     // The local UI should still return to the login screen if logout fails.
+  }
+};
+
+export const updateAdminProfile = async ({
+  name,
+}: {
+  name: string;
+}): Promise<AdminProfileUpdateResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/profile`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ name }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        errors: {
+          name: data.errors?.name,
+        },
+        message: data.message || "We could not update your profile right now.",
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+      message: data.message,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "We could not reach the server. Please try again in a moment.",
+    };
   }
 };
 

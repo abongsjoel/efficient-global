@@ -13,6 +13,7 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
     isCheckingSession,
     loginAdminSession,
     removeAdminProfileImageSession,
+    updateAdminProfileSession,
     updateAdminProfileImageSession,
   } = useAdminAuth();
 
@@ -38,6 +39,7 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
         admin={admin}
         onProfileImageRemove={removeAdminProfileImageSession}
         onProfileImageUpdate={updateAdminProfileImageSession}
+        onProfileUpdate={updateAdminProfileSession}
       />
     );
   }
