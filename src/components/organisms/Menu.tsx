@@ -2,6 +2,7 @@ import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../../contexts/useAdminAuth";
 import Hamburger from "../atoms/Hamburger";
+import { DashboardIcon, LogoutIcon, ProfileIcon } from "../icons";
 import type { Admin } from "../../utils/adminAuth";
 
 const getAdminInitials = (admin: Admin) => {
@@ -216,12 +217,24 @@ const Menu = () => {
               aria-haspopup="menu"
               aria-label={`Open account menu for ${admin.name}`}
               title={admin.name}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-950 text-sm font-bold uppercase text-white shadow-sm ring-2 ring-primary-200/25 transition hover:bg-primary-200 hover:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30"
+              className={`flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-sm font-bold uppercase shadow-sm transition focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30 ${
+                admin.profileImage
+                  ? "border border-slate-200 bg-white hover:border-primary-200/50"
+                  : "bg-slate-950 text-white ring-2 ring-primary-200/25 hover:bg-primary-200 hover:text-slate-950"
+              }`}
               onClick={() =>
                 setIsAdminMenuOpen((currentValue) => !currentValue)
               }
             >
-              {getAdminInitials(admin)}
+              {admin.profileImage ? (
+                <img
+                  src={admin.profileImage}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                getAdminInitials(admin)
+              )}
             </button>
 
             {isAdminMenuOpen ? (
@@ -229,39 +242,54 @@ const Menu = () => {
                 role="menu"
                 className="absolute right-0 top-12 z-50 w-72 rounded-xl border border-slate-200 bg-white p-4 text-left text-slate-900 shadow-2xl shadow-slate-900/15"
               >
-                <div className="border-b border-slate-100 pb-3">
-                  <p className="text-sm font-semibold text-slate-950">
-                    {admin.name}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-slate-500">
-                    {admin.email}
-                  </p>
-                  <p className="mt-3 text-xs uppercase tracking-[0.2em] text-primary-200">
-                    {admin.role.replace(/_/g, " ")}
-                  </p>
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-950 text-sm font-bold uppercase text-white">
+                    {admin.profileImage ? (
+                      <img
+                        src={admin.profileImage}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      getAdminInitials(admin)
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-950">
+                      {admin.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                      {admin.email}
+                    </p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-primary-200">
+                      {admin.role.replace(/_/g, " ")}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-1 border-b border-slate-100 py-3 text-sm">
                   <Link
                     to="/admin"
                     role="menuitem"
-                    className="block rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
                     onClick={() => {
                       setIsAdminMenuOpen(false);
                       setIsOpen(false);
                     }}
                   >
+                    <DashboardIcon />
                     Dashboard
                   </Link>
                   <Link
                     to="/admin/profile"
                     role="menuitem"
-                    className="block rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-primary-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/20"
                     onClick={() => {
                       setIsAdminMenuOpen(false);
                       setIsOpen(false);
                     }}
                   >
+                    <ProfileIcon />
                     Profile
                   </Link>
                 </div>
@@ -270,9 +298,10 @@ const Menu = () => {
                   <button
                     type="button"
                     role="menuitem"
-                    className="w-full rounded-lg bg-red-50 px-3 py-2 text-left text-sm font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200"
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-left text-sm font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200"
                     onClick={handleLogout}
                   >
+                    <LogoutIcon />
                     Logout
                   </button>
                 </div>

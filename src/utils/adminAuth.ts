@@ -7,6 +7,7 @@ export type Admin = {
   email: string;
   role: string;
   status: string;
+  profileImage?: string;
 };
 
 export type AdminLoginCredentials = {
@@ -17,7 +18,12 @@ export type AdminLoginCredentials = {
 
 type AdminAuthResponse = {
   admin?: Admin;
-  errors?: AdminLoginFieldErrors;
+  errors?: AdminLoginFieldErrors & {
+    confirmPassword?: string;
+    currentPassword?: string;
+    name?: string;
+    newPassword?: string;
+  };
   message?: string;
 };
 
@@ -29,6 +35,51 @@ export type AdminLoginResult =
   | {
       success: false;
       errors?: AdminLoginFieldErrors;
+      message: string;
+    };
+
+export type AdminProfileImageResult =
+  | {
+      success: true;
+      admin: Admin;
+      message?: string;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
+export type AdminProfileFieldErrors = {
+  name?: string;
+};
+
+export type AdminPasswordFieldErrors = {
+  confirmPassword?: string;
+  currentPassword?: string;
+  newPassword?: string;
+};
+
+export type AdminProfileUpdateResult =
+  | {
+      success: true;
+      admin: Admin;
+      message?: string;
+    }
+  | {
+      success: false;
+      errors?: AdminProfileFieldErrors;
+      message: string;
+    };
+
+export type AdminPasswordUpdateResult =
+  | {
+      success: true;
+      admin: Admin;
+      message?: string;
+    }
+  | {
+      success: false;
+      errors?: AdminPasswordFieldErrors;
       message: string;
     };
 
@@ -111,3 +162,154 @@ export const logoutAdmin = async () => {
     // The local UI should still return to the login screen if logout fails.
   }
 };
+
+export const updateAdminProfile = async ({
+  name,
+}: {
+  name: string;
+}): Promise<AdminProfileUpdateResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/profile`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ name }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        errors: {
+          name: data.errors?.name,
+        },
+        message: data.message || "We could not update your profile right now.",
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+      message: data.message,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "We could not reach the server. Please try again in a moment.",
+    };
+  }
+};
+
+export const updateAdminPassword = async ({
+  confirmPassword,
+  currentPassword,
+  newPassword,
+}: {
+  confirmPassword: string;
+  currentPassword: string;
+  newPassword: string;
+}): Promise<AdminPasswordUpdateResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/password`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ confirmPassword, currentPassword, newPassword }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        errors: {
+          confirmPassword: data.errors?.confirmPassword,
+          currentPassword: data.errors?.currentPassword,
+          newPassword: data.errors?.newPassword,
+        },
+        message: data.message || "We could not update your password right now.",
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+      message: data.message,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "We could not reach the server. Please try again in a moment.",
+    };
+  }
+};
+
+export const updateAdminProfileImage = async (
+  profileImage: string,
+): Promise<AdminProfileImageResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/profile-image`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ profileImage }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        message:
+          data.message ||
+          "We could not update your profile image right now.",
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+      message: data.message,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "We could not reach the server. Please try again in a moment.",
+    };
+  }
+};
+
+export const removeAdminProfileImage =
+  async (): Promise<AdminProfileImageResult> => {
+    try {
+      const response = await fetch(`${adminEndpoint}/profile-image`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.admin) {
+        return {
+          success: false,
+          message:
+            data.message ||
+            "We could not remove your profile image right now.",
+        };
+      }
+
+      return {
+        success: true,
+        admin: data.admin,
+        message: data.message,
+      };
+    } catch {
+      return {
+        success: false,
+        message: "We could not reach the server. Please try again in a moment.",
+      };
+    }
+  };

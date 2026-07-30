@@ -8,7 +8,11 @@ import {
 import {
   getCurrentAdmin,
   logoutAdmin as requestAdminLogout,
+  removeAdminProfileImage as requestAdminProfileImageRemoval,
   type Admin,
+  updateAdminPassword as requestAdminPasswordUpdate,
+  updateAdminProfile as requestAdminProfileUpdate,
+  updateAdminProfileImage as requestAdminProfileImageUpdate,
 } from "../utils/adminAuth";
 import { AdminAuthContext } from "./adminAuthContext";
 
@@ -48,14 +52,80 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
     setAdmin(null);
   }, []);
 
+  const updateAdminProfileSession = useCallback(
+    async (profile: { name: string }) => {
+      const result = await requestAdminProfileUpdate(profile);
+
+      if (result.success) {
+        setAdmin(result.admin);
+      }
+
+      return result;
+    },
+    [],
+  );
+
+  const updateAdminPasswordSession = useCallback(
+    async (passwords: {
+      confirmPassword: string;
+      currentPassword: string;
+      newPassword: string;
+    }) => {
+      const result = await requestAdminPasswordUpdate(passwords);
+
+      if (result.success) {
+        setAdmin(result.admin);
+      }
+
+      return result;
+    },
+    [],
+  );
+
+  const updateAdminProfileImageSession = useCallback(
+    async (profileImage: string) => {
+      const result = await requestAdminProfileImageUpdate(profileImage);
+
+      if (result.success) {
+        setAdmin(result.admin);
+      }
+
+      return result;
+    },
+    [],
+  );
+
+  const removeAdminProfileImageSession = useCallback(async () => {
+    const result = await requestAdminProfileImageRemoval();
+
+    if (result.success) {
+      setAdmin(result.admin);
+    }
+
+    return result;
+  }, []);
+
   const value = useMemo(
     () => ({
       admin,
       isCheckingSession,
       loginAdminSession,
       logoutAdminSession,
+      removeAdminProfileImageSession,
+      updateAdminPasswordSession,
+      updateAdminProfileSession,
+      updateAdminProfileImageSession,
     }),
-    [admin, isCheckingSession, loginAdminSession, logoutAdminSession],
+    [
+      admin,
+      isCheckingSession,
+      loginAdminSession,
+      logoutAdminSession,
+      removeAdminProfileImageSession,
+      updateAdminPasswordSession,
+      updateAdminProfileSession,
+      updateAdminProfileImageSession,
+    ],
   );
 
   return (

@@ -12,6 +12,10 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
     admin,
     isCheckingSession,
     loginAdminSession,
+    removeAdminProfileImageSession,
+    updateAdminPasswordSession,
+    updateAdminProfileSession,
+    updateAdminProfileImageSession,
   } = useAdminAuth();
 
   if (isCheckingSession) {
@@ -31,7 +35,15 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
   }
 
   if (view === "profile") {
-    return <AdminProfilePage admin={admin} />;
+    return (
+      <AdminProfilePage
+        admin={admin}
+        onProfileImageRemove={removeAdminProfileImageSession}
+        onProfileImageUpdate={updateAdminProfileImageSession}
+        onPasswordUpdate={updateAdminPasswordSession}
+        onProfileUpdate={updateAdminProfileSession}
+      />
+    );
   }
 
   return <AdminPage admin={admin} />;
