@@ -72,6 +72,8 @@ const maxSourceImageBytes = 8 * 1024 * 1024;
 const maxStoredProfileImageBytes = 1_000_000;
 const minAdminPasswordLength = 8;
 const maxAdminPasswordLength = 72;
+const adminPasswordRequirementMessage =
+  "Password must include a lowercase letter, uppercase letter, number, and special character.";
 const initialPasswordFields: PasswordFields = {
   confirmPassword: "",
   currentPassword: "",
@@ -190,6 +192,13 @@ const validatePasswordFields = ({
     errors.newPassword = `Password must be at least ${minAdminPasswordLength} characters.`;
   } else if (newPassword.length > maxAdminPasswordLength) {
     errors.newPassword = `Password must be ${maxAdminPasswordLength} characters or fewer.`;
+  } else if (
+    !/[a-z]/.test(newPassword) ||
+    !/[A-Z]/.test(newPassword) ||
+    !/[0-9]/.test(newPassword) ||
+    !/[^A-Za-z0-9\s]/.test(newPassword)
+  ) {
+    errors.newPassword = adminPasswordRequirementMessage;
   }
 
   if (!confirmPassword.trim()) {
