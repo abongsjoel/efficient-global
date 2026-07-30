@@ -158,7 +158,7 @@ const AdminProfilePage = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [displayNameDraft, setDisplayNameDraft] = useState(admin.name);
   const [displayNameError, setDisplayNameError] = useState("");
-  const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileImageOperation, setProfileImageOperation] =
     useState<ProfileImageOperation>(null);
   const [profileOperation, setProfileOperation] =
@@ -205,20 +205,20 @@ const AdminProfilePage = ({
     });
   };
 
-  const handleDisplayNameEdit = () => {
+  const handleProfileEdit = () => {
     setDisplayNameDraft(admin.name);
     setDisplayNameError("");
-    setIsEditingDisplayName(true);
+    setIsEditingProfile(true);
   };
 
-  const handleDisplayNameCancel = () => {
+  const handleProfileEditCancel = () => {
     if (isSavingDisplayName) {
       return;
     }
 
     setDisplayNameDraft(admin.name);
     setDisplayNameError("");
-    setIsEditingDisplayName(false);
+    setIsEditingProfile(false);
   };
 
   const handleDisplayNameSubmit = async (
@@ -236,7 +236,7 @@ const AdminProfilePage = ({
     }
 
     if (nextDisplayName === admin.name) {
-      setIsEditingDisplayName(false);
+      setIsEditingProfile(false);
       setDisplayNameDraft(admin.name);
       return;
     }
@@ -255,7 +255,7 @@ const AdminProfilePage = ({
     }
 
     setDisplayNameDraft(result.admin.name);
-    setIsEditingDisplayName(false);
+    setIsEditingProfile(false);
     setProfileToastMessage("Display name updated.");
   };
 
@@ -330,6 +330,21 @@ const AdminProfilePage = ({
             >
               Dashboard
             </Link>
+            {isEditingProfile ? (
+              <Button
+                disabled={isSavingDisplayName || isProcessingProfileImage}
+                type="button"
+                variant="inverse"
+                onClick={handleProfileEditCancel}
+              >
+                Cancel edit
+              </Button>
+            ) : (
+              <Button type="button" variant="inverse" onClick={handleProfileEdit}>
+                <EditIcon />
+                Edit profile
+              </Button>
+            )}
           </div>
         </div>
 
@@ -354,7 +369,7 @@ const AdminProfilePage = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              {isEditingDisplayName ? (
+              {isEditingProfile ? (
                 <form
                   className="max-w-sm"
                   onSubmit={handleDisplayNameSubmit}
@@ -390,62 +405,57 @@ const AdminProfilePage = ({
                       size="sm"
                       type="button"
                       variant="link"
-                      onClick={handleDisplayNameCancel}
+                      onClick={handleProfileEditCancel}
                     >
                       Cancel
                     </Button>
                   </div>
+                  <p className="mt-3 text-sm text-slate-500">{admin.email}</p>
                 </form>
               ) : (
                 <>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-bold tracking-tight">
-                      {admin.name}
-                    </h2>
-                    <Button
-                      aria-label="Edit display name"
-                      size="sm"
-                      type="button"
-                      variant="link"
-                      onClick={handleDisplayNameEdit}
-                    >
-                      <EditIcon />
-                      Edit
-                    </Button>
-                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight">
+                    {admin.name}
+                  </h2>
                   <p className="mt-1 text-sm text-slate-500">{admin.email}</p>
                 </>
               )}
 
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="link"
-                  disabled={isProcessingProfileImage}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {isSavingProfileImage ? <LoadingSpinner /> : <UploadIcon />}
-                  {isSavingProfileImage
-                    ? "Saving"
-                    : admin.profileImage
-                      ? "Change photo"
-                      : "Upload photo"}
-                </Button>
-
-                {admin.profileImage ? (
+              {isEditingProfile ? (
+                <div className="mt-5 flex flex-wrap items-center gap-3">
                   <Button
                     type="button"
                     size="sm"
-                    variant="dangerLink"
+                    variant="link"
                     disabled={isProcessingProfileImage}
-                    onClick={handleProfileImageRemove}
+                    onClick={() => fileInputRef.current?.click()}
                   >
-                    {isRemovingProfileImage ? <LoadingSpinner /> : <TrashIcon />}
-                    {isRemovingProfileImage ? "Removing" : "Remove"}
+                    {isSavingProfileImage ? <LoadingSpinner /> : <UploadIcon />}
+                    {isSavingProfileImage
+                      ? "Saving"
+                      : admin.profileImage
+                        ? "Change photo"
+                        : "Upload photo"}
                   </Button>
-                ) : null}
-              </div>
+
+                  {admin.profileImage ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="dangerLink"
+                      disabled={isProcessingProfileImage}
+                      onClick={handleProfileImageRemove}
+                    >
+                      {isRemovingProfileImage ? (
+                        <LoadingSpinner />
+                      ) : (
+                        <TrashIcon />
+                      )}
+                      {isRemovingProfileImage ? "Removing" : "Remove"}
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
 
               <input
                 ref={fileInputRef}
