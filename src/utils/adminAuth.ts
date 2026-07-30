@@ -19,7 +19,10 @@ export type AdminLoginCredentials = {
 type AdminAuthResponse = {
   admin?: Admin;
   errors?: AdminLoginFieldErrors & {
+    confirmPassword?: string;
+    currentPassword?: string;
     name?: string;
+    newPassword?: string;
   };
   message?: string;
 };
@@ -50,6 +53,12 @@ export type AdminProfileFieldErrors = {
   name?: string;
 };
 
+export type AdminPasswordFieldErrors = {
+  confirmPassword?: string;
+  currentPassword?: string;
+  newPassword?: string;
+};
+
 export type AdminProfileUpdateResult =
   | {
       success: true;
@@ -59,6 +68,18 @@ export type AdminProfileUpdateResult =
   | {
       success: false;
       errors?: AdminProfileFieldErrors;
+      message: string;
+    };
+
+export type AdminPasswordUpdateResult =
+  | {
+      success: true;
+      admin: Admin;
+      message?: string;
+    }
+  | {
+      success: false;
+      errors?: AdminPasswordFieldErrors;
       message: string;
     };
 
@@ -165,6 +186,51 @@ export const updateAdminProfile = async ({
           name: data.errors?.name,
         },
         message: data.message || "We could not update your profile right now.",
+      };
+    }
+
+    return {
+      success: true,
+      admin: data.admin,
+      message: data.message,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "We could not reach the server. Please try again in a moment.",
+    };
+  }
+};
+
+export const updateAdminPassword = async ({
+  confirmPassword,
+  currentPassword,
+  newPassword,
+}: {
+  confirmPassword: string;
+  currentPassword: string;
+  newPassword: string;
+}): Promise<AdminPasswordUpdateResult> => {
+  try {
+    const response = await fetch(`${adminEndpoint}/password`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ confirmPassword, currentPassword, newPassword }),
+    });
+    const data = await parseAdminResponse(response);
+
+    if (!response.ok || !data.admin) {
+      return {
+        success: false,
+        errors: {
+          confirmPassword: data.errors?.confirmPassword,
+          currentPassword: data.errors?.currentPassword,
+          newPassword: data.errors?.newPassword,
+        },
+        message: data.message || "We could not update your password right now.",
       };
     }
 

@@ -8,13 +8,17 @@ import {
 import { Link } from "react-router-dom";
 import Button from "../components/atoms/Button";
 import Input from "../components/atoms/Input";
+import PasswordVisibilityButton from "../components/atoms/PasswordVisibilityButton";
 import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
 import Toast from "../components/molecules/Toast";
 import type {
   Admin,
+  AdminPasswordFieldErrors,
+  AdminPasswordUpdateResult,
   AdminProfileImageResult,
   AdminProfileUpdateResult,
 } from "../utils/adminAuth";
+import { scrollToFirstErrorField } from "../utils/formFocus";
 
 type AdminProfilePageProps = {
   admin: Admin;
@@ -22,6 +26,11 @@ type AdminProfilePageProps = {
   onProfileImageUpdate: (
     profileImage: string,
   ) => Promise<AdminProfileImageResult>;
+  onPasswordUpdate: (passwords: {
+    confirmPassword: string;
+    currentPassword: string;
+    newPassword: string;
+  }) => Promise<AdminPasswordUpdateResult>;
   onProfileUpdate: (profile: {
     name: string;
   }) => Promise<AdminProfileUpdateResult>;
@@ -32,7 +41,15 @@ type PendingProfileImageCrop = {
 };
 
 type ProfileImageOperation = "remove" | "save" | null;
-type ProfileOperation = "displayName" | null;
+type ProfileOperation = "displayName" | "password" | null;
+
+type PasswordFields = {
+  confirmPassword: string;
+  currentPassword: string;
+  newPassword: string;
+};
+
+type PasswordVisibilityFields = Record<keyof PasswordFields, boolean>;
 
 const formatRole = (role: string) => role.replace(/_/g, " ");
 
@@ -53,6 +70,23 @@ const profileImageAcceptValue = Array.from(supportedProfileImageTypes).join(
 );
 const maxSourceImageBytes = 8 * 1024 * 1024;
 const maxStoredProfileImageBytes = 1_000_000;
+const minAdminPasswordLength = 8;
+const maxAdminPasswordLength = 72;
+const initialPasswordFields: PasswordFields = {
+  confirmPassword: "",
+  currentPassword: "",
+  newPassword: "",
+};
+const initialPasswordVisibility: PasswordVisibilityFields = {
+  confirmPassword: false,
+  currentPassword: false,
+  newPassword: false,
+};
+const passwordFieldOrder: Array<keyof PasswordFields> = [
+  "currentPassword",
+  "newPassword",
+  "confirmPassword",
+];
 
 const UploadIcon = () => (
   <svg
@@ -139,6 +173,34 @@ const getBase64ByteLength = (dataUrl: string) => {
 
 const normalizeDisplayName = (name: string) => name.trim().replace(/\s+/g, " ");
 
+const validatePasswordFields = ({
+  confirmPassword,
+  currentPassword,
+  newPassword,
+}: PasswordFields) => {
+  const errors: AdminPasswordFieldErrors = {};
+
+  if (!currentPassword.trim()) {
+    errors.currentPassword = "Enter your current password.";
+  }
+
+  if (!newPassword.trim()) {
+    errors.newPassword = "Enter a new password.";
+  } else if (newPassword.length < minAdminPasswordLength) {
+    errors.newPassword = `Password must be at least ${minAdminPasswordLength} characters.`;
+  } else if (newPassword.length > maxAdminPasswordLength) {
+    errors.newPassword = `Password must be ${maxAdminPasswordLength} characters or fewer.`;
+  }
+
+  if (!confirmPassword.trim()) {
+    errors.confirmPassword = "Confirm your new password.";
+  } else if (newPassword && confirmPassword !== newPassword) {
+    errors.confirmPassword = "Passwords do not match.";
+  }
+
+  return errors;
+};
+
 const validateProfileImageFile = (file: File) => {
   if (!supportedProfileImageTypes.has(file.type)) {
     return "Upload a PNG, JPG, or WebP profile image.";
@@ -155,11 +217,18 @@ const AdminProfilePage = ({
   admin,
   onProfileImageRemove,
   onProfileImageUpdate,
+  onPasswordUpdate,
   onProfileUpdate,
 }: AdminProfilePageProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [displayNameDraft, setDisplayNameDraft] = useState(admin.name);
   const [displayNameError, setDisplayNameError] = useState("");
+  const [passwordFields, setPasswordFields] =
+    useState<PasswordFields>(initialPasswordFields);
+  const [passwordErrors, setPasswordErrors] =
+    useState<AdminPasswordFieldErrors>({});
+  const [passwordVisibility, setPasswordVisibility] =
+    useState<PasswordVisibilityFields>(initialPasswordVisibility);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileImageOperation, setProfileImageOperation] =
     useState<ProfileImageOperation>(null);
@@ -173,7 +242,12 @@ const AdminProfilePage = ({
   const isRemovingProfileImage = profileImageOperation === "remove";
   const isSavingProfileImage = profileImageOperation === "save";
   const isSavingDisplayName = profileOperation === "displayName";
-  const hasDisplayNameChanges = normalizeDisplayName(displayNameDraft) !== admin.name;
+  const isSavingPassword = profileOperation === "password";
+  const isSavingProfileChange =
+    isSavingDisplayName || isSavingPassword || isProcessingProfileImage;
+  const hasDisplayNameChanges =
+    normalizeDisplayName(displayNameDraft) !== admin.name;
+  const hasPasswordChanges = Object.values(passwordFields).some(Boolean);
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -182,6 +256,42 @@ const AdminProfilePage = ({
 
     return () => URL.revokeObjectURL(pendingProfileImageCrop.imageUrl);
   }, [pendingProfileImageCrop]);
+
+  const resetPasswordFields = () => {
+    setPasswordFields(initialPasswordFields);
+    setPasswordErrors({});
+    setPasswordVisibility(initialPasswordVisibility);
+  };
+
+  const clearPasswordError = (field: keyof PasswordFields) => {
+    setPasswordErrors((currentErrors) => {
+      if (!currentErrors[field]) {
+        return currentErrors;
+      }
+
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+  };
+
+  const handlePasswordFieldChange = (
+    field: keyof PasswordFields,
+    value: string,
+  ) => {
+    setPasswordFields((currentFields) => ({
+      ...currentFields,
+      [field]: value,
+    }));
+    clearPasswordError(field);
+  };
+
+  const togglePasswordVisibility = (field: keyof PasswordFields) => {
+    setPasswordVisibility((currentVisibility) => ({
+      ...currentVisibility,
+      [field]: !currentVisibility[field],
+    }));
+  };
 
   const handleProfileImageChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -211,21 +321,22 @@ const AdminProfilePage = ({
   const handleProfileEdit = () => {
     setDisplayNameDraft(admin.name);
     setDisplayNameError("");
+    resetPasswordFields();
+    setProfileImageError("");
     setIsEditingProfile(true);
   };
 
-  const handleProfileEditCancel = () => {
-    if (isSavingDisplayName) {
+  const handleDisplayNameCancel = () => {
+    if (isSavingProfileChange) {
       return;
     }
 
     setDisplayNameDraft(admin.name);
     setDisplayNameError("");
-    setIsEditingProfile(false);
   };
 
   const handleProfileEditDone = () => {
-    if (isSavingDisplayName) {
+    if (isSavingProfileChange) {
       return;
     }
 
@@ -234,7 +345,15 @@ const AdminProfilePage = ({
       return;
     }
 
+    if (hasPasswordChanges) {
+      setPasswordErrors({
+        currentPassword: "Save or clear this password change first.",
+      });
+      return;
+    }
+
     setDisplayNameError("");
+    setPasswordErrors({});
     setIsEditingProfile(false);
   };
 
@@ -253,7 +372,6 @@ const AdminProfilePage = ({
     }
 
     if (nextDisplayName === admin.name) {
-      setIsEditingProfile(false);
       setDisplayNameDraft(admin.name);
       return;
     }
@@ -272,8 +390,52 @@ const AdminProfilePage = ({
     }
 
     setDisplayNameDraft(result.admin.name);
-    setIsEditingProfile(false);
     setProfileToastMessage("Display name updated.");
+  };
+
+  const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const validationErrors = validatePasswordFields(passwordFields);
+
+    setPasswordErrors(validationErrors);
+    setProfileToastMessage("");
+
+    if (Object.keys(validationErrors).length > 0) {
+      scrollToFirstErrorField(
+        form,
+        passwordFieldOrder.filter((fieldName) => validationErrors[fieldName]),
+      );
+      return;
+    }
+
+    setProfileOperation("password");
+    const result = await onPasswordUpdate(passwordFields);
+    setProfileOperation(null);
+
+    if (!result.success) {
+      const nextErrors = result.errors || {};
+      setPasswordErrors(nextErrors);
+
+      if (Object.keys(nextErrors).length > 0) {
+        scrollToFirstErrorField(
+          form,
+          passwordFieldOrder.filter((fieldName) => nextErrors[fieldName]),
+        );
+      }
+
+      if (Object.keys(nextErrors).length === 0) {
+        setPasswordErrors({
+          currentPassword:
+            result.message || "We could not update your password.",
+        });
+      }
+
+      return;
+    }
+
+    resetPasswordFields();
+    setProfileToastMessage("Password updated.");
   };
 
   const handleProfileImageCropCancel = () => {
@@ -324,6 +486,13 @@ const AdminProfilePage = ({
     setProfileToastMessage("Profile image removed.");
   };
 
+  const renderPasswordVisibilityButton = (field: keyof PasswordFields) => (
+    <PasswordVisibilityButton
+      isVisible={passwordVisibility[field]}
+      onClick={() => togglePasswordVisibility(field)}
+    />
+  );
+
   return (
     <section className="min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-16 text-slate-950 lg:px-10">
       <div className="mx-auto max-w-5xl">
@@ -353,7 +522,7 @@ const AdminProfilePage = ({
         <div className="mt-10 flex justify-end">
           {isEditingProfile ? (
             <Button
-              disabled={isSavingDisplayName || isProcessingProfileImage}
+              disabled={isSavingProfileChange}
               size="sm"
               type="button"
               variant="link"
@@ -418,7 +587,7 @@ const AdminProfilePage = ({
 
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <Button
-                      disabled={isSavingDisplayName}
+                      disabled={isSavingProfileChange}
                       size="sm"
                       type="submit"
                       variant="link"
@@ -427,11 +596,11 @@ const AdminProfilePage = ({
                       {isSavingDisplayName ? "Saving" : "Save"}
                     </Button>
                     <Button
-                      disabled={isSavingDisplayName}
+                      disabled={isSavingProfileChange}
                       size="sm"
                       type="button"
                       variant="link"
-                      onClick={handleProfileEditCancel}
+                      onClick={handleDisplayNameCancel}
                     >
                       Cancel
                     </Button>
@@ -521,6 +690,117 @@ const AdminProfilePage = ({
               </dd>
             </div>
           </dl>
+
+          {isEditingProfile ? (
+            <div className="mt-8 border-t border-slate-100 pt-8">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Password
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  Update your password by confirming the one you use now.
+                </p>
+
+                <form
+                  className="mt-5 grid gap-4"
+                  onSubmit={handlePasswordSubmit}
+                  noValidate
+                >
+                  <Input
+                    label="Current password"
+                    name="currentPassword"
+                    type={
+                      passwordVisibility.currentPassword ? "text" : "password"
+                    }
+                    autoComplete="current-password"
+                    value={passwordFields.currentPassword}
+                    error={passwordErrors.currentPassword}
+                    onChange={(event) =>
+                      handlePasswordFieldChange(
+                        "currentPassword",
+                        event.currentTarget.value,
+                      )
+                    }
+                    trailingElement={renderPasswordVisibilityButton(
+                      "currentPassword",
+                    )}
+                    required
+                  />
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      label="New password"
+                      name="newPassword"
+                      type={
+                        passwordVisibility.newPassword ? "text" : "password"
+                      }
+                      autoComplete="new-password"
+                      value={passwordFields.newPassword}
+                      error={passwordErrors.newPassword}
+                      minLength={minAdminPasswordLength}
+                      maxLength={maxAdminPasswordLength}
+                      onChange={(event) =>
+                        handlePasswordFieldChange(
+                          "newPassword",
+                          event.currentTarget.value,
+                        )
+                      }
+                      trailingElement={renderPasswordVisibilityButton(
+                        "newPassword",
+                      )}
+                      required
+                    />
+
+                    <Input
+                      label="Confirm password"
+                      name="confirmPassword"
+                      type={
+                        passwordVisibility.confirmPassword
+                          ? "text"
+                          : "password"
+                      }
+                      autoComplete="new-password"
+                      value={passwordFields.confirmPassword}
+                      error={passwordErrors.confirmPassword}
+                      minLength={minAdminPasswordLength}
+                      maxLength={maxAdminPasswordLength}
+                      onChange={(event) =>
+                        handlePasswordFieldChange(
+                          "confirmPassword",
+                          event.currentTarget.value,
+                        )
+                      }
+                      trailingElement={renderPasswordVisibilityButton(
+                        "confirmPassword",
+                      )}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                      disabled={isSavingProfileChange}
+                      size="sm"
+                      type="submit"
+                      variant="link"
+                    >
+                      {isSavingPassword ? <LoadingSpinner /> : null}
+                      {isSavingPassword ? "Saving" : "Save password"}
+                    </Button>
+                    <Button
+                      disabled={isSavingProfileChange || !hasPasswordChanges}
+                      size="sm"
+                      type="button"
+                      variant="link"
+                      onClick={resetPasswordFields}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
