@@ -330,25 +330,34 @@ const AdminProfilePage = ({
             >
               Dashboard
             </Link>
-            {isEditingProfile ? (
-              <Button
-                disabled={isSavingDisplayName || isProcessingProfileImage}
-                type="button"
-                variant="inverse"
-                onClick={handleProfileEditCancel}
-              >
-                Cancel edit
-              </Button>
-            ) : (
-              <Button type="button" variant="inverse" onClick={handleProfileEdit}>
-                <EditIcon />
-                Edit profile
-              </Button>
-            )}
           </div>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5">
+        <div className="mt-10 flex justify-end">
+          {isEditingProfile ? (
+            <Button
+              disabled={isSavingDisplayName || isProcessingProfileImage}
+              size="sm"
+              type="button"
+              variant="link"
+              onClick={handleProfileEditCancel}
+            >
+              Cancel edit
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="sm"
+              variant="link"
+              onClick={handleProfileEdit}
+            >
+              <EditIcon />
+              Edit
+            </Button>
+          )}
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div
               className={`flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full text-2xl font-bold uppercase ${
