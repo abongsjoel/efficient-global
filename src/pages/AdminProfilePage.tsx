@@ -175,6 +175,31 @@ const getBase64ByteLength = (dataUrl: string) => {
 
 const normalizeDisplayName = (name: string) => name.trim().replace(/\s+/g, " ");
 
+const getPasswordRequirementStatuses = (password: string) => [
+  {
+    label: `${minAdminPasswordLength}-${maxAdminPasswordLength} characters`,
+    isMet:
+      password.length >= minAdminPasswordLength &&
+      password.length <= maxAdminPasswordLength,
+  },
+  {
+    label: "Lowercase letter",
+    isMet: /[a-z]/.test(password),
+  },
+  {
+    label: "Uppercase letter",
+    isMet: /[A-Z]/.test(password),
+  },
+  {
+    label: "Number",
+    isMet: /[0-9]/.test(password),
+  },
+  {
+    label: "Special character",
+    isMet: /[^A-Za-z0-9\s]/.test(password),
+  },
+];
+
 const validatePasswordFields = ({
   confirmPassword,
   currentPassword,
@@ -257,6 +282,12 @@ const AdminProfilePage = ({
   const hasDisplayNameChanges =
     normalizeDisplayName(displayNameDraft) !== admin.name;
   const hasPasswordChanges = Object.values(passwordFields).some(Boolean);
+  const passwordRequirementStatuses = getPasswordRequirementStatuses(
+    passwordFields.newPassword,
+  );
+  const shouldShowPasswordRequirements =
+    passwordFields.newPassword.length > 0 &&
+    passwordRequirementStatuses.some((requirement) => !requirement.isMet);
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -737,28 +768,71 @@ const AdminProfilePage = ({
                   />
 
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Input
-                      label="New password"
-                      name="newPassword"
-                      type={
-                        passwordVisibility.newPassword ? "text" : "password"
-                      }
-                      autoComplete="new-password"
-                      value={passwordFields.newPassword}
-                      error={passwordErrors.newPassword}
-                      minLength={minAdminPasswordLength}
-                      maxLength={maxAdminPasswordLength}
-                      onChange={(event) =>
-                        handlePasswordFieldChange(
+                    <div>
+                      <Input
+                        label="New password"
+                        name="newPassword"
+                        type={
+                          passwordVisibility.newPassword ? "text" : "password"
+                        }
+                        autoComplete="new-password"
+                        value={passwordFields.newPassword}
+                        error={passwordErrors.newPassword}
+                        minLength={minAdminPasswordLength}
+                        maxLength={maxAdminPasswordLength}
+                        onChange={(event) =>
+                          handlePasswordFieldChange(
+                            "newPassword",
+                            event.currentTarget.value,
+                          )
+                        }
+                        trailingElement={renderPasswordVisibilityButton(
                           "newPassword",
-                          event.currentTarget.value,
-                        )
-                      }
-                      trailingElement={renderPasswordVisibilityButton(
-                        "newPassword",
-                      )}
-                      required
-                    />
+                        )}
+                        required
+                      />
+
+                      {shouldShowPasswordRequirements ? (
+                        <ul
+                          aria-label="New password requirements"
+                          aria-live="polite"
+                          className="mt-3 grid gap-1.5 text-xs"
+                        >
+                          {passwordRequirementStatuses.map((requirement) => (
+                            <li
+                              key={requirement.label}
+                              className={`flex items-center gap-2 transition-colors ${
+                                requirement.isMet
+                                  ? "text-green-700"
+                                  : "text-slate-500"
+                              }`}
+                            >
+                              <span
+                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                                  requirement.isMet
+                                    ? "border-green-600 bg-green-600 text-white"
+                                    : "border-slate-300 bg-white text-transparent"
+                                }`}
+                              >
+                                <svg
+                                  aria-hidden="true"
+                                  className="h-3 w-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2.5"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="m5 13 4 4L19 7" />
+                                </svg>
+                              </span>
+                              <span>{requirement.label}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
 
                     <Input
                       label="Confirm password"
