@@ -137,6 +137,8 @@ const getBase64ByteLength = (dataUrl: string) => {
   return (base64Value.length * 3) / 4 - padding;
 };
 
+const normalizeDisplayName = (name: string) => name.trim().replace(/\s+/g, " ");
+
 const validateProfileImageFile = (file: File) => {
   if (!supportedProfileImageTypes.has(file.type)) {
     return "Upload a PNG, JPG, or WebP profile image.";
@@ -171,6 +173,7 @@ const AdminProfilePage = ({
   const isRemovingProfileImage = profileImageOperation === "remove";
   const isSavingProfileImage = profileImageOperation === "save";
   const isSavingDisplayName = profileOperation === "displayName";
+  const hasDisplayNameChanges = normalizeDisplayName(displayNameDraft) !== admin.name;
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -221,11 +224,25 @@ const AdminProfilePage = ({
     setIsEditingProfile(false);
   };
 
+  const handleProfileEditDone = () => {
+    if (isSavingDisplayName) {
+      return;
+    }
+
+    if (hasDisplayNameChanges) {
+      setDisplayNameError("Save or cancel this display name change first.");
+      return;
+    }
+
+    setDisplayNameError("");
+    setIsEditingProfile(false);
+  };
+
   const handleDisplayNameSubmit = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
-    const nextDisplayName = displayNameDraft.trim().replace(/\s+/g, " ");
+    const nextDisplayName = normalizeDisplayName(displayNameDraft);
 
     setDisplayNameError("");
     setProfileToastMessage("");
@@ -340,9 +357,9 @@ const AdminProfilePage = ({
               size="sm"
               type="button"
               variant="link"
-              onClick={handleProfileEditCancel}
+              onClick={handleProfileEditDone}
             >
-              Cancel edit
+              Done
             </Button>
           ) : (
             <Button
