@@ -6,6 +6,7 @@ import {
   type PointerEvent,
 } from "react";
 import Button from "../atoms/Button";
+import { CloseIcon } from "../icons";
 
 type ImageSize = {
   height: number;
@@ -54,22 +55,6 @@ const minCropCircleSize = 72;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
-
-const CloseIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>
-);
 
 const LoadingSpinner = () => (
   <span

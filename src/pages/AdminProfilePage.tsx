@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import Button from "../components/atoms/Button";
 import Input from "../components/atoms/Input";
 import PasswordVisibilityButton from "../components/atoms/PasswordVisibilityButton";
+import { CheckIcon, EditIcon, TrashIcon, UploadIcon } from "../components/icons";
 import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
 import Toast from "../components/molecules/Toast";
 import type {
@@ -89,58 +90,6 @@ const passwordFieldOrder: Array<keyof PasswordFields> = [
   "newPassword",
   "confirmPassword",
 ];
-
-const UploadIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path d="M12 16V4" />
-    <path d="m7 9 5-5 5 5" />
-    <path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path d="M3 6h18" />
-    <path d="M8 6V4h8v2" />
-    <path d="m19 6-1 14H6L5 6" />
-    <path d="M10 11v5" />
-    <path d="M14 11v5" />
-  </svg>
-);
-
-const EditIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path d="M12 20h9" />
-    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-  </svg>
-);
 
 const LoadingSpinner = () => (
   <span
@@ -814,18 +763,7 @@ const AdminProfilePage = ({
                                     : "border-slate-300 bg-white text-transparent"
                                 }`}
                               >
-                                <svg
-                                  aria-hidden="true"
-                                  className="h-3 w-3"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2.5"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="m5 13 4 4L19 7" />
-                                </svg>
+                                <CheckIcon className="h-3 w-3" />
                               </span>
                               <span>{requirement.label}</span>
                             </li>

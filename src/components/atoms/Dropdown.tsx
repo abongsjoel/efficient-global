@@ -7,6 +7,7 @@ import {
   renderErrorMessage,
   renderRequiredLabel,
 } from "./formFieldStyles";
+import { ChevronDownIcon } from "../icons";
 
 export interface DropdownOption {
   label: string;
@@ -89,13 +90,7 @@ const Dropdown = forwardRef<HTMLSelectElement, DropdownProps>(function Dropdown(
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
         >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <ChevronDownIcon />
         </span>
       </div>
       {error && errorId ? renderErrorMessage(errorId, error) : null}

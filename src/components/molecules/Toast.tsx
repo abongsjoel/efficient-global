@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Button from "../atoms/Button";
 import { cx } from "../atoms/formFieldStyles";
+import { CheckIcon, CloseIcon } from "../icons";
 
 type ToastVariant = "success";
 
@@ -18,37 +19,6 @@ const variantStyles: Record<ToastVariant, string> = {
 const iconStyles: Record<ToastVariant, string> = {
   success: "bg-primary-200 text-white",
 };
-
-const CheckIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2.5"
-    viewBox="0 0 24 24"
-  >
-    <path d="m5 13 4 4L19 7" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>
-);
 
 const Toast = ({
   autoDismissMs = 3500,

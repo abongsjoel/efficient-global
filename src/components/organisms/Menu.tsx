@@ -2,6 +2,7 @@ import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../../contexts/useAdminAuth";
 import Hamburger from "../atoms/Hamburger";
+import { DashboardIcon, LogoutIcon, ProfileIcon } from "../icons";
 import type { Admin } from "../../utils/adminAuth";
 
 const getAdminInitials = (admin: Admin) => {
@@ -16,58 +17,6 @@ const getAdminInitials = (admin: Admin) => {
 
   return fallback.slice(0, 2).toUpperCase();
 };
-
-const DashboardIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4 shrink-0"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <rect x="3" y="3" width="7" height="7" rx="1.5" />
-    <rect x="14" y="3" width="7" height="7" rx="1.5" />
-    <rect x="14" y="14" width="7" height="7" rx="1.5" />
-    <rect x="3" y="14" width="7" height="7" rx="1.5" />
-  </svg>
-);
-
-const ProfileIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4 shrink-0"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 21a8 8 0 0 1 16 0" />
-  </svg>
-);
-
-const LogoutIcon = () => (
-  <svg
-    aria-hidden="true"
-    className="h-4 w-4 shrink-0"
-    fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path d="M10 17l5-5-5-5" />
-    <path d="M15 12H3" />
-    <path d="M21 19V5a2 2 0 0 0-2-2h-5" />
-    <path d="M14 21h5a2 2 0 0 0 2-2" />
-  </svg>
-);
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
