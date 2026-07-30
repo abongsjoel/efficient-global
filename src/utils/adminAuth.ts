@@ -25,6 +25,10 @@ type AdminAuthResponse = {
     newPassword?: string;
   };
   message?: string;
+  session?: {
+    expiresAt?: string;
+    token?: string;
+  };
 };
 
 export type AdminLoginResult =
@@ -84,6 +88,35 @@ export type AdminPasswordUpdateResult =
     };
 
 const adminEndpoint = `${apiBaseUrl}/api/admin`;
+const adminSessionTokenStorageKey = "efficient_global_admin_session_token";
+
+const getStoredAdminSessionToken = () =>
+  window.sessionStorage.getItem(adminSessionTokenStorageKey) ||
+  window.localStorage.getItem(adminSessionTokenStorageKey) ||
+  "";
+
+const storeAdminSessionToken = (token: string, keepMeLoggedIn: boolean) => {
+  window.sessionStorage.removeItem(adminSessionTokenStorageKey);
+  window.localStorage.removeItem(adminSessionTokenStorageKey);
+
+  if (keepMeLoggedIn) {
+    window.localStorage.setItem(adminSessionTokenStorageKey, token);
+    return;
+  }
+
+  window.sessionStorage.setItem(adminSessionTokenStorageKey, token);
+};
+
+const clearAdminSessionToken = () => {
+  window.sessionStorage.removeItem(adminSessionTokenStorageKey);
+  window.localStorage.removeItem(adminSessionTokenStorageKey);
+};
+
+const getAdminAuthorizationHeaders = () => {
+  const token = getStoredAdminSessionToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const parseAdminResponse = async (response: Response) => {
   try {
@@ -104,6 +137,8 @@ export const loginAdmin = async ({
   password,
 }: AdminLoginCredentials): Promise<AdminLoginResult> => {
   try {
+    clearAdminSessionToken();
+
     const response = await fetch(`${adminEndpoint}/login`, {
       method: "POST",
       headers: {
@@ -122,6 +157,10 @@ export const loginAdmin = async ({
       };
     }
 
+    if (data.session?.token) {
+      storeAdminSessionToken(data.session.token, keepMeLoggedIn);
+    }
+
     return {
       success: true,
       admin: data.admin,
@@ -137,10 +176,15 @@ export const loginAdmin = async ({
 export const getCurrentAdmin = async () => {
   try {
     const response = await fetch(`${adminEndpoint}/me`, {
+      headers: getAdminAuthorizationHeaders(),
       credentials: "include",
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        clearAdminSessionToken();
+      }
+
       return null;
     }
 
@@ -156,10 +200,13 @@ export const logoutAdmin = async () => {
   try {
     await fetch(`${adminEndpoint}/logout`, {
       method: "POST",
+      headers: getAdminAuthorizationHeaders(),
       credentials: "include",
     });
   } catch {
     // The local UI should still return to the login screen if logout fails.
+  } finally {
+    clearAdminSessionToken();
   }
 };
 
@@ -173,6 +220,7 @@ export const updateAdminProfile = async ({
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        ...getAdminAuthorizationHeaders(),
       },
       credentials: "include",
       body: JSON.stringify({ name }),
@@ -180,6 +228,10 @@ export const updateAdminProfile = async ({
     const data = await parseAdminResponse(response);
 
     if (!response.ok || !data.admin) {
+      if (response.status === 401) {
+        clearAdminSessionToken();
+      }
+
       return {
         success: false,
         errors: {
@@ -216,6 +268,7 @@ export const updateAdminPassword = async ({
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        ...getAdminAuthorizationHeaders(),
       },
       credentials: "include",
       body: JSON.stringify({ confirmPassword, currentPassword, newPassword }),
@@ -223,6 +276,10 @@ export const updateAdminPassword = async ({
     const data = await parseAdminResponse(response);
 
     if (!response.ok || !data.admin) {
+      if (response.status === 401) {
+        clearAdminSessionToken();
+      }
+
       return {
         success: false,
         errors: {
@@ -255,6 +312,7 @@ export const updateAdminProfileImage = async (
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        ...getAdminAuthorizationHeaders(),
       },
       credentials: "include",
       body: JSON.stringify({ profileImage }),
@@ -262,6 +320,10 @@ export const updateAdminProfileImage = async (
     const data = await parseAdminResponse(response);
 
     if (!response.ok || !data.admin) {
+      if (response.status === 401) {
+        clearAdminSessionToken();
+      }
+
       return {
         success: false,
         message:
@@ -288,11 +350,16 @@ export const removeAdminProfileImage =
     try {
       const response = await fetch(`${adminEndpoint}/profile-image`, {
         method: "DELETE",
+        headers: getAdminAuthorizationHeaders(),
         credentials: "include",
       });
       const data = await parseAdminResponse(response);
 
       if (!response.ok || !data.admin) {
+        if (response.status === 401) {
+          clearAdminSessionToken();
+        }
+
         return {
           success: false,
           message:
