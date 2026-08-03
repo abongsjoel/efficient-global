@@ -3,6 +3,7 @@ import Button from "../../atoms/Button";
 import { cx } from "../../atoms/formFieldStyles";
 import { ChevronLeftIcon } from "../../icons";
 import type { Admin } from "../../../utils/adminAuth";
+import { formatAdminRole } from "../../../utils/adminDisplay";
 import {
   adminPanelItems,
   type AdminPageView,
@@ -119,7 +120,10 @@ const AdminSidebar = ({
         )}
       >
         <p className="truncate text-sm font-semibold text-slate-950">
-          {admin.name}
+          {admin.name}{" "}
+          <span className="text-xs font-medium capitalize text-slate-500">
+            ({formatAdminRole(admin.role)})
+          </span>
         </p>
         <p className="mt-1 truncate text-xs text-slate-500">{admin.email}</p>
       </div>
