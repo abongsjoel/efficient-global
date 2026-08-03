@@ -139,6 +139,7 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
             >
               {adminPanelItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = item.id === view;
                 const itemContent = (
                   <>
                     <Icon />
@@ -149,14 +150,17 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
                     >
                       <span className="block truncate">{item.label}</span>
                       {item.description ? (
-                        <span className="mt-0.5 block truncate text-xs font-normal text-slate-400">
+                        <span
+                          className={`mt-0.5 block truncate text-xs font-normal ${
+                            isActive ? "text-white/80" : "text-slate-400"
+                          }`}
+                        >
                           {item.description}
                         </span>
                       ) : null}
                     </span>
                   </>
                 );
-                const isActive = item.id === view;
                 const itemClassName = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${
                   isActive
                     ? "bg-primary-200 text-white shadow-sm"
