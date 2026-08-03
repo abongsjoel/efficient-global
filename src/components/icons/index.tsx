@@ -49,6 +49,50 @@ export const ChevronDownIcon = ({
   </svg>
 );
 
+export const ChevronLeftIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+
+export const ClipboardListIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M9 5h6" />
+    <path d="M9 3h6a2 2 0 0 1 2 2v1H7V5a2 2 0 0 1 2-2Z" />
+    <path d="M7 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+    <path d="M8 12h.01" />
+    <path d="M11 12h5" />
+    <path d="M8 16h.01" />
+    <path d="M11 16h5" />
+  </svg>
+);
+
 export const CloseIcon = ({
   className,
   ...props
@@ -226,5 +270,27 @@ export const UploadIcon = ({
     <path d="M12 16V4" />
     <path d="m7 9 5-5 5 5" />
     <path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
+  </svg>
+);
+
+export const UsersIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
 );
