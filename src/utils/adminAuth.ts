@@ -10,6 +10,30 @@ export type Admin = {
   profileImage?: string;
 };
 
+export type AdminDeliveryRequest = {
+  id: string;
+  source: string;
+  pickup: string;
+  delivery: string;
+  datetime: string;
+  vehicle: string;
+  name: string;
+  email: string;
+  phone: string;
+  rush: string;
+  instructions: string;
+  status: string;
+  emailNotification: {
+    status: string;
+    resendEmailId?: string;
+    errorMessage?: string;
+    updatedAt?: string;
+  };
+  submittedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminLoginCredentials = {
   identifier: string;
   keepMeLoggedIn?: boolean;
@@ -18,6 +42,7 @@ export type AdminLoginCredentials = {
 
 type AdminAuthResponse = {
   admin?: Admin;
+  deliveryRequests?: AdminDeliveryRequest[];
   errors?: AdminLoginFieldErrors & {
     confirmPassword?: string;
     currentPassword?: string;
@@ -84,6 +109,16 @@ export type AdminPasswordUpdateResult =
   | {
       success: false;
       errors?: AdminPasswordFieldErrors;
+      message: string;
+    };
+
+export type AdminDeliveryRequestsResult =
+  | {
+      success: true;
+      deliveryRequests: AdminDeliveryRequest[];
+    }
+  | {
+      success: false;
       message: string;
     };
 
@@ -372,6 +407,39 @@ export const removeAdminProfileImage =
         success: true,
         admin: data.admin,
         message: data.message,
+      };
+    } catch {
+      return {
+        success: false,
+        message: "We could not reach the server. Please try again in a moment.",
+      };
+    }
+  };
+
+export const getAdminDeliveryRequests =
+  async (): Promise<AdminDeliveryRequestsResult> => {
+    try {
+      const response = await fetch(`${adminEndpoint}/delivery-requests`, {
+        headers: getAdminAuthorizationHeaders(),
+        credentials: "include",
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          clearAdminSessionToken();
+        }
+
+        return {
+          success: false,
+          message:
+            data.message || "We could not load delivery requests right now.",
+        };
+      }
+
+      return {
+        success: true,
+        deliveryRequests: data.deliveryRequests || [],
       };
     } catch {
       return {
