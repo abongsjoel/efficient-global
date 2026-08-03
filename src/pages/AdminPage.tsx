@@ -12,14 +12,16 @@ import type { Admin } from "../utils/adminAuth";
 
 type AdminPageProps = {
   admin?: Admin;
+  view?: AdminPageView;
 };
+
+type AdminPageView = "dashboard" | "requests" | "admins";
 
 type AdminPanelItem = {
   description?: string;
-  disabled?: boolean;
   href?: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
-  isActive?: boolean;
+  id: AdminPageView | "profile";
   label: string;
 };
 
@@ -30,31 +32,56 @@ const adminPanelItems: AdminPanelItem[] = [
     description: "Dashboard home",
     href: "/admin",
     icon: DashboardIcon,
-    isActive: true,
+    id: "dashboard",
     label: "Overview",
   },
   {
     description: "Incoming submissions",
-    disabled: true,
+    href: "/admin/requests",
     icon: ClipboardListIcon,
+    id: "requests",
     label: "Requests",
   },
   {
     description: "Access management",
-    disabled: true,
+    href: "/admin/admins",
     icon: UsersIcon,
+    id: "admins",
     label: "Admins",
   },
   {
     description: "Account settings",
     href: "/admin/profile",
     icon: ProfileIcon,
+    id: "profile",
     label: "Profile",
   },
 ];
 
-const AdminPage = ({ admin }: AdminPageProps) => {
+const pageContent: Record<
+  AdminPageView,
+  {
+    description: string;
+    title: string;
+  }
+> = {
+  admins: {
+    description: "Admin management tools will live here.",
+    title: "Admins",
+  },
+  dashboard: {
+    description: "This area is reserved for Efficient Global administrators.",
+    title: "Dashboard",
+  },
+  requests: {
+    description: "Request management tools will live here.",
+    title: "Requests",
+  },
+};
+
+const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const currentPage = pageContent[view];
 
   return (
     <section
@@ -129,24 +156,12 @@ const AdminPage = ({ admin }: AdminPageProps) => {
                     </span>
                   </>
                 );
+                const isActive = item.id === view;
                 const itemClassName = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${
-                  item.isActive
+                  isActive
                     ? "bg-primary-200 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-50 hover:text-primary-200"
                 }`;
-
-                if (item.disabled) {
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className={`${itemClassName} cursor-not-allowed opacity-55`}
-                      disabled
-                    >
-                      {itemContent}
-                    </button>
-                  );
-                }
 
                 return (
                   <Link
@@ -184,12 +199,12 @@ const AdminPage = ({ admin }: AdminPageProps) => {
                     Admin
                   </p>
                   <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
-                    Dashboard
+                    {currentPage.title}
                   </h1>
                   <p className="mt-5 text-base leading-7 text-slate-600">
-                    This area is reserved for Efficient Global administrators.
+                    {currentPage.description}
                   </p>
-                  {admin ? (
+                  {admin && view === "dashboard" ? (
                     <p className="mt-3 text-sm text-slate-500">
                       Signed in as {admin.name} ({formatRole(admin.role)}).
                     </p>
@@ -198,41 +213,43 @@ const AdminPage = ({ admin }: AdminPageProps) => {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Requests
-                </p>
-                <p className="mt-3 text-2xl font-bold text-slate-950">0</p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Request review tools can live here when submissions are stored.
-                </p>
-              </div>
+            {view === "dashboard" ? (
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Requests
+                  </p>
+                  <p className="mt-3 text-2xl font-bold text-slate-950">0</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Request review tools can live here when submissions are stored.
+                  </p>
+                </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Role
-                </p>
-                <p className="mt-3 text-2xl font-bold capitalize text-slate-950">
-                  {formatRole(admin?.role)}
-                </p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Access level for the current admin session.
-                </p>
-              </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Role
+                  </p>
+                  <p className="mt-3 text-2xl font-bold capitalize text-slate-950">
+                    {formatRole(admin?.role)}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Access level for the current admin session.
+                  </p>
+                </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Status
-                </p>
-                <p className="mt-3 text-2xl font-bold capitalize text-slate-950">
-                  {admin?.status || "Active"}
-                </p>
-                <p className="mt-2 text-sm text-slate-500">
-                  Account standing for dashboard access.
-                </p>
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Status
+                  </p>
+                  <p className="mt-3 text-2xl font-bold capitalize text-slate-950">
+                    {admin?.status || "Active"}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Account standing for dashboard access.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
         </div>
       </div>
