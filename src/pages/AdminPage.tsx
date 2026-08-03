@@ -161,7 +161,10 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
                     </span>
                   </>
                 );
-                const itemClassName = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${
+                const itemLayoutClassName = isPanelCollapsed
+                  ? "w-full gap-3 px-3 py-2 lg:mx-auto lg:h-12 lg:w-12 lg:justify-center lg:gap-0 lg:px-0 lg:py-0"
+                  : "w-full gap-3 px-3 py-2";
+                const itemClassName = `flex min-h-12 items-center rounded-xl text-left text-sm font-semibold transition ${itemLayoutClassName} ${
                   isActive
                     ? "bg-primary-200 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-50 hover:text-primary-200"
@@ -172,6 +175,7 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
                     key={item.label}
                     to={item.href || "/admin"}
                     className={itemClassName}
+                    title={isPanelCollapsed ? item.label : undefined}
                   >
                     {itemContent}
                   </Link>
