@@ -1,32 +1,64 @@
+import { useState } from "react";
+import { cx } from "../components/atoms/formFieldStyles";
+import AdminDashboardSummary from "../components/organisms/admin/AdminDashboardSummary";
+import AdminDeliveryRequestsTable from "../components/organisms/admin/AdminDeliveryRequestsTable";
+import AdminSidebar from "../components/organisms/admin/AdminSidebar";
+import AdminViewHeader from "../components/organisms/admin/AdminViewHeader";
+import {
+  adminPageContent,
+  type AdminPageView,
+} from "../components/organisms/admin/adminPageConfig";
 import type { Admin } from "../utils/adminAuth";
 
 type AdminPageProps = {
   admin?: Admin;
+  view?: AdminPageView;
 };
 
-const AdminPage = ({ admin }: AdminPageProps) => (
-  <section className="min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-16 text-slate-950 lg:px-10">
-    <div className="mx-auto max-w-7xl">
-      <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-200">
-            Admin
-          </p>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
-            Admin
-          </h1>
-          <p className="mt-5 text-base leading-7 text-slate-600">
-            This area is reserved for Efficient Global administrators.
-          </p>
-          {admin ? (
-            <p className="mt-3 text-sm text-slate-500">
-              Signed in as {admin.name} ({admin.role.replace(/_/g, " ")}).
-            </p>
-          ) : null}
+const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const currentPage = adminPageContent[view];
+  const shouldShowViewHeader = view !== "deliveryRequests";
+
+  return (
+    <section
+      className={cx(
+        "min-h-[calc(100vh-7rem)] snap-start bg-slate-50 px-6 py-10 text-slate-950 transition-[padding] duration-300 lg:pr-10",
+        isPanelCollapsed ? "lg:pl-28" : "lg:pl-80",
+      )}
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col gap-6">
+          <AdminSidebar
+            admin={admin}
+            isCollapsed={isPanelCollapsed}
+            view={view}
+            onToggleCollapsed={() =>
+              setIsPanelCollapsed((currentValue) => !currentValue)
+            }
+          />
+
+          <main className="min-w-0 flex-1">
+            {shouldShowViewHeader ? (
+              <AdminViewHeader
+                admin={admin}
+                content={currentPage}
+                showSessionSummary={view === "dashboard"}
+              />
+            ) : null}
+
+            {view === "dashboard" ? (
+              <AdminDashboardSummary admin={admin} />
+            ) : null}
+
+            {view === "deliveryRequests" ? (
+              <AdminDeliveryRequestsTable />
+            ) : null}
+          </main>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default AdminPage;
