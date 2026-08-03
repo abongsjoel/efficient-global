@@ -1,4 +1,9 @@
 import { apiBaseUrl } from "./api";
+import {
+  clearAdminSessionToken,
+  getStoredAdminSessionToken,
+  storeAdminSessionToken,
+} from "./adminSessionToken";
 import type { AdminLoginFieldErrors } from "./formValidation";
 
 export type Admin = {
@@ -123,29 +128,6 @@ export type AdminDeliveryRequestsResult =
     };
 
 const adminEndpoint = `${apiBaseUrl}/api/admin`;
-const adminSessionTokenStorageKey = "efficient_global_admin_session_token";
-
-const getStoredAdminSessionToken = () =>
-  window.sessionStorage.getItem(adminSessionTokenStorageKey) ||
-  window.localStorage.getItem(adminSessionTokenStorageKey) ||
-  "";
-
-const storeAdminSessionToken = (token: string, keepMeLoggedIn: boolean) => {
-  window.sessionStorage.removeItem(adminSessionTokenStorageKey);
-  window.localStorage.removeItem(adminSessionTokenStorageKey);
-
-  if (keepMeLoggedIn) {
-    window.localStorage.setItem(adminSessionTokenStorageKey, token);
-    return;
-  }
-
-  window.sessionStorage.setItem(adminSessionTokenStorageKey, token);
-};
-
-const clearAdminSessionToken = () => {
-  window.sessionStorage.removeItem(adminSessionTokenStorageKey);
-  window.localStorage.removeItem(adminSessionTokenStorageKey);
-};
 
 const getAdminAuthorizationHeaders = () => {
   const token = getStoredAdminSessionToken();

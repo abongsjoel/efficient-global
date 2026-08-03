@@ -2,6 +2,7 @@ import { useState } from "react";
 import { cx } from "../components/atoms/formFieldStyles";
 import AdminDashboardSummary from "../components/organisms/admin/AdminDashboardSummary";
 import AdminDeliveryRequestsTable from "../components/organisms/admin/AdminDeliveryRequestsTable";
+import AdminInformationRequestsTable from "../components/organisms/admin/AdminInformationRequestsTable";
 import AdminSidebar from "../components/organisms/admin/AdminSidebar";
 import AdminViewHeader from "../components/organisms/admin/AdminViewHeader";
 import {
@@ -18,7 +19,8 @@ type AdminPageProps = {
 const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const currentPage = adminPageContent[view];
-  const shouldShowViewHeader = view !== "deliveryRequests";
+  const shouldShowViewHeader =
+    view !== "deliveryRequests" && view !== "informationRequests";
 
   return (
     <section
@@ -53,6 +55,10 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
 
             {view === "deliveryRequests" ? (
               <AdminDeliveryRequestsTable />
+            ) : null}
+
+            {view === "informationRequests" ? (
+              <AdminInformationRequestsTable />
             ) : null}
           </main>
         </div>

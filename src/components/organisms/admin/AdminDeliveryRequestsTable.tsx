@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { cx } from "../../atoms/formFieldStyles";
+import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
 import {
   getAdminDeliveryRequests,
@@ -20,34 +20,6 @@ const formatDateTime = (value: string) => {
 
   return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
 };
-
-const formatStatusLabel = (status: string) =>
-  (status || "unknown").replace(/_/g, " ");
-
-const getStatusBadgeClassName = (status: string) => {
-  switch (status) {
-    case "sent":
-    case "new":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "failed":
-      return "border-red-200 bg-red-50 text-red-700";
-    case "pending":
-      return "border-amber-200 bg-amber-50 text-amber-700";
-    default:
-      return "border-slate-200 bg-slate-50 text-slate-600";
-  }
-};
-
-const StatusBadge = ({ status }: { status: string }) => (
-  <span
-    className={cx(
-      "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold capitalize",
-      getStatusBadgeClassName(status),
-    )}
-  >
-    {formatStatusLabel(status)}
-  </span>
-);
 
 const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
