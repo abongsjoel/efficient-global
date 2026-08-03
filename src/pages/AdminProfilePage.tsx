@@ -19,6 +19,7 @@ import type {
   AdminProfileImageResult,
   AdminProfileUpdateResult,
 } from "../utils/adminAuth";
+import { formatAdminRole } from "../utils/adminDisplay";
 import { scrollToFirstErrorField } from "../utils/formFocus";
 
 type AdminProfilePageProps = {
@@ -51,8 +52,6 @@ type PasswordFields = {
 };
 
 type PasswordVisibilityFields = Record<keyof PasswordFields, boolean>;
-
-const formatRole = (role: string) => role.replace(/_/g, " ");
 
 const formatStatus = (status: string) => roleStatusLabels[status] || status;
 
@@ -667,7 +666,7 @@ const AdminProfilePage = ({
                 Role
               </dt>
               <dd className="mt-2 font-semibold capitalize text-slate-800">
-                {formatRole(admin.role)}
+                {formatAdminRole(admin.role)}
               </dd>
             </div>
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
