@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
 import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
 import {
-  getAdminDeliveryRequests,
   type AdminDeliveryRequest,
-} from "../../../utils/adminAuth";
+  useGetDeliveryRequestsQuery,
+} from "../../../services/adminApi";
+import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -101,45 +101,22 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
 ];
 
 const AdminDeliveryRequestsTable = () => {
-  const [deliveryRequests, setDeliveryRequests] = useState<
-    AdminDeliveryRequest[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadDeliveryRequests = async () => {
-      const result = await getAdminDeliveryRequests();
-
-      if (!isMounted) {
-        return;
-      }
-
-      if (!result.success) {
-        setErrorMessage(result.message);
-        setIsLoading(false);
-        return;
-      }
-
-      setDeliveryRequests(result.deliveryRequests);
-      setErrorMessage("");
-      setIsLoading(false);
-    };
-
-    loadDeliveryRequests();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const {
+    data: deliveryRequests = [],
+    error,
+    isLoading,
+  } = useGetDeliveryRequestsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
   return (
     <Table
       columns={deliveryRequestColumns}
       emptyMessage="No delivery requests yet."
-      errorMessage={errorMessage}
+      errorMessage={getRtkQueryErrorMessage(
+        error,
+        "We could not load delivery requests right now.",
+      )}
       getRowKey={(request) => request.id}
       isLoading={isLoading}
       loadingMessage="Loading delivery requests..."

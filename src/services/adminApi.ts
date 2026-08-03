@@ -33,8 +33,36 @@ export type AdminInformationRequest = {
   updatedAt: string;
 };
 
+export type AdminDeliveryRequest = {
+  id: string;
+  source: string;
+  pickup: string;
+  delivery: string;
+  datetime: string;
+  vehicle: string;
+  name: string;
+  email: string;
+  phone: string;
+  rush: string;
+  instructions: string;
+  status: string;
+  emailNotification: {
+    status: string;
+    resendEmailId?: string;
+    errorMessage?: string;
+    updatedAt?: string;
+  };
+  submittedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type AdminInformationRequestsResponse = {
   informationRequests?: AdminInformationRequest[];
+};
+
+type AdminDeliveryRequestsResponse = {
+  deliveryRequests?: AdminDeliveryRequest[];
 };
 
 const rawBaseQuery = fetchBaseQuery({
@@ -68,12 +96,29 @@ const adminBaseQuery: BaseQueryFn<
 export const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: adminBaseQuery,
-  tagTypes: ["InformationRequests"],
+  tagTypes: ["DeliveryRequests", "InformationRequests"],
   endpoints: (builder) => ({
+    getDeliveryRequests: builder.query<AdminDeliveryRequest[], void>({
+      query: () => "/delivery-requests",
+      transformResponse: (response: AdminDeliveryRequestsResponse) =>
+        response.deliveryRequests || [],
+      keepUnusedDataFor: 300,
+      providesTags: (result) =>
+        result
+          ? [
+              { type: "DeliveryRequests", id: "LIST" },
+              ...result.map(({ id }) => ({
+                type: "DeliveryRequests" as const,
+                id,
+              })),
+            ]
+          : [{ type: "DeliveryRequests", id: "LIST" }],
+    }),
     getInformationRequests: builder.query<AdminInformationRequest[], void>({
       query: () => "/information-requests",
       transformResponse: (response: AdminInformationRequestsResponse) =>
         response.informationRequests || [],
+      keepUnusedDataFor: 300,
       providesTags: (result) =>
         result
           ? [
@@ -88,4 +133,7 @@ export const adminApi = createApi({
   }),
 });
 
-export const { useGetInformationRequestsQuery } = adminApi;
+export const {
+  useGetDeliveryRequestsQuery,
+  useGetInformationRequestsQuery,
+} = adminApi;

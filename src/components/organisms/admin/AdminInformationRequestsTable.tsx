@@ -1,11 +1,10 @@
-import type { SerializedError } from "@reduxjs/toolkit";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
 import {
   type AdminInformationRequest,
   useGetInformationRequestsQuery,
 } from "../../../services/adminApi";
+import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
@@ -20,30 +19,6 @@ const formatDateTime = (value: string) => {
   const date = new Date(value);
 
   return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
-};
-
-const getQueryErrorMessage = (
-  error: FetchBaseQueryError | SerializedError | undefined,
-) => {
-  if (!error) {
-    return "";
-  }
-
-  if ("status" in error) {
-    const data = error.data;
-
-    if (data && typeof data === "object" && "message" in data) {
-      const message = data.message;
-
-      return typeof message === "string"
-        ? message
-        : "We could not load information requests right now.";
-    }
-
-    return "We could not load information requests right now.";
-  }
-
-  return error.message || "We could not load information requests right now.";
 };
 
 const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
@@ -116,7 +91,10 @@ const AdminInformationRequestsTable = () => {
     <Table
       columns={informationRequestColumns}
       emptyMessage="No information requests yet."
-      errorMessage={getQueryErrorMessage(error)}
+      errorMessage={getRtkQueryErrorMessage(
+        error,
+        "We could not load information requests right now.",
+      )}
       getRowKey={(request) => request.id}
       isLoading={isLoading}
       loadingMessage="Loading information requests..."
