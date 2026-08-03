@@ -4,7 +4,12 @@ import AdminProfilePage from "../../pages/AdminProfilePage";
 import { useAdminAuth } from "../../contexts/useAdminAuth";
 
 type AdminRouteProps = {
-  view?: "admins" | "dashboard" | "profile" | "requests";
+  view?:
+    | "admins"
+    | "dashboard"
+    | "deliveryRequests"
+    | "informationRequests"
+    | "profile";
 };
 
 const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {

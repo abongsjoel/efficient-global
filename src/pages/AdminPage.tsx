@@ -5,6 +5,7 @@ import {
   ChevronLeftIcon,
   ClipboardListIcon,
   DashboardIcon,
+  MailIcon,
   ProfileIcon,
   UsersIcon,
 } from "../components/icons";
@@ -15,7 +16,11 @@ type AdminPageProps = {
   view?: AdminPageView;
 };
 
-type AdminPageView = "dashboard" | "requests" | "admins";
+type AdminPageView =
+  | "dashboard"
+  | "deliveryRequests"
+  | "informationRequests"
+  | "admins";
 
 type AdminPanelItem = {
   description?: string;
@@ -36,11 +41,18 @@ const adminPanelItems: AdminPanelItem[] = [
     label: "Overview",
   },
   {
-    description: "Incoming submissions",
-    href: "/admin/requests",
+    description: "Delivery submissions",
+    href: "/admin/delivery-requests",
     icon: ClipboardListIcon,
-    id: "requests",
-    label: "Requests",
+    id: "deliveryRequests",
+    label: "Delivery Requests",
+  },
+  {
+    description: "Information inquiries",
+    href: "/admin/information-requests",
+    icon: MailIcon,
+    id: "informationRequests",
+    label: "Information Requests",
   },
   {
     description: "Access management",
@@ -73,9 +85,13 @@ const pageContent: Record<
     description: "This area is reserved for Efficient Global administrators.",
     title: "Dashboard",
   },
-  requests: {
-    description: "Request management tools will live here.",
-    title: "Requests",
+  deliveryRequests: {
+    description: "Delivery request submissions will live here.",
+    title: "Delivery Requests",
+  },
+  informationRequests: {
+    description: "Request information submissions will live here.",
+    title: "Information Requests",
   },
 };
 

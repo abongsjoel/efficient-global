@@ -17,7 +17,15 @@ function App() {
             <Route path="admin" element={<AdminRoute />} />
             <Route
               path="admin/requests"
-              element={<AdminRoute view="requests" />}
+              element={<AdminRoute view="deliveryRequests" />}
+            />
+            <Route
+              path="admin/delivery-requests"
+              element={<AdminRoute view="deliveryRequests" />}
+            />
+            <Route
+              path="admin/information-requests"
+              element={<AdminRoute view="informationRequests" />}
             />
             <Route
               path="admin/admins"
