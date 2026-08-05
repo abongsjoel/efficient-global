@@ -1,8 +1,8 @@
 import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
 import {
-  type AdminDeliveryRequest,
-  useGetDeliveryRequestsQuery,
+  type AdminInformationRequest,
+  useGetInformationRequestsQuery,
 } from "../../../services/adminApi";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
@@ -21,7 +21,7 @@ const formatDateTime = (value: string) => {
   return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
 };
 
-const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
+const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
     key: "submitted",
     header: "Submitted",
@@ -29,8 +29,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     render: (request) => formatDateTime(request.submittedAt),
   },
   {
-    key: "requester",
-    header: "Requester",
+    key: "contact",
+    header: "Contact",
     render: (request) => (
       <>
         <p className="font-semibold text-slate-950">{request.name}</p>
@@ -40,44 +40,24 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     ),
   },
   {
-    key: "pickup",
-    header: "Pickup",
-    cellClassName: "max-w-[190px] break-words text-slate-700",
-    render: (request) => <span title={request.pickup}>{request.pickup}</span>,
-  },
-  {
-    key: "delivery",
-    header: "Delivery",
+    key: "organization",
+    header: "Organization",
     cellClassName: "max-w-[190px] break-words text-slate-700",
     render: (request) => (
-      <span title={request.delivery}>{request.delivery}</span>
+      <span title={request.organization}>{request.organization || "-"}</span>
     ),
   },
   {
-    key: "needed",
-    header: "Needed",
-    cellClassName: "whitespace-nowrap text-slate-700",
-    render: (request) => formatDateTime(request.datetime),
+    key: "message",
+    header: "Message",
+    cellClassName: "max-w-[360px] break-words text-slate-700",
+    render: (request) => <span title={request.message}>{request.message}</span>,
   },
   {
-    key: "type",
-    header: "Type",
-    cellClassName: "font-medium capitalize text-slate-700",
-    render: (request) => request.vehicle,
-  },
-  {
-    key: "rush",
-    header: "Rush",
-    cellClassName: "font-medium capitalize text-slate-700",
-    render: (request) => request.rush,
-  },
-  {
-    key: "instructions",
-    header: "Instructions",
-    cellClassName: "max-w-[220px] break-words text-slate-600",
-    render: (request) => (
-      <span title={request.instructions}>{request.instructions || "-"}</span>
-    ),
+    key: "source",
+    header: "Source",
+    cellClassName: "font-medium text-slate-700",
+    render: (request) => request.source,
   },
   {
     key: "status",
@@ -100,32 +80,30 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   },
 ];
 
-const AdminDeliveryRequestsTable = () => {
+const AdminInformationRequestsTable = () => {
   const {
-    data: deliveryRequests = [],
+    data: informationRequests = [],
     error,
     isLoading,
-  } = useGetDeliveryRequestsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  } = useGetInformationRequestsQuery();
 
   return (
     <Table
-      columns={deliveryRequestColumns}
-      emptyMessage="No delivery requests yet."
+      columns={informationRequestColumns}
+      emptyMessage="No information requests yet."
       errorMessage={getRtkQueryErrorMessage(
         error,
-        "We could not load delivery requests right now.",
+        "We could not load information requests right now.",
       )}
       getRowKey={(request) => request.id}
       isLoading={isLoading}
-      loadingMessage="Loading delivery requests..."
-      minWidthClassName="min-w-[1280px]"
-      rows={deliveryRequests}
-      subtitle={`${deliveryRequests.length} total`}
-      title="Delivery Requests"
+      loadingMessage="Loading information requests..."
+      minWidthClassName="min-w-[1080px]"
+      rows={informationRequests}
+      subtitle={`${informationRequests.length} total`}
+      title="Information Requests"
     />
   );
 };
 
-export default AdminDeliveryRequestsTable;
+export default AdminInformationRequestsTable;
