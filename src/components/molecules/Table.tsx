@@ -372,7 +372,7 @@ const Table = <Row,>({
                   className={cx(
                     tableControlButtonClassName,
                     isSortingEnabled &&
-                      "border-primary-200 bg-primary-200 text-white hover:bg-primary-300 hover:text-white",
+                      "!border-primary-200 !bg-primary-200 !text-white hover:!bg-primary-300 hover:!text-white",
                   )}
                   size="sm"
                   type="button"
