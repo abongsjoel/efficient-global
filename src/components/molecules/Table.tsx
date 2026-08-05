@@ -161,7 +161,7 @@ const Table = <Row,>({
   return (
     <section
       className={cx(
-        "overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5",
+        "overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5",
         className,
       )}
     >
@@ -195,7 +195,7 @@ const Table = <Row,>({
               {isColumnPanelOpen ? (
                 <div
                   id={columnControlsId}
-                  className="absolute right-0 z-30 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15"
+                  className="absolute right-0 z-50 mt-2 max-h-80 w-64 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15"
                 >
                   <div className="space-y-1">
                     {hideableColumns.map((column) => {
@@ -265,7 +265,7 @@ const Table = <Row,>({
       ) : null}
 
       {shouldShowTable ? (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-b-xl">
           <table
             className={cx(
               minWidthClassName,
