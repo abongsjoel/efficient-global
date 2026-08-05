@@ -8,16 +8,33 @@ import {
 } from "react";
 import Button from "../atoms/Button";
 import { cx } from "../atoms/formFieldStyles";
-import { ColumnsIcon } from "../icons";
+import { ColumnsIcon, SortIcon } from "../icons";
+
+export type TableSortValue =
+  | boolean
+  | Date
+  | null
+  | number
+  | string
+  | undefined;
+
+type SortDirection = "asc" | "desc";
+
+type SortState = {
+  columnKey: string;
+  direction: SortDirection;
+} | null;
 
 export type TableColumn<Row> = {
   cellClassName?: string;
   header: ReactNode;
   headerClassName?: string;
   isHideable?: boolean;
+  isSortable?: boolean;
   key: string;
   label?: string;
   render: (row: Row) => ReactNode;
+  sortValue?: (row: Row) => TableSortValue;
 };
 
 type TableProps<Row> = {
@@ -60,6 +77,69 @@ const getStoredHiddenColumnKeys = (storageKey: string | undefined) => {
   }
 };
 
+const sortValueCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+const isColumnSortable = <Row,>(column: TableColumn<Row>) =>
+  column.isSortable !== false && typeof column.sortValue === "function";
+
+const normalizeSortValue = (value: TableSortValue) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    const timestamp = value.getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? 1 : 0;
+  }
+
+  const trimmedValue = value.trim();
+
+  return trimmedValue ? trimmedValue : null;
+};
+
+const compareSortValues = (
+  firstValue: TableSortValue,
+  secondValue: TableSortValue,
+) => {
+  const firstComparableValue = normalizeSortValue(firstValue);
+  const secondComparableValue = normalizeSortValue(secondValue);
+
+  if (firstComparableValue === null && secondComparableValue === null) {
+    return 0;
+  }
+
+  if (firstComparableValue === null) {
+    return 1;
+  }
+
+  if (secondComparableValue === null) {
+    return -1;
+  }
+
+  if (
+    typeof firstComparableValue === "number" &&
+    typeof secondComparableValue === "number"
+  ) {
+    return firstComparableValue - secondComparableValue;
+  }
+
+  return sortValueCollator.compare(
+    String(firstComparableValue),
+    String(secondComparableValue),
+  );
+};
+
 const Table = <Row,>({
   className,
   columns,
@@ -80,6 +160,7 @@ const Table = <Row,>({
     getStoredHiddenColumnKeys(columnVisibilityStorageKey),
   );
   const [isColumnPanelOpen, setIsColumnPanelOpen] = useState(false);
+  const [sortState, setSortState] = useState<SortState>(null);
   const hiddenColumnKeySet = useMemo(
     () => new Set(hiddenColumnKeys),
     [hiddenColumnKeys],
@@ -96,6 +177,42 @@ const Table = <Row,>({
 
     return nextVisibleColumns.length > 0 ? nextVisibleColumns : columns;
   }, [columns, hiddenColumnKeySet]);
+  const sortableColumnByKey = useMemo(
+    () =>
+      new Map(
+        columns
+          .filter(isColumnSortable)
+          .map((column) => [column.key, column]),
+      ),
+    [columns],
+  );
+  const sortedRows = useMemo(() => {
+    if (!sortState) {
+      return rows;
+    }
+
+    const sortColumn = sortableColumnByKey.get(sortState.columnKey);
+
+    if (!sortColumn?.sortValue) {
+      return rows;
+    }
+
+    return rows
+      .map((row, index) => ({ index, row }))
+      .sort((firstRow, secondRow) => {
+        const comparison = compareSortValues(
+          sortColumn.sortValue?.(firstRow.row),
+          sortColumn.sortValue?.(secondRow.row),
+        );
+
+        if (comparison === 0) {
+          return firstRow.index - secondRow.index;
+        }
+
+        return sortState.direction === "asc" ? comparison : -comparison;
+      })
+      .map(({ row }) => row);
+  }, [rows, sortState, sortableColumnByKey]);
   const hasHeader = Boolean(title || subtitle);
   const shouldShowTable = !isLoading && !errorMessage && rows.length > 0;
   const shouldShowColumnControls = hideableColumns.length > 1;
@@ -141,6 +258,10 @@ const Table = <Row,>({
   }, [isColumnPanelOpen]);
 
   const toggleColumnVisibility = (columnKey: string) => {
+    if (sortState?.columnKey === columnKey && !hiddenColumnKeySet.has(columnKey)) {
+      setSortState(null);
+    }
+
     setHiddenColumnKeys((currentHiddenColumnKeys) => {
       if (currentHiddenColumnKeys.includes(columnKey)) {
         return currentHiddenColumnKeys.filter((key) => key !== columnKey);
@@ -156,6 +277,58 @@ const Table = <Row,>({
 
       return [...currentHiddenColumnKeys, columnKey];
     });
+  };
+
+  const toggleColumnSort = (columnKey: string) => {
+    setSortState((currentSortState) => {
+      if (currentSortState?.columnKey !== columnKey) {
+        return { columnKey, direction: "asc" };
+      }
+
+      if (currentSortState.direction === "asc") {
+        return { columnKey, direction: "desc" };
+      }
+
+      return null;
+    });
+  };
+
+  const renderColumnHeader = (column: TableColumn<Row>) => {
+    const isSortable = isColumnSortable(column);
+    const sortDirection =
+      sortState?.columnKey === column.key ? sortState.direction : null;
+    const ariaSortValue = isSortable
+      ? sortDirection === "asc"
+        ? "ascending"
+        : sortDirection === "desc"
+          ? "descending"
+          : "none"
+      : undefined;
+
+    return (
+      <th
+        key={column.key}
+        aria-sort={ariaSortValue}
+        className={cx("px-4 py-3 font-semibold", column.headerClassName)}
+      >
+        {isSortable ? (
+          <button
+            aria-label={`Sort by ${getColumnLabel(column)}`}
+            className={cx(
+              "inline-flex items-center gap-1.5 rounded text-left font-semibold transition hover:text-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-200/30",
+              sortDirection && "text-primary-200",
+            )}
+            type="button"
+            onClick={() => toggleColumnSort(column.key)}
+          >
+            <span>{column.header}</span>
+            <SortIcon direction={sortDirection} />
+          </button>
+        ) : (
+          column.header
+        )}
+      </th>
+    );
   };
 
   return (
@@ -273,22 +446,10 @@ const Table = <Row,>({
             )}
           >
             <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
-              <tr>
-                {visibleColumns.map((column) => (
-                  <th
-                    key={column.key}
-                    className={cx(
-                      "px-4 py-3 font-semibold",
-                      column.headerClassName,
-                    )}
-                  >
-                    {column.header}
-                  </th>
-                ))}
-              </tr>
+              <tr>{visibleColumns.map(renderColumnHeader)}</tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.map((row, index) => (
+              {sortedRows.map((row, index) => (
                 <tr
                   key={getRowKey(row, index)}
                   className="align-top transition-colors hover:bg-slate-50/70"

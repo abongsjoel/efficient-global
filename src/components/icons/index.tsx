@@ -6,6 +6,10 @@ type PasswordVisibilityIconProps = IconProps & {
   isVisible: boolean;
 };
 
+type SortIconProps = IconProps & {
+  direction?: "asc" | "desc" | null;
+};
+
 const getIconClassName = (
   className: string | undefined,
   defaultClassName: string,
@@ -267,6 +271,37 @@ export const ProfileIcon = ({
   >
     <circle cx="12" cy="8" r="4" />
     <path d="M4 21a8 8 0 0 1 16 0" />
+  </svg>
+);
+
+export const SortIcon = ({
+  className,
+  direction = null,
+  ...props
+}: SortIconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-3.5 w-3.5 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    {direction === "asc" ? (
+      <path d="m7 14 5-5 5 5" />
+    ) : null}
+    {direction === "desc" ? (
+      <path d="m7 10 5 5 5-5" />
+    ) : null}
+    {!direction ? (
+      <>
+        <path d="m8 9 4-4 4 4" />
+        <path d="m16 15-4 4-4-4" />
+      </>
+    ) : null}
   </svg>
 );
 
