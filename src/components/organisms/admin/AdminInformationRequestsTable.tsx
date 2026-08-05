@@ -1,5 +1,6 @@
 import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
+import TruncatedHoverText from "../../molecules/TruncatedHoverText";
 import {
   type AdminInformationRequest,
   useGetInformationRequestsQuery,
@@ -51,7 +52,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "message",
     header: "Message",
     cellClassName: "max-w-[360px] break-words text-slate-700",
-    render: (request) => <span title={request.message}>{request.message}</span>,
+    render: (request) => <TruncatedHoverText text={request.message} />,
   },
   {
     key: "source",
