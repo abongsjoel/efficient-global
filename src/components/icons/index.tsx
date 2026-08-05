@@ -113,6 +113,27 @@ export const CloseIcon = ({
   </svg>
 );
 
+export const ColumnsIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M9 4v16" />
+    <path d="M15 4v16" />
+  </svg>
+);
+
 export const DashboardIcon = ({
   className,
   ...props

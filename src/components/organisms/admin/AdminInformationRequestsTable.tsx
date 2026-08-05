@@ -89,6 +89,7 @@ const AdminInformationRequestsTable = () => {
 
   return (
     <Table
+      columnVisibilityStorageKey="efficient_global_information_requests_table_columns"
       columns={informationRequestColumns}
       emptyMessage="No information requests yet."
       errorMessage={getRtkQueryErrorMessage(

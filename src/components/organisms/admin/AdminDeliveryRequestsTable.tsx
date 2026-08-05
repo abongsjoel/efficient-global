@@ -111,6 +111,7 @@ const AdminDeliveryRequestsTable = () => {
 
   return (
     <Table
+      columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns"
       columns={deliveryRequestColumns}
       emptyMessage="No delivery requests yet."
       errorMessage={getRtkQueryErrorMessage(
