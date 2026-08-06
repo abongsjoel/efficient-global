@@ -70,7 +70,9 @@ const getStoredHiddenColumnKeys = (storageKey: string | undefined) => {
     const parsedValue = storedValue ? JSON.parse(storedValue) : [];
 
     return Array.isArray(parsedValue)
-      ? parsedValue.filter((value): value is string => typeof value === "string")
+      ? parsedValue.filter(
+          (value): value is string => typeof value === "string",
+        )
       : [];
   } catch {
     return [];
@@ -184,9 +186,7 @@ const Table = <Row,>({
   const sortableColumnByKey = useMemo(
     () =>
       new Map(
-        columns
-          .filter(isColumnSortable)
-          .map((column) => [column.key, column]),
+        columns.filter(isColumnSortable).map((column) => [column.key, column]),
       ),
     [columns],
   );
@@ -312,7 +312,7 @@ const Table = <Row,>({
   const renderColumnHeader = (column: TableColumn<Row>) => {
     const isSortable = isSortingEnabled && isColumnSortable(column);
     const sortDirection =
-      sortState?.columnKey === column.key ? sortState.direction : null;
+      sortState?.columnKey === column.key ? sortState.direction : undefined;
     const ariaSortValue = isSortable
       ? sortDirection === "asc"
         ? "ascending"
@@ -332,7 +332,7 @@ const Table = <Row,>({
             aria-label={`Sort by ${getColumnLabel(column)}`}
             className={cx(
               "inline-flex items-center gap-1.5 rounded text-left font-semibold transition hover:text-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-200/30",
-              sortDirection && "text-primary-200",
+              sortDirection ? "text-primary-200" : undefined,
             )}
             type="button"
             onClick={() => toggleColumnSort(column.key)}
