@@ -33,6 +33,10 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
+    filter: {
+      type: "dateRange",
+      value: (request) => request.submittedAt,
+    },
     render: (request) => formatDateTime(request.submittedAt),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
@@ -46,12 +50,22 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
         <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
       </>
     ),
+    filter: {
+      placeholder: "Search name, email, or phone",
+      type: "text",
+      value: (request) => `${request.name} ${request.email} ${request.phone}`,
+    },
     sortValue: (request) => `${request.name} ${request.email} ${request.phone}`,
   },
   {
     key: "organization",
     header: "Organization",
     cellClassName: "max-w-[190px] break-words text-slate-700",
+    filter: {
+      placeholder: "Search organization",
+      type: "text",
+      value: (request) => request.organization,
+    },
     render: (request) => (
       <span title={request.organization}>{request.organization || "-"}</span>
     ),
@@ -61,6 +75,11 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "message",
     header: "Message",
     cellClassName: "max-w-[360px] break-words text-slate-700",
+    filter: {
+      placeholder: "Search message",
+      type: "text",
+      value: (request) => request.message,
+    },
     render: (request) => <TruncatedHoverText text={request.message} />,
     sortValue: (request) => request.message,
   },
@@ -68,18 +87,31 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "source",
     header: "Source",
     cellClassName: "font-medium text-slate-700",
+    filter: {
+      type: "select",
+      value: (request) => request.source,
+    },
     render: (request) => request.source,
     sortValue: (request) => request.source,
   },
   {
     key: "status",
     header: "Status",
+    filter: {
+      type: "select",
+      value: (request) => request.status,
+    },
     render: (request) => <StatusBadge status={request.status} />,
     sortValue: (request) => request.status,
   },
   {
     key: "email",
     header: "Email",
+    filter: {
+      label: "Email status",
+      type: "select",
+      value: (request) => request.emailNotification.status,
+    },
     render: (request) => (
       <>
         <StatusBadge status={request.emailNotification.status} />

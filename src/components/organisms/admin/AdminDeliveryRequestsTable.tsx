@@ -33,6 +33,10 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
+    filter: {
+      type: "dateRange",
+      value: (request) => request.submittedAt,
+    },
     render: (request) => formatDateTime(request.submittedAt),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
@@ -46,12 +50,22 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
         <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
       </>
     ),
+    filter: {
+      placeholder: "Search name, email, or phone",
+      type: "text",
+      value: (request) => `${request.name} ${request.email} ${request.phone}`,
+    },
     sortValue: (request) => `${request.name} ${request.email} ${request.phone}`,
   },
   {
     key: "pickup",
     header: "Pickup",
     cellClassName: "max-w-[190px] break-words text-slate-700",
+    filter: {
+      placeholder: "Search pickup",
+      type: "text",
+      value: (request) => request.pickup,
+    },
     render: (request) => <span title={request.pickup}>{request.pickup}</span>,
     sortValue: (request) => request.pickup,
   },
@@ -59,6 +73,11 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "delivery",
     header: "Delivery",
     cellClassName: "max-w-[190px] break-words text-slate-700",
+    filter: {
+      placeholder: "Search delivery",
+      type: "text",
+      value: (request) => request.delivery,
+    },
     render: (request) => (
       <span title={request.delivery}>{request.delivery}</span>
     ),
@@ -68,6 +87,10 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "needed",
     header: "Needed",
     cellClassName: "whitespace-nowrap text-slate-700",
+    filter: {
+      type: "dateRange",
+      value: (request) => request.datetime,
+    },
     render: (request) => formatDateTime(request.datetime),
     sortValue: (request) => getTimestamp(request.datetime),
   },
@@ -75,6 +98,10 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "type",
     header: "Type",
     cellClassName: "font-medium capitalize text-slate-700",
+    filter: {
+      type: "select",
+      value: (request) => request.vehicle,
+    },
     render: (request) => request.vehicle,
     sortValue: (request) => request.vehicle,
   },
@@ -82,6 +109,10 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "rush",
     header: "Rush",
     cellClassName: "font-medium capitalize text-slate-700",
+    filter: {
+      type: "select",
+      value: (request) => request.rush,
+    },
     render: (request) => request.rush,
     sortValue: (request) => request.rush,
   },
@@ -89,18 +120,32 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "instructions",
     header: "Instructions",
     cellClassName: "max-w-[220px] break-words text-slate-600",
+    filter: {
+      placeholder: "Search instructions",
+      type: "text",
+      value: (request) => request.instructions,
+    },
     render: (request) => <TruncatedHoverText text={request.instructions} />,
     sortValue: (request) => request.instructions,
   },
   {
     key: "status",
     header: "Status",
+    filter: {
+      type: "select",
+      value: (request) => request.status,
+    },
     render: (request) => <StatusBadge status={request.status} />,
     sortValue: (request) => request.status,
   },
   {
     key: "email",
     header: "Email",
+    filter: {
+      label: "Email status",
+      type: "select",
+      value: (request) => request.emailNotification.status,
+    },
     render: (request) => (
       <>
         <StatusBadge status={request.emailNotification.status} />

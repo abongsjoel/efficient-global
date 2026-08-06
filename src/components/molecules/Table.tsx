@@ -1,4 +1,5 @@
 import {
+  type ChangeEvent,
   useEffect,
   useId,
   useMemo,
@@ -8,7 +9,7 @@ import {
 } from "react";
 import Button from "../atoms/Button";
 import { cx } from "../atoms/formFieldStyles";
-import { ColumnsIcon, SortIcon } from "../icons";
+import { CloseIcon, ColumnsIcon, FilterIcon, SortIcon } from "../icons";
 
 export type TableSortValue =
   | boolean
@@ -25,8 +26,33 @@ type SortState = {
   direction: SortDirection;
 } | null;
 
+type TableFilterType = "dateRange" | "select" | "text";
+
+type TableFilterOption = {
+  label: string;
+  value: string;
+};
+
+type TableDateRangeFilterValue = {
+  from?: string;
+  to?: string;
+};
+
+type TableFilterStateValue = string | TableDateRangeFilterValue;
+
+type TableFilterState = Record<string, TableFilterStateValue | undefined>;
+
+type TableFilterConfig<Row> = {
+  label?: string;
+  options?: TableFilterOption[];
+  placeholder?: string;
+  type: TableFilterType;
+  value: (row: Row) => TableSortValue;
+};
+
 export type TableColumn<Row> = {
   cellClassName?: string;
+  filter?: TableFilterConfig<Row>;
   header: ReactNode;
   headerClassName?: string;
   isHideable?: boolean;
@@ -87,8 +113,21 @@ const sortValueCollator = new Intl.Collator(undefined, {
 const tableControlButtonClassName =
   "rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:border-primary-200 hover:bg-slate-50 hover:text-primary-200";
 
+const filterControlClassName =
+  "mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-primary-200 focus:bg-white focus:ring-4 focus:ring-primary-200/20";
+
+const hasColumnFilter = <Row,>(
+  column: TableColumn<Row>,
+): column is TableColumn<Row> & { filter: TableFilterConfig<Row> } =>
+  Boolean(column.filter);
+
 const isColumnSortable = <Row,>(column: TableColumn<Row>) =>
   column.isSortable !== false && typeof column.sortValue === "function";
+
+const formatFilterOptionLabel = (value: string) =>
+  (value || "Unknown")
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 const normalizeSortValue = (value: TableSortValue) => {
   if (value === null || value === undefined) {
@@ -145,6 +184,119 @@ const compareSortValues = (
   );
 };
 
+const getFilterStringValue = (value: TableSortValue) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? "" : value.toISOString();
+  }
+
+  return String(value).trim();
+};
+
+const normalizeFilterText = (value: TableSortValue) =>
+  getFilterStringValue(value).toLowerCase();
+
+const getFilterTimestamp = (value: TableSortValue) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    const timestamp = value.getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+  }
+
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? null : value;
+  }
+
+  const timestamp = new Date(String(value)).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
+const getDateInputTimestamp = (value: string | undefined, endOfDay = false) => {
+  if (!value) {
+    return null;
+  }
+
+  const timestamp = new Date(
+    `${value}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}`,
+  ).getTime();
+
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
+const isDateRangeFilterValue = (
+  value: TableFilterStateValue | undefined,
+): value is TableDateRangeFilterValue =>
+  Boolean(value) && typeof value === "object";
+
+const isFilterValueActive = (value: TableFilterStateValue | undefined) => {
+  if (!value) {
+    return false;
+  }
+
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+
+  return Boolean(value.from || value.to);
+};
+
+const getActiveFilterCount = (filters: TableFilterState) =>
+  Object.values(filters).filter(isFilterValueActive).length;
+
+const doesRowMatchFilter = <Row,>(
+  row: Row,
+  column: TableColumn<Row> & { filter: TableFilterConfig<Row> },
+  filterValue: TableFilterStateValue | undefined,
+) => {
+  if (!isFilterValueActive(filterValue)) {
+    return true;
+  }
+
+  const rowValue = column.filter.value(row);
+
+  if (column.filter.type === "dateRange") {
+    if (!isDateRangeFilterValue(filterValue)) {
+      return true;
+    }
+
+    const rowTimestamp = getFilterTimestamp(rowValue);
+
+    if (rowTimestamp === null) {
+      return false;
+    }
+
+    const fromTimestamp = getDateInputTimestamp(filterValue.from);
+    const toTimestamp = getDateInputTimestamp(filterValue.to, true);
+
+    return (
+      (fromTimestamp === null || rowTimestamp >= fromTimestamp) &&
+      (toTimestamp === null || rowTimestamp <= toTimestamp)
+    );
+  }
+
+  if (typeof filterValue !== "string") {
+    return true;
+  }
+
+  const normalizedFilterValue = filterValue.trim().toLowerCase();
+
+  if (!normalizedFilterValue) {
+    return true;
+  }
+
+  if (column.filter.type === "select") {
+    return normalizeFilterText(rowValue) === normalizedFilterValue;
+  }
+
+  return normalizeFilterText(rowValue).includes(normalizedFilterValue);
+};
+
 const Table = <Row,>({
   className,
   columns,
@@ -161,10 +313,14 @@ const Table = <Row,>({
 }: TableProps<Row>) => {
   const columnControlsId = useId();
   const columnControlsRef = useRef<HTMLDivElement>(null);
+  const filterControlsId = useId();
+  const filterControlsRef = useRef<HTMLDivElement>(null);
   const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(() =>
     getStoredHiddenColumnKeys(columnVisibilityStorageKey),
   );
+  const [filters, setFilters] = useState<TableFilterState>({});
   const [isColumnPanelOpen, setIsColumnPanelOpen] = useState(false);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isSortingEnabled, setIsSortingEnabled] = useState(false);
   const [sortState, setSortState] = useState<SortState>(null);
   const hiddenColumnKeySet = useMemo(
@@ -190,18 +346,44 @@ const Table = <Row,>({
       ),
     [columns],
   );
+  const filterableColumns = useMemo(
+    () => columns.filter(hasColumnFilter),
+    [columns],
+  );
+  const filterableColumnByKey = useMemo(
+    () => new Map(filterableColumns.map((column) => [column.key, column])),
+    [filterableColumns],
+  );
+  const activeFilterCount = useMemo(
+    () => getActiveFilterCount(filters),
+    [filters],
+  );
+  const hasActiveFilters = activeFilterCount > 0;
+  const filteredRows = useMemo(() => {
+    if (!hasActiveFilters) {
+      return rows;
+    }
+
+    return rows.filter((row) =>
+      Object.entries(filters).every(([columnKey, filterValue]) => {
+        const column = filterableColumnByKey.get(columnKey);
+
+        return column ? doesRowMatchFilter(row, column, filterValue) : true;
+      }),
+    );
+  }, [filterableColumnByKey, filters, hasActiveFilters, rows]);
   const sortedRows = useMemo(() => {
     if (!isSortingEnabled || !sortState) {
-      return rows;
+      return filteredRows;
     }
 
     const sortColumn = sortableColumnByKey.get(sortState.columnKey);
 
     if (!sortColumn?.sortValue) {
-      return rows;
+      return filteredRows;
     }
 
-    return rows
+    return filteredRows
       .map((row, index) => ({ index, row }))
       .sort((firstRow, secondRow) => {
         const comparison = compareSortValues(
@@ -216,11 +398,103 @@ const Table = <Row,>({
         return sortState.direction === "asc" ? comparison : -comparison;
       })
       .map(({ row }) => row);
-  }, [isSortingEnabled, rows, sortState, sortableColumnByKey]);
+  }, [filteredRows, isSortingEnabled, sortState, sortableColumnByKey]);
   const hasHeader = Boolean(title || subtitle);
-  const shouldShowTable = !isLoading && !errorMessage && rows.length > 0;
+  const shouldShowTable = !isLoading && !errorMessage && filteredRows.length > 0;
   const shouldShowColumnControls = hideableColumns.length > 1;
+  const shouldShowFilterControls = filterableColumns.length > 0;
   const shouldShowSortControls = sortableColumnByKey.size > 0;
+  const selectFilterOptionsByColumnKey = useMemo(() => {
+    const optionsByColumnKey = new Map<string, TableFilterOption[]>();
+
+    filterableColumns.forEach((column) => {
+      if (column.filter.type !== "select") {
+        return;
+      }
+
+      if (column.filter.options) {
+        optionsByColumnKey.set(column.key, column.filter.options);
+        return;
+      }
+
+      const optionsByValue = new Map<string, TableFilterOption>();
+
+      rows.forEach((row) => {
+        const rawValue = getFilterStringValue(column.filter.value(row));
+        const value = rawValue.toLowerCase();
+
+        if (!value || optionsByValue.has(value)) {
+          return;
+        }
+
+        optionsByValue.set(value, {
+          label: formatFilterOptionLabel(rawValue),
+          value,
+        });
+      });
+
+      optionsByColumnKey.set(
+        column.key,
+        [...optionsByValue.values()].sort((firstOption, secondOption) =>
+          sortValueCollator.compare(firstOption.label, secondOption.label),
+        ),
+      );
+    });
+
+    return optionsByColumnKey;
+  }, [filterableColumns, rows]);
+  const activeFilterSummaries = useMemo(
+    () =>
+      filterableColumns
+        .map((column) => {
+          const filterValue = filters[column.key];
+
+          if (!isFilterValueActive(filterValue)) {
+            return null;
+          }
+
+          const label = column.filter.label ?? getColumnLabel(column);
+          let valueLabel = "";
+
+          if (
+            column.filter.type === "dateRange" &&
+            isDateRangeFilterValue(filterValue)
+          ) {
+            if (filterValue.from && filterValue.to) {
+              valueLabel = `${filterValue.from} to ${filterValue.to}`;
+            } else {
+              valueLabel = filterValue.from
+                ? `from ${filterValue.from}`
+                : `until ${filterValue.to}`;
+            }
+          } else if (typeof filterValue === "string") {
+            const trimmedFilterValue = filterValue.trim();
+
+            if (column.filter.type === "select") {
+              valueLabel =
+                selectFilterOptionsByColumnKey
+                  .get(column.key)
+                  ?.find((option) => option.value === trimmedFilterValue)
+                  ?.label ?? trimmedFilterValue;
+            } else {
+              valueLabel = trimmedFilterValue;
+            }
+          }
+
+          return {
+            key: column.key,
+            label,
+            valueLabel,
+          };
+        })
+        .filter(
+          (
+            summary,
+          ): summary is { key: string; label: string; valueLabel: string } =>
+            Boolean(summary),
+        ),
+    [filterableColumns, filters, selectFilterOptionsByColumnKey],
+  );
 
   useEffect(() => {
     if (!columnVisibilityStorageKey || typeof window === "undefined") {
@@ -234,22 +508,34 @@ const Table = <Row,>({
   }, [columnVisibilityStorageKey, hiddenColumnKeys]);
 
   useEffect(() => {
-    if (!isColumnPanelOpen) {
+    if (!isColumnPanelOpen && !isFilterPanelOpen) {
       return;
     }
 
     const handlePointerDown = (event: PointerEvent) => {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+
       if (
-        event.target instanceof Node &&
+        isColumnPanelOpen &&
         !columnControlsRef.current?.contains(event.target)
       ) {
         setIsColumnPanelOpen(false);
+      }
+
+      if (
+        isFilterPanelOpen &&
+        !filterControlsRef.current?.contains(event.target)
+      ) {
+        setIsFilterPanelOpen(false);
       }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsColumnPanelOpen(false);
+        setIsFilterPanelOpen(false);
       }
     };
 
@@ -260,7 +546,168 @@ const Table = <Row,>({
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isColumnPanelOpen]);
+  }, [isColumnPanelOpen, isFilterPanelOpen]);
+
+  const updateFilter = (
+    columnKey: string,
+    filterValue: TableFilterStateValue | undefined,
+  ) => {
+    setFilters((currentFilters) => {
+      const nextFilters = { ...currentFilters };
+
+      if (isFilterValueActive(filterValue)) {
+        nextFilters[columnKey] = filterValue;
+      } else {
+        delete nextFilters[columnKey];
+      }
+
+      return nextFilters;
+    });
+  };
+
+  const updateTextFilter = (
+    columnKey: string,
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    updateFilter(columnKey, event.currentTarget.value);
+  };
+
+  const updateDateRangeFilter = (
+    columnKey: string,
+    field: keyof TableDateRangeFilterValue,
+    value: string,
+  ) => {
+    setFilters((currentFilters) => {
+      const currentFilterValue = currentFilters[columnKey];
+      const currentDateRangeFilter = isDateRangeFilterValue(currentFilterValue)
+        ? currentFilterValue
+        : {};
+      const nextDateRangeFilter = {
+        ...currentDateRangeFilter,
+        [field]: value,
+      };
+      const nextFilters = { ...currentFilters };
+
+      if (isFilterValueActive(nextDateRangeFilter)) {
+        nextFilters[columnKey] = nextDateRangeFilter;
+      } else {
+        delete nextFilters[columnKey];
+      }
+
+      return nextFilters;
+    });
+  };
+
+  const clearFilter = (columnKey: string) => {
+    setFilters((currentFilters) => {
+      const nextFilters = { ...currentFilters };
+      delete nextFilters[columnKey];
+      return nextFilters;
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+  };
+
+  const renderFilterControl = (
+    column: TableColumn<Row> & { filter: TableFilterConfig<Row> },
+  ) => {
+    const label = column.filter.label ?? getColumnLabel(column);
+    const filterId = `${filterControlsId}-${column.key}`;
+    const filterValue = filters[column.key];
+
+    if (column.filter.type === "dateRange") {
+      const dateRangeValue = isDateRangeFilterValue(filterValue)
+        ? filterValue
+        : {};
+
+      return (
+        <div key={column.key}>
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+            {label}
+          </span>
+          <div className="mt-1.5 grid grid-cols-2 gap-2">
+            <label className="text-xs font-medium text-slate-500">
+              From
+              <input
+                className={filterControlClassName}
+                type="date"
+                value={dateRangeValue.from ?? ""}
+                onChange={(event) =>
+                  updateDateRangeFilter(
+                    column.key,
+                    "from",
+                    event.currentTarget.value,
+                  )
+                }
+              />
+            </label>
+            <label className="text-xs font-medium text-slate-500">
+              To
+              <input
+                className={filterControlClassName}
+                type="date"
+                value={dateRangeValue.to ?? ""}
+                onChange={(event) =>
+                  updateDateRangeFilter(
+                    column.key,
+                    "to",
+                    event.currentTarget.value,
+                  )
+                }
+              />
+            </label>
+          </div>
+        </div>
+      );
+    }
+
+    if (column.filter.type === "select") {
+      return (
+        <label
+          key={column.key}
+          htmlFor={filterId}
+          className="block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500"
+        >
+          {label}
+          <select
+            id={filterId}
+            className={filterControlClassName}
+            value={typeof filterValue === "string" ? filterValue : ""}
+            onChange={(event) => updateTextFilter(column.key, event)}
+          >
+            <option value="">All</option>
+            {(selectFilterOptionsByColumnKey.get(column.key) ?? []).map(
+              (option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+      );
+    }
+
+    return (
+      <label
+        key={column.key}
+        htmlFor={filterId}
+        className="block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500"
+      >
+        {label}
+        <input
+          id={filterId}
+          className={filterControlClassName}
+          placeholder={column.filter.placeholder ?? `Search ${label}`}
+          type="search"
+          value={typeof filterValue === "string" ? filterValue : ""}
+          onChange={(event) => updateTextFilter(column.key, event)}
+        />
+      </label>
+    );
+  };
 
   const toggleColumnVisibility = (columnKey: string) => {
     if (
@@ -364,8 +811,64 @@ const Table = <Row,>({
               <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
             ) : null}
           </div>
-          {shouldShowColumnControls || shouldShowSortControls ? (
+          {shouldShowColumnControls ||
+          shouldShowFilterControls ||
+          shouldShowSortControls ? (
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              {shouldShowFilterControls ? (
+                <div ref={filterControlsRef} className="relative shrink-0">
+                  <Button
+                    aria-controls={filterControlsId}
+                    aria-expanded={isFilterPanelOpen}
+                    aria-pressed={hasActiveFilters}
+                    className={cx(
+                      tableControlButtonClassName,
+                      (hasActiveFilters || isFilterPanelOpen) &&
+                        "!border-primary-200 !bg-primary-200 !text-white hover:!bg-primary-300 hover:!text-white",
+                    )}
+                    size="sm"
+                    type="button"
+                    variant="link"
+                    onClick={() => {
+                      setIsColumnPanelOpen(false);
+                      setIsFilterPanelOpen((currentValue) => !currentValue);
+                    }}
+                  >
+                    <FilterIcon />
+                    {hasActiveFilters
+                      ? `Filters (${activeFilterCount})`
+                      : "Filters"}
+                  </Button>
+
+                  {isFilterPanelOpen ? (
+                    <div
+                      id={filterControlsId}
+                      className="absolute right-0 z-50 mt-2 max-h-[28rem] w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-950/15"
+                    >
+                      <div className="space-y-4">
+                        {filterableColumns.map(renderFilterControl)}
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                        <span className="text-xs text-slate-500">
+                          {filteredRows.length} of {rows.length} shown
+                        </span>
+                        <Button
+                          className="px-2 py-1 text-xs"
+                          disabled={!hasActiveFilters}
+                          size="sm"
+                          type="button"
+                          variant="link"
+                          onClick={clearFilters}
+                        >
+                          Clear filters
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
               {shouldShowSortControls ? (
                 <Button
                   aria-pressed={isSortingEnabled}
@@ -393,9 +896,10 @@ const Table = <Row,>({
                     size="sm"
                     type="button"
                     variant="link"
-                    onClick={() =>
-                      setIsColumnPanelOpen((currentValue) => !currentValue)
-                    }
+                    onClick={() => {
+                      setIsFilterPanelOpen(false);
+                      setIsColumnPanelOpen((currentValue) => !currentValue);
+                    }}
                   >
                     <ColumnsIcon />
                     Columns
@@ -461,6 +965,46 @@ const Table = <Row,>({
         </div>
       ) : null}
 
+      {hasActiveFilters ? (
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50/60 px-5 py-3">
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+            Showing {filteredRows.length} of {rows.length}
+          </span>
+          {activeFilterSummaries.map((filter) => (
+            <span
+              key={filter.key}
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-primary-200/30 bg-white px-2.5 py-1 text-xs font-medium text-slate-700"
+            >
+              <span className="truncate">
+                <span className="font-semibold text-slate-900">
+                  {filter.label}:
+                </span>{" "}
+                {filter.valueLabel}
+              </span>
+              <Button
+                aria-label={`Remove ${filter.label} filter`}
+                className="rounded-full p-0.5 text-slate-400 hover:text-red-600"
+                size="sm"
+                type="button"
+                variant="link"
+                onClick={() => clearFilter(filter.key)}
+              >
+                <CloseIcon className="h-3 w-3" />
+              </Button>
+            </span>
+          ))}
+          <Button
+            className="px-2 py-1 text-xs"
+            size="sm"
+            type="button"
+            variant="link"
+            onClick={clearFilters}
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+
       {isLoading ? (
         <p className="px-5 py-8 text-sm text-slate-500">{loadingMessage}</p>
       ) : null}
@@ -474,8 +1018,12 @@ const Table = <Row,>({
         </p>
       ) : null}
 
-      {!isLoading && !errorMessage && rows.length === 0 ? (
-        <p className="px-5 py-8 text-sm text-slate-500">{emptyMessage}</p>
+      {!isLoading && !errorMessage && filteredRows.length === 0 ? (
+        <p className="px-5 py-8 text-sm text-slate-500">
+          {hasActiveFilters && rows.length > 0
+            ? "No records match the active filters."
+            : emptyMessage}
+        </p>
       ) : null}
 
       {shouldShowTable ? (

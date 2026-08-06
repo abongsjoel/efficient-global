@@ -180,6 +180,27 @@ export const EditIcon = ({
   </svg>
 );
 
+export const FilterIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M3 5h18" />
+    <path d="M6 12h12" />
+    <path d="M10 19h4" />
+  </svg>
+);
+
 export const LogoutIcon = ({
   className,
   ...props
