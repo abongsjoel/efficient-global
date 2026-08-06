@@ -912,7 +912,7 @@ const Table = <Row,>({
                   </span>
                   <input
                     id={searchInputId}
-                    className="h-9 w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-primary-200 focus:border-primary-200 focus:ring-4 focus:ring-primary-200/20"
+                    className="table-search-input h-9 w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-primary-200 focus:border-primary-200 focus:ring-4 focus:ring-primary-200/20"
                     placeholder={searchPlaceholder}
                     type="search"
                     value={searchQuery}
