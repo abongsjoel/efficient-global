@@ -1,5 +1,6 @@
 import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
+import TruncatedHoverText from "../../molecules/TruncatedHoverText";
 import {
   type AdminDeliveryRequest,
   useGetDeliveryRequestsQuery,
@@ -21,12 +22,19 @@ const formatDateTime = (value: string) => {
   return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
 };
 
+const getTimestamp = (value: string) => {
+  const timestamp = new Date(value).getTime();
+
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
 const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
     render: (request) => formatDateTime(request.submittedAt),
+    sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
     key: "requester",
@@ -38,12 +46,14 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
         <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
       </>
     ),
+    sortValue: (request) => `${request.name} ${request.email} ${request.phone}`,
   },
   {
     key: "pickup",
     header: "Pickup",
     cellClassName: "max-w-[190px] break-words text-slate-700",
     render: (request) => <span title={request.pickup}>{request.pickup}</span>,
+    sortValue: (request) => request.pickup,
   },
   {
     key: "delivery",
@@ -52,37 +62,41 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     render: (request) => (
       <span title={request.delivery}>{request.delivery}</span>
     ),
+    sortValue: (request) => request.delivery,
   },
   {
     key: "needed",
     header: "Needed",
     cellClassName: "whitespace-nowrap text-slate-700",
     render: (request) => formatDateTime(request.datetime),
+    sortValue: (request) => getTimestamp(request.datetime),
   },
   {
     key: "type",
     header: "Type",
     cellClassName: "font-medium capitalize text-slate-700",
     render: (request) => request.vehicle,
+    sortValue: (request) => request.vehicle,
   },
   {
     key: "rush",
     header: "Rush",
     cellClassName: "font-medium capitalize text-slate-700",
     render: (request) => request.rush,
+    sortValue: (request) => request.rush,
   },
   {
     key: "instructions",
     header: "Instructions",
     cellClassName: "max-w-[220px] break-words text-slate-600",
-    render: (request) => (
-      <span title={request.instructions}>{request.instructions || "-"}</span>
-    ),
+    render: (request) => <TruncatedHoverText text={request.instructions} />,
+    sortValue: (request) => request.instructions,
   },
   {
     key: "status",
     header: "Status",
     render: (request) => <StatusBadge status={request.status} />,
+    sortValue: (request) => request.status,
   },
   {
     key: "email",
@@ -97,6 +111,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
         ) : null}
       </>
     ),
+    sortValue: (request) => request.emailNotification.status,
   },
 ];
 
@@ -111,6 +126,7 @@ const AdminDeliveryRequestsTable = () => {
 
   return (
     <Table
+      columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns"
       columns={deliveryRequestColumns}
       emptyMessage="No delivery requests yet."
       errorMessage={getRtkQueryErrorMessage(

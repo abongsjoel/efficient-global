@@ -1,5 +1,6 @@
 import StatusBadge from "../../atoms/StatusBadge";
 import Table, { type TableColumn } from "../../molecules/Table";
+import TruncatedHoverText from "../../molecules/TruncatedHoverText";
 import {
   type AdminInformationRequest,
   useGetInformationRequestsQuery,
@@ -21,12 +22,19 @@ const formatDateTime = (value: string) => {
   return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
 };
 
+const getTimestamp = (value: string) => {
+  const timestamp = new Date(value).getTime();
+
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
 const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
     render: (request) => formatDateTime(request.submittedAt),
+    sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
     key: "contact",
@@ -38,6 +46,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
         <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
       </>
     ),
+    sortValue: (request) => `${request.name} ${request.email} ${request.phone}`,
   },
   {
     key: "organization",
@@ -46,23 +55,27 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     render: (request) => (
       <span title={request.organization}>{request.organization || "-"}</span>
     ),
+    sortValue: (request) => request.organization,
   },
   {
     key: "message",
     header: "Message",
     cellClassName: "max-w-[360px] break-words text-slate-700",
-    render: (request) => <span title={request.message}>{request.message}</span>,
+    render: (request) => <TruncatedHoverText text={request.message} />,
+    sortValue: (request) => request.message,
   },
   {
     key: "source",
     header: "Source",
     cellClassName: "font-medium text-slate-700",
     render: (request) => request.source,
+    sortValue: (request) => request.source,
   },
   {
     key: "status",
     header: "Status",
     render: (request) => <StatusBadge status={request.status} />,
+    sortValue: (request) => request.status,
   },
   {
     key: "email",
@@ -77,6 +90,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
         ) : null}
       </>
     ),
+    sortValue: (request) => request.emailNotification.status,
   },
 ];
 
@@ -89,6 +103,7 @@ const AdminInformationRequestsTable = () => {
 
   return (
     <Table
+      columnVisibilityStorageKey="efficient_global_information_requests_table_columns"
       columns={informationRequestColumns}
       emptyMessage="No information requests yet."
       errorMessage={getRtkQueryErrorMessage(
