@@ -183,6 +183,23 @@ const AdminDeliveryRequestsTable = () => {
       loadingMessage="Loading delivery requests..."
       minWidthClassName="min-w-[1280px]"
       rows={deliveryRequests}
+      searchPlaceholder="Search delivery requests..."
+      searchValue={(request) => [
+        request.submittedAt,
+        request.source,
+        request.pickup,
+        request.delivery,
+        request.datetime,
+        request.vehicle,
+        request.name,
+        request.email,
+        request.phone,
+        request.rush,
+        request.instructions,
+        request.status,
+        request.emailNotification.status,
+        request.emailNotification.errorMessage,
+      ]}
       subtitle={`${deliveryRequests.length} total`}
       title="Delivery Requests"
     />

@@ -147,6 +147,19 @@ const AdminInformationRequestsTable = () => {
       loadingMessage="Loading information requests..."
       minWidthClassName="min-w-[1080px]"
       rows={informationRequests}
+      searchPlaceholder="Search information requests..."
+      searchValue={(request) => [
+        request.submittedAt,
+        request.source,
+        request.name,
+        request.email,
+        request.phone,
+        request.organization,
+        request.message,
+        request.status,
+        request.emailNotification.status,
+        request.emailNotification.errorMessage,
+      ]}
       subtitle={`${informationRequests.length} total`}
       title="Information Requests"
     />

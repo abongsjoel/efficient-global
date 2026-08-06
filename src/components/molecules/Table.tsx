@@ -9,7 +9,13 @@ import {
 } from "react";
 import Button from "../atoms/Button";
 import { cx } from "../atoms/formFieldStyles";
-import { CloseIcon, ColumnsIcon, FilterIcon, SortIcon } from "../icons";
+import {
+  CloseIcon,
+  ColumnsIcon,
+  FilterIcon,
+  SearchIcon,
+  SortIcon,
+} from "../icons";
 
 export type TableSortValue =
   | boolean
@@ -41,6 +47,8 @@ type TableDateRangeFilterValue = {
 type TableFilterStateValue = string | TableDateRangeFilterValue;
 
 type TableFilterState = Record<string, TableFilterStateValue | undefined>;
+
+type TableSearchValue = TableSortValue | TableSortValue[];
 
 type TableFilterConfig<Row> = {
   label?: string;
@@ -74,6 +82,8 @@ type TableProps<Row> = {
   loadingMessage?: string;
   minWidthClassName?: string;
   rows: Row[];
+  searchPlaceholder?: string;
+  searchValue?: (row: Row) => TableSearchValue;
   subtitle?: ReactNode;
   title?: ReactNode;
 };
@@ -199,6 +209,31 @@ const getFilterStringValue = (value: TableSortValue) => {
 const normalizeFilterText = (value: TableSortValue) =>
   getFilterStringValue(value).toLowerCase();
 
+const getSearchStringValue = (value: TableSearchValue) =>
+  (Array.isArray(value) ? value : [value])
+    .map(getFilterStringValue)
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+const getDefaultSearchStringValue = <Row,>(
+  row: Row,
+  columns: Array<TableColumn<Row>>,
+) =>
+  columns
+    .flatMap((column) => [
+      column.filter?.value(row),
+      column.sortValue?.(row),
+    ])
+    .filter(
+      (value): value is Exclude<TableSortValue, null | undefined> =>
+        value !== null && value !== undefined,
+    )
+    .map(getFilterStringValue)
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
 const getFilterTimestamp = (value: TableSortValue) => {
   if (value === null || value === undefined) {
     return null;
@@ -308,6 +343,8 @@ const Table = <Row,>({
   loadingMessage = "Loading...",
   minWidthClassName = "min-w-full",
   rows,
+  searchPlaceholder = "Search table...",
+  searchValue,
   subtitle,
   title,
 }: TableProps<Row>) => {
@@ -315,6 +352,7 @@ const Table = <Row,>({
   const columnControlsRef = useRef<HTMLDivElement>(null);
   const filterControlsId = useId();
   const filterControlsRef = useRef<HTMLDivElement>(null);
+  const searchInputId = useId();
   const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(() =>
     getStoredHiddenColumnKeys(columnVisibilityStorageKey),
   );
@@ -322,6 +360,7 @@ const Table = <Row,>({
   const [isColumnPanelOpen, setIsColumnPanelOpen] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isSortingEnabled, setIsSortingEnabled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortState, setSortState] = useState<SortState>(null);
   const hiddenColumnKeySet = useMemo(
     () => new Set(hiddenColumnKeys),
@@ -359,19 +398,36 @@ const Table = <Row,>({
     [filters],
   );
   const hasActiveFilters = activeFilterCount > 0;
-  const filteredRows = useMemo(() => {
-    if (!hasActiveFilters) {
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const hasActiveSearch = normalizedSearchQuery.length > 0;
+  const shouldShowSearchControl =
+    Boolean(searchValue) || columns.some((column) => column.filter || column.sortValue);
+  const searchedRows = useMemo(() => {
+    if (!hasActiveSearch) {
       return rows;
     }
 
-    return rows.filter((row) =>
+    return rows.filter((row) => {
+      const rowSearchValue = searchValue
+        ? getSearchStringValue(searchValue(row))
+        : getDefaultSearchStringValue(row, columns);
+
+      return rowSearchValue.includes(normalizedSearchQuery);
+    });
+  }, [columns, hasActiveSearch, normalizedSearchQuery, rows, searchValue]);
+  const filteredRows = useMemo(() => {
+    if (!hasActiveFilters) {
+      return searchedRows;
+    }
+
+    return searchedRows.filter((row) =>
       Object.entries(filters).every(([columnKey, filterValue]) => {
         const column = filterableColumnByKey.get(columnKey);
 
         return column ? doesRowMatchFilter(row, column, filterValue) : true;
       }),
     );
-  }, [filterableColumnByKey, filters, hasActiveFilters, rows]);
+  }, [filterableColumnByKey, filters, hasActiveFilters, searchedRows]);
   const sortedRows = useMemo(() => {
     if (!isSortingEnabled || !sortState) {
       return filteredRows;
@@ -610,6 +666,15 @@ const Table = <Row,>({
     setFilters({});
   };
 
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const clearSearchAndFilters = () => {
+    setSearchQuery("");
+    setFilters({});
+  };
+
   const renderFilterControl = (
     column: TableColumn<Row> & { filter: TableFilterConfig<Row> },
   ) => {
@@ -813,8 +878,41 @@ const Table = <Row,>({
           </div>
           {shouldShowColumnControls ||
           shouldShowFilterControls ||
+          shouldShowSearchControl ||
           shouldShowSortControls ? (
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              {shouldShowSearchControl ? (
+                <label
+                  htmlFor={searchInputId}
+                  className="relative w-full sm:w-64"
+                >
+                  <span className="sr-only">Search table</span>
+                  <span className="pointer-events-none absolute left-3 top-1/2 text-slate-400 -translate-y-1/2">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    id={searchInputId}
+                    className="h-9 w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-primary-200 focus:border-primary-200 focus:ring-4 focus:ring-primary-200/20"
+                    placeholder={searchPlaceholder}
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                  />
+                  {hasActiveSearch ? (
+                    <Button
+                      aria-label="Clear table search"
+                      className="absolute right-2 top-1/2 rounded-full p-1 text-slate-400 -translate-y-1/2 hover:text-red-600"
+                      size="sm"
+                      type="button"
+                      variant="link"
+                      onClick={clearSearch}
+                    >
+                      <CloseIcon className="h-3.5 w-3.5" />
+                    </Button>
+                  ) : null}
+                </label>
+              ) : null}
+
               {shouldShowFilterControls ? (
                 <div ref={filterControlsRef} className="relative shrink-0">
                   <Button
@@ -965,11 +1063,29 @@ const Table = <Row,>({
         </div>
       ) : null}
 
-      {hasActiveFilters ? (
+      {hasActiveFilters || hasActiveSearch ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50/60 px-5 py-3">
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
             Showing {filteredRows.length} of {rows.length}
           </span>
+          {hasActiveSearch ? (
+            <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-primary-200/30 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+              <span className="truncate">
+                <span className="font-semibold text-slate-900">Search:</span>{" "}
+                {searchQuery.trim()}
+              </span>
+              <Button
+                aria-label="Remove search"
+                className="rounded-full p-0.5 text-slate-400 hover:text-red-600"
+                size="sm"
+                type="button"
+                variant="link"
+                onClick={clearSearch}
+              >
+                <CloseIcon className="h-3 w-3" />
+              </Button>
+            </span>
+          ) : null}
           {activeFilterSummaries.map((filter) => (
             <span
               key={filter.key}
@@ -998,7 +1114,7 @@ const Table = <Row,>({
             size="sm"
             type="button"
             variant="link"
-            onClick={clearFilters}
+            onClick={clearSearchAndFilters}
           >
             Clear all
           </Button>
@@ -1020,8 +1136,8 @@ const Table = <Row,>({
 
       {!isLoading && !errorMessage && filteredRows.length === 0 ? (
         <p className="px-5 py-8 text-sm text-slate-500">
-          {hasActiveFilters && rows.length > 0
-            ? "No records match the active filters."
+          {(hasActiveFilters || hasActiveSearch) && rows.length > 0
+            ? "No records match the active search or filters."
             : emptyMessage}
         </p>
       ) : null}
