@@ -37,17 +37,24 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "dateRange",
       value: (request) => request.submittedAt,
     },
-    render: (request) => formatDateTime(request.submittedAt),
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(formatDateTime(request.submittedAt)),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
     key: "contact",
     header: "Contact",
-    render: (request) => (
+    render: (request, { highlightSearchText }) => (
       <>
-        <p className="font-semibold text-slate-950">{request.name}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.email}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
+        <p className="font-semibold text-slate-950">
+          {highlightSearchText(request.name)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.email)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.phone)}
+        </p>
       </>
     ),
     filter: {
@@ -66,8 +73,10 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "text",
       value: (request) => request.organization,
     },
-    render: (request) => (
-      <span title={request.organization}>{request.organization || "-"}</span>
+    render: (request, { highlightSearchText }) => (
+      <span title={request.organization}>
+        {highlightSearchText(request.organization || "-")}
+      </span>
     ),
     sortValue: (request) => request.organization,
   },
@@ -80,7 +89,9 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "text",
       value: (request) => request.message,
     },
-    render: (request) => <TruncatedHoverText text={request.message} />,
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText highlightQuery={searchQuery} text={request.message} />
+    ),
     sortValue: (request) => request.message,
   },
   {
@@ -91,7 +102,8 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "select",
       value: (request) => request.source,
     },
-    render: (request) => request.source,
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.source),
     sortValue: (request) => request.source,
   },
   {
@@ -101,7 +113,9 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "select",
       value: (request) => request.status,
     },
-    render: (request) => <StatusBadge status={request.status} />,
+    render: (request, { searchQuery }) => (
+      <StatusBadge highlightQuery={searchQuery} status={request.status} />
+    ),
     sortValue: (request) => request.status,
   },
   {
@@ -112,16 +126,23 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "select",
       value: (request) => request.emailNotification.status,
     },
-    render: (request) => (
-      <>
-        <StatusBadge status={request.emailNotification.status} />
-        {request.emailNotification.errorMessage ? (
-          <p className="mt-2 max-w-[220px] text-xs text-red-600">
-            {request.emailNotification.errorMessage}
-          </p>
-        ) : null}
-      </>
-    ),
+    render: (request, { highlightSearchText, searchQuery }) => {
+      const errorMessage = request.emailNotification.errorMessage;
+
+      return (
+        <>
+          <StatusBadge
+            highlightQuery={searchQuery}
+            status={request.emailNotification.status}
+          />
+          {errorMessage ? (
+            <p className="mt-2 max-w-[220px] text-xs text-red-600">
+              {highlightSearchText(errorMessage)}
+            </p>
+          ) : null}
+        </>
+      );
+    },
     sortValue: (request) => request.emailNotification.status,
   },
 ];
@@ -149,7 +170,7 @@ const AdminInformationRequestsTable = () => {
       rows={informationRequests}
       searchPlaceholder="Search information requests..."
       searchValue={(request) => [
-        request.submittedAt,
+        formatDateTime(request.submittedAt),
         request.source,
         request.name,
         request.email,

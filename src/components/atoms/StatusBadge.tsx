@@ -1,6 +1,8 @@
+import HighlightedText from "./HighlightedText";
 import { cx } from "./formFieldStyles";
 
 type StatusBadgeProps = {
+  highlightQuery?: string;
   status: string;
 };
 
@@ -28,8 +30,9 @@ const getStatusBadgeTone = (status: string) => {
 const formatStatusLabel = (status: string) =>
   (status || "unknown").replace(/_/g, " ");
 
-const StatusBadge = ({ status }: StatusBadgeProps) => {
+const StatusBadge = ({ highlightQuery, status }: StatusBadgeProps) => {
   const tone = getStatusBadgeTone(status);
+  const label = formatStatusLabel(status);
 
   return (
     <span
@@ -38,7 +41,11 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
         statusBadgeStyles[tone],
       )}
     >
-      {formatStatusLabel(status)}
+      <HighlightedText
+        highlightClassName="bg-amber-200/90"
+        query={highlightQuery}
+        text={label}
+      />
     </span>
   );
 };

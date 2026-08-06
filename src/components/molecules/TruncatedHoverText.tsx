@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
+import HighlightedText from "../atoms/HighlightedText";
 import { cx } from "../atoms/formFieldStyles";
 
 type TooltipPosition = {
@@ -19,6 +20,7 @@ type TooltipPosition = {
 type TruncatedHoverTextProps = {
   className?: string;
   emptyFallback?: string;
+  highlightQuery?: string;
   lineCount?: number;
   text?: string | null;
 };
@@ -31,6 +33,7 @@ const TOOLTIP_ESTIMATED_HEIGHT = 220;
 const TruncatedHoverText = ({
   className,
   emptyFallback = "-",
+  highlightQuery,
   lineCount = 3,
   text,
 }: TruncatedHoverTextProps) => {
@@ -156,7 +159,7 @@ const TruncatedHoverText = ({
         onPointerEnter={openTooltip}
         onPointerLeave={scheduleCloseTooltip}
       >
-        {displayText}
+        <HighlightedText query={highlightQuery} text={displayText ?? ""} />
       </span>
 
       {isTooltipOpen &&
@@ -180,7 +183,9 @@ const TruncatedHoverText = ({
               onPointerEnter={clearCloseTimeout}
               onPointerLeave={scheduleCloseTooltip}
             >
-              <p className="whitespace-pre-wrap break-words">{text}</p>
+              <p className="whitespace-pre-wrap break-words">
+                <HighlightedText query={highlightQuery} text={text ?? ""} />
+              </p>
             </div>,
             document.body,
           )

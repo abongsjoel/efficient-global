@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import Button from "../atoms/Button";
+import HighlightedText from "../atoms/HighlightedText";
 import { cx } from "../atoms/formFieldStyles";
 import {
   CloseIcon,
@@ -50,6 +51,11 @@ type TableFilterState = Record<string, TableFilterStateValue | undefined>;
 
 type TableSearchValue = TableSortValue | TableSortValue[];
 
+export type TableRenderContext = {
+  highlightSearchText: (value: TableSortValue) => ReactNode;
+  searchQuery: string;
+};
+
 type TableFilterConfig<Row> = {
   label?: string;
   options?: TableFilterOption[];
@@ -67,7 +73,7 @@ export type TableColumn<Row> = {
   isSortable?: boolean;
   key: string;
   label?: string;
-  render: (row: Row) => ReactNode;
+  render: (row: Row, context: TableRenderContext) => ReactNode;
   sortValue?: (row: Row) => TableSortValue;
 };
 
@@ -398,10 +404,24 @@ const Table = <Row,>({
     [filters],
   );
   const hasActiveFilters = activeFilterCount > 0;
-  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const trimmedSearchQuery = searchQuery.trim();
+  const normalizedSearchQuery = trimmedSearchQuery.toLowerCase();
   const hasActiveSearch = normalizedSearchQuery.length > 0;
   const shouldShowSearchControl =
-    Boolean(searchValue) || columns.some((column) => column.filter || column.sortValue);
+    Boolean(searchValue) ||
+    columns.some((column) => column.filter || column.sortValue);
+  const renderContext = useMemo<TableRenderContext>(
+    () => ({
+      highlightSearchText: (value) => (
+        <HighlightedText
+          query={trimmedSearchQuery}
+          text={getFilterStringValue(value)}
+        />
+      ),
+      searchQuery: trimmedSearchQuery,
+    }),
+    [trimmedSearchQuery],
+  );
   const searchedRows = useMemo(() => {
     if (!hasActiveSearch) {
       return rows;
@@ -1164,7 +1184,7 @@ const Table = <Row,>({
                       key={column.key}
                       className={cx("px-4 py-4", column.cellClassName)}
                     >
-                      {column.render(row)}
+                      {column.render(row, renderContext)}
                     </td>
                   ))}
                 </tr>

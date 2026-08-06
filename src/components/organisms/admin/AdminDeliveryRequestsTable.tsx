@@ -37,17 +37,24 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "dateRange",
       value: (request) => request.submittedAt,
     },
-    render: (request) => formatDateTime(request.submittedAt),
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(formatDateTime(request.submittedAt)),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
     key: "requester",
     header: "Requester",
-    render: (request) => (
+    render: (request, { highlightSearchText }) => (
       <>
-        <p className="font-semibold text-slate-950">{request.name}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.email}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
+        <p className="font-semibold text-slate-950">
+          {highlightSearchText(request.name)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.email)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.phone)}
+        </p>
       </>
     ),
     filter: {
@@ -66,7 +73,9 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.pickup,
     },
-    render: (request) => <span title={request.pickup}>{request.pickup}</span>,
+    render: (request, { highlightSearchText }) => (
+      <span title={request.pickup}>{highlightSearchText(request.pickup)}</span>
+    ),
     sortValue: (request) => request.pickup,
   },
   {
@@ -78,8 +87,10 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.delivery,
     },
-    render: (request) => (
-      <span title={request.delivery}>{request.delivery}</span>
+    render: (request, { highlightSearchText }) => (
+      <span title={request.delivery}>
+        {highlightSearchText(request.delivery)}
+      </span>
     ),
     sortValue: (request) => request.delivery,
   },
@@ -91,7 +102,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "dateRange",
       value: (request) => request.datetime,
     },
-    render: (request) => formatDateTime(request.datetime),
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(formatDateTime(request.datetime)),
     sortValue: (request) => getTimestamp(request.datetime),
   },
   {
@@ -102,7 +114,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "select",
       value: (request) => request.vehicle,
     },
-    render: (request) => request.vehicle,
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.vehicle),
     sortValue: (request) => request.vehicle,
   },
   {
@@ -113,7 +126,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "select",
       value: (request) => request.rush,
     },
-    render: (request) => request.rush,
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.rush),
     sortValue: (request) => request.rush,
   },
   {
@@ -125,7 +139,12 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.instructions,
     },
-    render: (request) => <TruncatedHoverText text={request.instructions} />,
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText
+        highlightQuery={searchQuery}
+        text={request.instructions}
+      />
+    ),
     sortValue: (request) => request.instructions,
   },
   {
@@ -135,7 +154,9 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "select",
       value: (request) => request.status,
     },
-    render: (request) => <StatusBadge status={request.status} />,
+    render: (request, { searchQuery }) => (
+      <StatusBadge highlightQuery={searchQuery} status={request.status} />
+    ),
     sortValue: (request) => request.status,
   },
   {
@@ -146,16 +167,23 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "select",
       value: (request) => request.emailNotification.status,
     },
-    render: (request) => (
-      <>
-        <StatusBadge status={request.emailNotification.status} />
-        {request.emailNotification.errorMessage ? (
-          <p className="mt-2 max-w-[220px] text-xs text-red-600">
-            {request.emailNotification.errorMessage}
-          </p>
-        ) : null}
-      </>
-    ),
+    render: (request, { highlightSearchText, searchQuery }) => {
+      const errorMessage = request.emailNotification.errorMessage;
+
+      return (
+        <>
+          <StatusBadge
+            highlightQuery={searchQuery}
+            status={request.emailNotification.status}
+          />
+          {errorMessage ? (
+            <p className="mt-2 max-w-[220px] text-xs text-red-600">
+              {highlightSearchText(errorMessage)}
+            </p>
+          ) : null}
+        </>
+      );
+    },
     sortValue: (request) => request.emailNotification.status,
   },
 ];
@@ -185,11 +213,11 @@ const AdminDeliveryRequestsTable = () => {
       rows={deliveryRequests}
       searchPlaceholder="Search delivery requests..."
       searchValue={(request) => [
-        request.submittedAt,
+        formatDateTime(request.submittedAt),
         request.source,
         request.pickup,
         request.delivery,
-        request.datetime,
+        formatDateTime(request.datetime),
         request.vehicle,
         request.name,
         request.email,
