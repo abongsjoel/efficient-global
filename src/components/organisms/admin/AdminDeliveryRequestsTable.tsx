@@ -33,34 +33,64 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
-    render: (request) => formatDateTime(request.submittedAt),
+    filter: {
+      type: "dateRange",
+      value: (request) => request.submittedAt,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(formatDateTime(request.submittedAt)),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
     key: "requester",
     header: "Requester",
-    render: (request) => (
+    render: (request, { highlightSearchText }) => (
       <>
-        <p className="font-semibold text-slate-950">{request.name}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.email}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
+        <p className="font-semibold text-slate-950">
+          {highlightSearchText(request.name)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.email)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.phone)}
+        </p>
       </>
     ),
+    filter: {
+      placeholder: "Search name, email, or phone",
+      type: "text",
+      value: (request) => `${request.name} ${request.email} ${request.phone}`,
+    },
     sortValue: (request) => `${request.name} ${request.email} ${request.phone}`,
   },
   {
     key: "pickup",
     header: "Pickup",
     cellClassName: "max-w-[190px] break-words text-slate-700",
-    render: (request) => <span title={request.pickup}>{request.pickup}</span>,
+    filter: {
+      placeholder: "Search pickup",
+      type: "text",
+      value: (request) => request.pickup,
+    },
+    render: (request, { highlightSearchText }) => (
+      <span title={request.pickup}>{highlightSearchText(request.pickup)}</span>
+    ),
     sortValue: (request) => request.pickup,
   },
   {
     key: "delivery",
     header: "Delivery",
     cellClassName: "max-w-[190px] break-words text-slate-700",
-    render: (request) => (
-      <span title={request.delivery}>{request.delivery}</span>
+    filter: {
+      placeholder: "Search delivery",
+      type: "text",
+      value: (request) => request.delivery,
+    },
+    render: (request, { highlightSearchText }) => (
+      <span title={request.delivery}>
+        {highlightSearchText(request.delivery)}
+      </span>
     ),
     sortValue: (request) => request.delivery,
   },
@@ -68,49 +98,92 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "needed",
     header: "Needed",
     cellClassName: "whitespace-nowrap text-slate-700",
-    render: (request) => formatDateTime(request.datetime),
+    filter: {
+      type: "dateRange",
+      value: (request) => request.datetime,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(formatDateTime(request.datetime)),
     sortValue: (request) => getTimestamp(request.datetime),
   },
   {
     key: "type",
     header: "Type",
     cellClassName: "font-medium capitalize text-slate-700",
-    render: (request) => request.vehicle,
+    filter: {
+      type: "select",
+      value: (request) => request.vehicle,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.vehicle),
     sortValue: (request) => request.vehicle,
   },
   {
     key: "rush",
     header: "Rush",
     cellClassName: "font-medium capitalize text-slate-700",
-    render: (request) => request.rush,
+    filter: {
+      type: "select",
+      value: (request) => request.rush,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.rush),
     sortValue: (request) => request.rush,
   },
   {
     key: "instructions",
     header: "Instructions",
     cellClassName: "max-w-[220px] break-words text-slate-600",
-    render: (request) => <TruncatedHoverText text={request.instructions} />,
+    filter: {
+      placeholder: "Search instructions",
+      type: "text",
+      value: (request) => request.instructions,
+    },
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText
+        highlightQuery={searchQuery}
+        text={request.instructions}
+      />
+    ),
     sortValue: (request) => request.instructions,
   },
   {
     key: "status",
     header: "Status",
-    render: (request) => <StatusBadge status={request.status} />,
+    filter: {
+      type: "select",
+      value: (request) => request.status,
+    },
+    render: (request, { searchQuery }) => (
+      <StatusBadge highlightQuery={searchQuery} status={request.status} />
+    ),
     sortValue: (request) => request.status,
   },
   {
     key: "email",
     header: "Email",
-    render: (request) => (
-      <>
-        <StatusBadge status={request.emailNotification.status} />
-        {request.emailNotification.errorMessage ? (
-          <p className="mt-2 max-w-[220px] text-xs text-red-600">
-            {request.emailNotification.errorMessage}
-          </p>
-        ) : null}
-      </>
-    ),
+    filter: {
+      label: "Email status",
+      type: "select",
+      value: (request) => request.emailNotification.status,
+    },
+    render: (request, { highlightSearchText, searchQuery }) => {
+      const errorMessage = request.emailNotification.errorMessage;
+
+      return (
+        <>
+          <StatusBadge
+            highlightQuery={searchQuery}
+            status={request.emailNotification.status}
+          />
+          {errorMessage ? (
+            <p className="mt-2 max-w-[220px] text-xs text-red-600">
+              {highlightSearchText(errorMessage)}
+            </p>
+          ) : null}
+        </>
+      );
+    },
     sortValue: (request) => request.emailNotification.status,
   },
 ];
@@ -138,6 +211,23 @@ const AdminDeliveryRequestsTable = () => {
       loadingMessage="Loading delivery requests..."
       minWidthClassName="min-w-[1280px]"
       rows={deliveryRequests}
+      searchPlaceholder="Search delivery requests..."
+      searchValue={(request) => [
+        formatDateTime(request.submittedAt),
+        request.source,
+        request.pickup,
+        request.delivery,
+        formatDateTime(request.datetime),
+        request.vehicle,
+        request.name,
+        request.email,
+        request.phone,
+        request.rush,
+        request.instructions,
+        request.status,
+        request.emailNotification.status,
+        request.emailNotification.errorMessage,
+      ]}
       subtitle={`${deliveryRequests.length} total`}
       title="Delivery Requests"
     />

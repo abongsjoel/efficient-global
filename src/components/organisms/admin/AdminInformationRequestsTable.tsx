@@ -33,27 +33,50 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
-    render: (request) => formatDateTime(request.submittedAt),
+    filter: {
+      type: "dateRange",
+      value: (request) => request.submittedAt,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(formatDateTime(request.submittedAt)),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
     key: "contact",
     header: "Contact",
-    render: (request) => (
+    render: (request, { highlightSearchText }) => (
       <>
-        <p className="font-semibold text-slate-950">{request.name}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.email}</p>
-        <p className="mt-1 text-xs text-slate-500">{request.phone}</p>
+        <p className="font-semibold text-slate-950">
+          {highlightSearchText(request.name)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.email)}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {highlightSearchText(request.phone)}
+        </p>
       </>
     ),
+    filter: {
+      placeholder: "Search name, email, or phone",
+      type: "text",
+      value: (request) => `${request.name} ${request.email} ${request.phone}`,
+    },
     sortValue: (request) => `${request.name} ${request.email} ${request.phone}`,
   },
   {
     key: "organization",
     header: "Organization",
     cellClassName: "max-w-[190px] break-words text-slate-700",
-    render: (request) => (
-      <span title={request.organization}>{request.organization || "-"}</span>
+    filter: {
+      placeholder: "Search organization",
+      type: "text",
+      value: (request) => request.organization,
+    },
+    render: (request, { highlightSearchText }) => (
+      <span title={request.organization}>
+        {highlightSearchText(request.organization || "-")}
+      </span>
     ),
     sortValue: (request) => request.organization,
   },
@@ -61,35 +84,65 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "message",
     header: "Message",
     cellClassName: "max-w-[360px] break-words text-slate-700",
-    render: (request) => <TruncatedHoverText text={request.message} />,
+    filter: {
+      placeholder: "Search message",
+      type: "text",
+      value: (request) => request.message,
+    },
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText highlightQuery={searchQuery} text={request.message} />
+    ),
     sortValue: (request) => request.message,
   },
   {
     key: "source",
     header: "Source",
     cellClassName: "font-medium text-slate-700",
-    render: (request) => request.source,
+    filter: {
+      type: "select",
+      value: (request) => request.source,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.source),
     sortValue: (request) => request.source,
   },
   {
     key: "status",
     header: "Status",
-    render: (request) => <StatusBadge status={request.status} />,
+    filter: {
+      type: "select",
+      value: (request) => request.status,
+    },
+    render: (request, { searchQuery }) => (
+      <StatusBadge highlightQuery={searchQuery} status={request.status} />
+    ),
     sortValue: (request) => request.status,
   },
   {
     key: "email",
     header: "Email",
-    render: (request) => (
-      <>
-        <StatusBadge status={request.emailNotification.status} />
-        {request.emailNotification.errorMessage ? (
-          <p className="mt-2 max-w-[220px] text-xs text-red-600">
-            {request.emailNotification.errorMessage}
-          </p>
-        ) : null}
-      </>
-    ),
+    filter: {
+      label: "Email status",
+      type: "select",
+      value: (request) => request.emailNotification.status,
+    },
+    render: (request, { highlightSearchText, searchQuery }) => {
+      const errorMessage = request.emailNotification.errorMessage;
+
+      return (
+        <>
+          <StatusBadge
+            highlightQuery={searchQuery}
+            status={request.emailNotification.status}
+          />
+          {errorMessage ? (
+            <p className="mt-2 max-w-[220px] text-xs text-red-600">
+              {highlightSearchText(errorMessage)}
+            </p>
+          ) : null}
+        </>
+      );
+    },
     sortValue: (request) => request.emailNotification.status,
   },
 ];
@@ -115,6 +168,19 @@ const AdminInformationRequestsTable = () => {
       loadingMessage="Loading information requests..."
       minWidthClassName="min-w-[1080px]"
       rows={informationRequests}
+      searchPlaceholder="Search information requests..."
+      searchValue={(request) => [
+        formatDateTime(request.submittedAt),
+        request.source,
+        request.name,
+        request.email,
+        request.phone,
+        request.organization,
+        request.message,
+        request.status,
+        request.emailNotification.status,
+        request.emailNotification.errorMessage,
+      ]}
       subtitle={`${informationRequests.length} total`}
       title="Information Requests"
     />

@@ -180,6 +180,27 @@ export const EditIcon = ({
   </svg>
 );
 
+export const FilterIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M3 5h18" />
+    <path d="M6 12h12" />
+    <path d="M10 19h4" />
+  </svg>
+);
+
 export const LogoutIcon = ({
   className,
   ...props
@@ -271,6 +292,26 @@ export const ProfileIcon = ({
   >
     <circle cx="12" cy="8" r="4" />
     <path d="M4 21a8 8 0 0 1 16 0" />
+  </svg>
+);
+
+export const SearchIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" />
   </svg>
 );
 

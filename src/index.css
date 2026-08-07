@@ -12,6 +12,13 @@
   }
 }
 
+@layer components {
+  .table-search-input::-webkit-search-cancel-button,
+  .table-search-input::-webkit-search-decoration {
+    appearance: none;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

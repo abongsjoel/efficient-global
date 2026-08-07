@@ -7,35 +7,45 @@ import {
   type ReactNode,
 } from "react";
 import Button from "../atoms/Button";
+import HighlightedText from "../atoms/HighlightedText";
 import { cx } from "../atoms/formFieldStyles";
-import { ColumnsIcon, SortIcon } from "../icons";
+import { SortIcon } from "../icons";
+import TableActiveControls from "./table/TableActiveControls";
+import TableColumnControls from "./table/TableColumnControls";
+import TableFilterControls from "./table/TableFilterControls";
+import TableHeaderCell from "./table/TableHeaderCell";
+import TableSearchControl from "./table/TableSearchControl";
+import type {
+  SortState,
+  TableColumn,
+  TableDateRangeFilterValue,
+  TableFilterState,
+  TableFilterStateValue,
+  TableRenderContext,
+  TableSearchValue,
+} from "./table/tableTypes";
+import {
+  compareSortValues,
+  doesRowMatchFilter,
+  getActiveFilterCount,
+  getActiveFilterSummaries,
+  getDefaultSearchStringValue,
+  getFilterStringValue,
+  getSearchStringValue,
+  getSelectFilterOptionsByColumnKey,
+  getStoredHiddenColumnKeys,
+  hasColumnFilter,
+  isColumnSortable,
+  isDateRangeFilterValue,
+  isFilterValueActive,
+  tableControlButtonClassName,
+} from "./table/tableUtils";
 
-export type TableSortValue =
-  | boolean
-  | Date
-  | null
-  | number
-  | string
-  | undefined;
-
-type SortDirection = "asc" | "desc";
-
-type SortState = {
-  columnKey: string;
-  direction: SortDirection;
-} | null;
-
-export type TableColumn<Row> = {
-  cellClassName?: string;
-  header: ReactNode;
-  headerClassName?: string;
-  isHideable?: boolean;
-  isSortable?: boolean;
-  key: string;
-  label?: string;
-  render: (row: Row) => ReactNode;
-  sortValue?: (row: Row) => TableSortValue;
-};
+export type {
+  TableColumn,
+  TableRenderContext,
+  TableSortValue,
+} from "./table/tableTypes";
 
 type TableProps<Row> = {
   className?: string;
@@ -48,99 +58,10 @@ type TableProps<Row> = {
   loadingMessage?: string;
   minWidthClassName?: string;
   rows: Row[];
+  searchPlaceholder?: string;
+  searchValue?: (row: Row) => TableSearchValue;
   subtitle?: ReactNode;
   title?: ReactNode;
-};
-
-const getColumnLabel = <Row,>(column: TableColumn<Row>) => {
-  if (column.label) {
-    return column.label;
-  }
-
-  return typeof column.header === "string" ? column.header : column.key;
-};
-
-const getStoredHiddenColumnKeys = (storageKey: string | undefined) => {
-  if (!storageKey || typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const storedValue = window.localStorage.getItem(storageKey);
-    const parsedValue = storedValue ? JSON.parse(storedValue) : [];
-
-    return Array.isArray(parsedValue)
-      ? parsedValue.filter((value): value is string => typeof value === "string")
-      : [];
-  } catch {
-    return [];
-  }
-};
-
-const sortValueCollator = new Intl.Collator(undefined, {
-  numeric: true,
-  sensitivity: "base",
-});
-
-const tableControlButtonClassName =
-  "rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:border-primary-200 hover:bg-slate-50 hover:text-primary-200";
-
-const isColumnSortable = <Row,>(column: TableColumn<Row>) =>
-  column.isSortable !== false && typeof column.sortValue === "function";
-
-const normalizeSortValue = (value: TableSortValue) => {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  if (value instanceof Date) {
-    const timestamp = value.getTime();
-    return Number.isNaN(timestamp) ? null : timestamp;
-  }
-
-  if (typeof value === "number") {
-    return Number.isNaN(value) ? null : value;
-  }
-
-  if (typeof value === "boolean") {
-    return value ? 1 : 0;
-  }
-
-  const trimmedValue = value.trim();
-
-  return trimmedValue ? trimmedValue : null;
-};
-
-const compareSortValues = (
-  firstValue: TableSortValue,
-  secondValue: TableSortValue,
-) => {
-  const firstComparableValue = normalizeSortValue(firstValue);
-  const secondComparableValue = normalizeSortValue(secondValue);
-
-  if (firstComparableValue === null && secondComparableValue === null) {
-    return 0;
-  }
-
-  if (firstComparableValue === null) {
-    return 1;
-  }
-
-  if (secondComparableValue === null) {
-    return -1;
-  }
-
-  if (
-    typeof firstComparableValue === "number" &&
-    typeof secondComparableValue === "number"
-  ) {
-    return firstComparableValue - secondComparableValue;
-  }
-
-  return sortValueCollator.compare(
-    String(firstComparableValue),
-    String(secondComparableValue),
-  );
 };
 
 const Table = <Row,>({
@@ -154,17 +75,26 @@ const Table = <Row,>({
   loadingMessage = "Loading...",
   minWidthClassName = "min-w-full",
   rows,
+  searchPlaceholder = "Search table...",
+  searchValue,
   subtitle,
   title,
 }: TableProps<Row>) => {
   const columnControlsId = useId();
   const columnControlsRef = useRef<HTMLDivElement>(null);
+  const filterControlsId = useId();
+  const filterControlsRef = useRef<HTMLDivElement>(null);
+  const searchInputId = useId();
   const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(() =>
     getStoredHiddenColumnKeys(columnVisibilityStorageKey),
   );
+  const [filters, setFilters] = useState<TableFilterState>({});
   const [isColumnPanelOpen, setIsColumnPanelOpen] = useState(false);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isSortingEnabled, setIsSortingEnabled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortState, setSortState] = useState<SortState>(null);
+
   const hiddenColumnKeySet = useMemo(
     () => new Set(hiddenColumnKeys),
     [hiddenColumnKeys],
@@ -184,24 +114,79 @@ const Table = <Row,>({
   const sortableColumnByKey = useMemo(
     () =>
       new Map(
-        columns
-          .filter(isColumnSortable)
-          .map((column) => [column.key, column]),
+        columns.filter(isColumnSortable).map((column) => [column.key, column]),
       ),
     [columns],
   );
+  const filterableColumns = useMemo(
+    () => columns.filter(hasColumnFilter),
+    [columns],
+  );
+  const filterableColumnByKey = useMemo(
+    () => new Map(filterableColumns.map((column) => [column.key, column])),
+    [filterableColumns],
+  );
+  const activeFilterCount = useMemo(
+    () => getActiveFilterCount(filters),
+    [filters],
+  );
+  const hasActiveFilters = activeFilterCount > 0;
+  const trimmedSearchQuery = searchQuery.trim();
+  const normalizedSearchQuery = trimmedSearchQuery.toLowerCase();
+  const hasActiveSearch = normalizedSearchQuery.length > 0;
+  const shouldShowSearchControl =
+    Boolean(searchValue) ||
+    columns.some((column) => column.filter || column.sortValue);
+  const renderContext = useMemo<TableRenderContext>(
+    () => ({
+      highlightSearchText: (value) => (
+        <HighlightedText
+          query={trimmedSearchQuery}
+          text={getFilterStringValue(value)}
+        />
+      ),
+      searchQuery: trimmedSearchQuery,
+    }),
+    [trimmedSearchQuery],
+  );
+  const searchedRows = useMemo(() => {
+    if (!hasActiveSearch) {
+      return rows;
+    }
+
+    return rows.filter((row) => {
+      const rowSearchValue = searchValue
+        ? getSearchStringValue(searchValue(row))
+        : getDefaultSearchStringValue(row, columns);
+
+      return rowSearchValue.includes(normalizedSearchQuery);
+    });
+  }, [columns, hasActiveSearch, normalizedSearchQuery, rows, searchValue]);
+  const filteredRows = useMemo(() => {
+    if (!hasActiveFilters) {
+      return searchedRows;
+    }
+
+    return searchedRows.filter((row) =>
+      Object.entries(filters).every(([columnKey, filterValue]) => {
+        const column = filterableColumnByKey.get(columnKey);
+
+        return column ? doesRowMatchFilter(row, column, filterValue) : true;
+      }),
+    );
+  }, [filterableColumnByKey, filters, hasActiveFilters, searchedRows]);
   const sortedRows = useMemo(() => {
     if (!isSortingEnabled || !sortState) {
-      return rows;
+      return filteredRows;
     }
 
     const sortColumn = sortableColumnByKey.get(sortState.columnKey);
 
     if (!sortColumn?.sortValue) {
-      return rows;
+      return filteredRows;
     }
 
-    return rows
+    return filteredRows
       .map((row, index) => ({ index, row }))
       .sort((firstRow, secondRow) => {
         const comparison = compareSortValues(
@@ -216,11 +201,31 @@ const Table = <Row,>({
         return sortState.direction === "asc" ? comparison : -comparison;
       })
       .map(({ row }) => row);
-  }, [isSortingEnabled, rows, sortState, sortableColumnByKey]);
+  }, [filteredRows, isSortingEnabled, sortState, sortableColumnByKey]);
+  const selectFilterOptionsByColumnKey = useMemo(
+    () => getSelectFilterOptionsByColumnKey(filterableColumns, rows),
+    [filterableColumns, rows],
+  );
+  const activeFilterSummaries = useMemo(
+    () =>
+      getActiveFilterSummaries(
+        filterableColumns,
+        filters,
+        selectFilterOptionsByColumnKey,
+      ),
+    [filterableColumns, filters, selectFilterOptionsByColumnKey],
+  );
+
   const hasHeader = Boolean(title || subtitle);
-  const shouldShowTable = !isLoading && !errorMessage && rows.length > 0;
+  const shouldShowTable = !isLoading && !errorMessage && filteredRows.length > 0;
   const shouldShowColumnControls = hideableColumns.length > 1;
+  const shouldShowFilterControls = filterableColumns.length > 0;
   const shouldShowSortControls = sortableColumnByKey.size > 0;
+  const shouldShowToolbar =
+    shouldShowColumnControls ||
+    shouldShowFilterControls ||
+    shouldShowSearchControl ||
+    shouldShowSortControls;
 
   useEffect(() => {
     if (!columnVisibilityStorageKey || typeof window === "undefined") {
@@ -234,22 +239,34 @@ const Table = <Row,>({
   }, [columnVisibilityStorageKey, hiddenColumnKeys]);
 
   useEffect(() => {
-    if (!isColumnPanelOpen) {
+    if (!isColumnPanelOpen && !isFilterPanelOpen) {
       return;
     }
 
     const handlePointerDown = (event: PointerEvent) => {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+
       if (
-        event.target instanceof Node &&
+        isColumnPanelOpen &&
         !columnControlsRef.current?.contains(event.target)
       ) {
         setIsColumnPanelOpen(false);
+      }
+
+      if (
+        isFilterPanelOpen &&
+        !filterControlsRef.current?.contains(event.target)
+      ) {
+        setIsFilterPanelOpen(false);
       }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsColumnPanelOpen(false);
+        setIsFilterPanelOpen(false);
       }
     };
 
@@ -260,7 +277,71 @@ const Table = <Row,>({
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isColumnPanelOpen]);
+  }, [isColumnPanelOpen, isFilterPanelOpen]);
+
+  const updateFilter = (
+    columnKey: string,
+    filterValue: TableFilterStateValue | undefined,
+  ) => {
+    setFilters((currentFilters) => {
+      const nextFilters = { ...currentFilters };
+
+      if (isFilterValueActive(filterValue)) {
+        nextFilters[columnKey] = filterValue;
+      } else {
+        delete nextFilters[columnKey];
+      }
+
+      return nextFilters;
+    });
+  };
+
+  const updateDateRangeFilter = (
+    columnKey: string,
+    field: keyof TableDateRangeFilterValue,
+    value: string,
+  ) => {
+    setFilters((currentFilters) => {
+      const currentFilterValue = currentFilters[columnKey];
+      const currentDateRangeFilter = isDateRangeFilterValue(currentFilterValue)
+        ? currentFilterValue
+        : {};
+      const nextDateRangeFilter = {
+        ...currentDateRangeFilter,
+        [field]: value,
+      };
+      const nextFilters = { ...currentFilters };
+
+      if (isFilterValueActive(nextDateRangeFilter)) {
+        nextFilters[columnKey] = nextDateRangeFilter;
+      } else {
+        delete nextFilters[columnKey];
+      }
+
+      return nextFilters;
+    });
+  };
+
+  const clearFilter = (columnKey: string) => {
+    setFilters((currentFilters) => {
+      const nextFilters = { ...currentFilters };
+      delete nextFilters[columnKey];
+      return nextFilters;
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const clearSearchAndFilters = () => {
+    setSearchQuery("");
+    setFilters({});
+  };
 
   const toggleColumnVisibility = (columnKey: string) => {
     if (
@@ -309,44 +390,6 @@ const Table = <Row,>({
     setIsSortingEnabled((currentValue) => !currentValue);
   };
 
-  const renderColumnHeader = (column: TableColumn<Row>) => {
-    const isSortable = isSortingEnabled && isColumnSortable(column);
-    const sortDirection =
-      sortState?.columnKey === column.key ? sortState.direction : null;
-    const ariaSortValue = isSortable
-      ? sortDirection === "asc"
-        ? "ascending"
-        : sortDirection === "desc"
-          ? "descending"
-          : "none"
-      : undefined;
-
-    return (
-      <th
-        key={column.key}
-        aria-sort={ariaSortValue}
-        className={cx("px-4 py-3 font-semibold", column.headerClassName)}
-      >
-        {isSortable ? (
-          <button
-            aria-label={`Sort by ${getColumnLabel(column)}`}
-            className={cx(
-              "inline-flex items-center gap-1.5 rounded text-left font-semibold transition hover:text-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-200/30",
-              sortDirection && "text-primary-200",
-            )}
-            type="button"
-            onClick={() => toggleColumnSort(column.key)}
-          >
-            <span>{column.header}</span>
-            <SortIcon direction={sortDirection} />
-          </button>
-        ) : (
-          column.header
-        )}
-      </th>
-    );
-  };
-
   return (
     <section
       className={cx(
@@ -364,8 +407,41 @@ const Table = <Row,>({
               <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
             ) : null}
           </div>
-          {shouldShowColumnControls || shouldShowSortControls ? (
+          {shouldShowToolbar ? (
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              {shouldShowSearchControl ? (
+                <TableSearchControl
+                  hasActiveSearch={hasActiveSearch}
+                  inputId={searchInputId}
+                  placeholder={searchPlaceholder}
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onClear={clearSearch}
+                />
+              ) : null}
+
+              {shouldShowFilterControls ? (
+                <TableFilterControls
+                  activeFilterCount={activeFilterCount}
+                  containerRef={filterControlsRef}
+                  filteredRowCount={filteredRows.length}
+                  filters={filters}
+                  hasActiveFilters={hasActiveFilters}
+                  isOpen={isFilterPanelOpen}
+                  panelId={filterControlsId}
+                  rowsCount={rows.length}
+                  selectFilterOptionsByColumnKey={selectFilterOptionsByColumnKey}
+                  tableColumns={filterableColumns}
+                  onClearFilters={clearFilters}
+                  onDateRangeFilterChange={updateDateRangeFilter}
+                  onTextFilterChange={updateFilter}
+                  onToggle={() => {
+                    setIsColumnPanelOpen(false);
+                    setIsFilterPanelOpen((currentValue) => !currentValue);
+                  }}
+                />
+              ) : null}
+
               {shouldShowSortControls ? (
                 <Button
                   aria-pressed={isSortingEnabled}
@@ -385,81 +461,36 @@ const Table = <Row,>({
               ) : null}
 
               {shouldShowColumnControls ? (
-                <div ref={columnControlsRef} className="relative shrink-0">
-                  <Button
-                    aria-controls={columnControlsId}
-                    aria-expanded={isColumnPanelOpen}
-                    className={tableControlButtonClassName}
-                    size="sm"
-                    type="button"
-                    variant="link"
-                    onClick={() =>
-                      setIsColumnPanelOpen((currentValue) => !currentValue)
-                    }
-                  >
-                    <ColumnsIcon />
-                    Columns
-                  </Button>
-
-                  {isColumnPanelOpen ? (
-                    <div
-                      id={columnControlsId}
-                      className="absolute right-0 z-50 mt-2 max-h-80 w-64 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/15"
-                    >
-                      <div className="space-y-1">
-                        {hideableColumns.map((column) => {
-                          const isColumnVisible = !hiddenColumnKeySet.has(
-                            column.key,
-                          );
-                          const visibleHideableColumnCount =
-                            hideableColumns.filter(
-                              (hideableColumn) =>
-                                !hiddenColumnKeySet.has(hideableColumn.key),
-                            ).length;
-                          const isLastVisibleColumn =
-                            isColumnVisible && visibleHideableColumnCount <= 1;
-
-                          return (
-                            <label
-                              key={column.key}
-                              className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                            >
-                              <input
-                                checked={isColumnVisible}
-                                className="h-4 w-4 rounded border-slate-300 text-primary-200 accent-primary-200"
-                                disabled={isLastVisibleColumn}
-                                type="checkbox"
-                                onChange={() =>
-                                  toggleColumnVisibility(column.key)
-                                }
-                              />
-                              <span className="min-w-0 flex-1 truncate">
-                                {getColumnLabel(column)}
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-2 border-t border-slate-100 pt-2">
-                        <Button
-                          className="px-2 py-1 text-xs"
-                          size="sm"
-                          type="button"
-                          variant="link"
-                          onClick={() => setHiddenColumnKeys([])}
-                        >
-                          Reset columns
-                        </Button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
+                <TableColumnControls
+                  containerRef={columnControlsRef}
+                  hiddenColumnKeySet={hiddenColumnKeySet}
+                  isOpen={isColumnPanelOpen}
+                  panelId={columnControlsId}
+                  tableColumns={hideableColumns}
+                  onResetColumns={() => setHiddenColumnKeys([])}
+                  onToggle={() => {
+                    setIsFilterPanelOpen(false);
+                    setIsColumnPanelOpen((currentValue) => !currentValue);
+                  }}
+                  onToggleColumnVisibility={toggleColumnVisibility}
+                />
               ) : null}
             </div>
           ) : null}
         </div>
       ) : null}
+
+      <TableActiveControls
+        activeFilterSummaries={activeFilterSummaries}
+        filteredRowCount={filteredRows.length}
+        hasActiveFilters={hasActiveFilters}
+        hasActiveSearch={hasActiveSearch}
+        rowsCount={rows.length}
+        searchQuery={searchQuery}
+        onClearAll={clearSearchAndFilters}
+        onClearFilter={clearFilter}
+        onClearSearch={clearSearch}
+      />
 
       {isLoading ? (
         <p className="px-5 py-8 text-sm text-slate-500">{loadingMessage}</p>
@@ -474,8 +505,12 @@ const Table = <Row,>({
         </p>
       ) : null}
 
-      {!isLoading && !errorMessage && rows.length === 0 ? (
-        <p className="px-5 py-8 text-sm text-slate-500">{emptyMessage}</p>
+      {!isLoading && !errorMessage && filteredRows.length === 0 ? (
+        <p className="px-5 py-8 text-sm text-slate-500">
+          {(hasActiveFilters || hasActiveSearch) && rows.length > 0
+            ? "No records match the active search or filters."
+            : emptyMessage}
+        </p>
       ) : null}
 
       {shouldShowTable ? (
@@ -487,7 +522,21 @@ const Table = <Row,>({
             )}
           >
             <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
-              <tr>{visibleColumns.map(renderColumnHeader)}</tr>
+              <tr>
+                {visibleColumns.map((column) => (
+                  <TableHeaderCell
+                    key={column.key}
+                    column={column}
+                    isSortingEnabled={isSortingEnabled}
+                    sortDirection={
+                      sortState?.columnKey === column.key
+                        ? sortState.direction
+                        : undefined
+                    }
+                    onToggleSort={toggleColumnSort}
+                  />
+                ))}
+              </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {sortedRows.map((row, index) => (
@@ -500,7 +549,7 @@ const Table = <Row,>({
                       key={column.key}
                       className={cx("px-4 py-4", column.cellClassName)}
                     >
-                      {column.render(row)}
+                      {column.render(row, renderContext)}
                     </td>
                   ))}
                 </tr>
