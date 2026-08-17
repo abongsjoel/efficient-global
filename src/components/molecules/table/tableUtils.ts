@@ -13,6 +13,16 @@ import type {
 export const tableControlButtonClassName =
   "rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:border-primary-200 hover:bg-slate-50 hover:text-primary-200";
 
+export const stickyActionsCellClassName =
+  "sticky right-0 px-4 py-4 text-right align-middle";
+
+export const stickyActionsHeaderClassName =
+  "sticky right-0 z-20 bg-slate-50 px-4 py-3 text-right font-semibold";
+
+// Only drawn while columns are still hidden to the right of the pinned cell.
+export const stickyActionsShadowClassName =
+  "shadow-[-8px_0_12px_-10px_rgba(15,23,42,0.35)]";
+
 export const filterControlClassName =
   "mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-primary-200 focus:bg-white focus:ring-4 focus:ring-primary-200/20";
 

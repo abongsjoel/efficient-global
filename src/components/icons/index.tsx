@@ -275,6 +275,25 @@ export const PasswordVisibilityIcon = ({
   </svg>
 );
 
+export const PhoneIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M6.5 3h3l1.5 4.5-2 1.5a13 13 0 0 0 6 6l1.5-2 4.5 1.5v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3Z" />
+  </svg>
+);
+
 export const ProfileIcon = ({
   className,
   ...props

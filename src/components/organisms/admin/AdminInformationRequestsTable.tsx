@@ -1,6 +1,11 @@
+import { useState } from "react";
 import StatusBadge from "../../atoms/StatusBadge";
+import RequestDetailsModal, {
+  type RequestDetailsField,
+} from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
+import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminInformationRequest,
   useGetInformationRequestsQuery,
@@ -147,43 +152,107 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   },
 ];
 
+const getInformationRequestDetailsFields = (
+  request: AdminInformationRequest,
+): RequestDetailsField[] => [
+  { label: "Submitted", value: formatDateTime(request.submittedAt) },
+  { label: "Source", value: request.source },
+  { label: "Contact", value: request.name },
+  { label: "Email", value: request.email },
+  { label: "Phone", value: request.phone },
+  { label: "Organization", value: request.organization },
+  { isWide: true, label: "Message", value: request.message },
+  {
+    label: "Status",
+    value: <StatusBadge status={request.status} />,
+  },
+  {
+    label: "Email notification",
+    value: (
+      <>
+        <StatusBadge status={request.emailNotification.status} />
+        {request.emailNotification.errorMessage ? (
+          <p className="mt-2 text-xs text-red-600">
+            {request.emailNotification.errorMessage}
+          </p>
+        ) : null}
+      </>
+    ),
+  },
+];
+
 const AdminInformationRequestsTable = () => {
   const {
     data: informationRequests = [],
     error,
     isLoading,
   } = useGetInformationRequestsQuery();
+  const [selectedRequest, setSelectedRequest] =
+    useState<AdminInformationRequest | null>(null);
 
   return (
-    <Table
-      columnVisibilityStorageKey="efficient_global_information_requests_table_columns"
-      columns={informationRequestColumns}
-      emptyMessage="No information requests yet."
-      errorMessage={getRtkQueryErrorMessage(
-        error,
-        "We could not load information requests right now.",
-      )}
-      getRowKey={(request) => request.id}
-      isLoading={isLoading}
-      loadingMessage="Loading information requests..."
-      minWidthClassName="min-w-[1080px]"
-      rows={informationRequests}
-      searchPlaceholder="Search information requests..."
-      searchValue={(request) => [
-        formatDateTime(request.submittedAt),
-        request.source,
-        request.name,
-        request.email,
-        request.phone,
-        request.organization,
-        request.message,
-        request.status,
-        request.emailNotification.status,
-        request.emailNotification.errorMessage,
-      ]}
-      subtitle={`${informationRequests.length} total`}
-      title="Information Requests"
-    />
+    <>
+      <Table
+        actionsColumn={{
+          header: "Actions",
+          render: (request) => (
+            <AdminRequestRowActions
+              email={request.email}
+              emailSubject="Re: your inquiry to Efficient Global"
+              name={request.name}
+              phone={request.phone}
+              onView={() => setSelectedRequest(request)}
+            />
+          ),
+        }}
+        columnVisibilityStorageKey="efficient_global_information_requests_table_columns"
+        columns={informationRequestColumns}
+        emptyMessage="No information requests yet."
+        errorMessage={getRtkQueryErrorMessage(
+          error,
+          "We could not load information requests right now.",
+        )}
+        getRowKey={(request) => request.id}
+        isLoading={isLoading}
+        loadingMessage="Loading information requests..."
+        minWidthClassName="min-w-[1080px]"
+        rows={informationRequests}
+        searchPlaceholder="Search information requests..."
+        searchValue={(request) => [
+          formatDateTime(request.submittedAt),
+          request.source,
+          request.name,
+          request.email,
+          request.phone,
+          request.organization,
+          request.message,
+          request.status,
+          request.emailNotification.status,
+          request.emailNotification.errorMessage,
+        ]}
+        subtitle={`${informationRequests.length} total`}
+        title="Information Requests"
+      />
+
+      <RequestDetailsModal
+        email={selectedRequest?.email}
+        emailSubject="Re: your inquiry to Efficient Global"
+        fields={
+          selectedRequest
+            ? getInformationRequestDetailsFields(selectedRequest)
+            : []
+        }
+        isOpen={Boolean(selectedRequest)}
+        phone={selectedRequest?.phone}
+        subtitle={
+          selectedRequest
+            ? `Submitted ${formatDateTime(selectedRequest.submittedAt)}`
+            : undefined
+        }
+        title={`Information request from ${selectedRequest?.name ?? ""}`.trim()}
+        onClose={() => setSelectedRequest(null)}
+      />
+    </>
   );
 };
 

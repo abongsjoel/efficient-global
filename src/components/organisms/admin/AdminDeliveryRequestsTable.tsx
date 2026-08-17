@@ -1,6 +1,11 @@
+import { useState } from "react";
 import StatusBadge from "../../atoms/StatusBadge";
+import RequestDetailsModal, {
+  type RequestDetailsField,
+} from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
+import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminDeliveryRequest,
   useGetDeliveryRequestsQuery,
@@ -188,6 +193,39 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   },
 ];
 
+const getDeliveryRequestDetailsFields = (
+  request: AdminDeliveryRequest,
+): RequestDetailsField[] => [
+  { label: "Submitted", value: formatDateTime(request.submittedAt) },
+  { label: "Needed by", value: formatDateTime(request.datetime) },
+  { label: "Requester", value: request.name },
+  { label: "Organization contact", value: request.email },
+  { label: "Phone", value: request.phone },
+  { label: "Request type", value: request.vehicle },
+  { label: "Rush", value: request.rush },
+  { label: "Source", value: request.source },
+  { isWide: true, label: "Pickup", value: request.pickup },
+  { isWide: true, label: "Delivery", value: request.delivery },
+  { isWide: true, label: "Instructions", value: request.instructions },
+  {
+    label: "Status",
+    value: <StatusBadge status={request.status} />,
+  },
+  {
+    label: "Email notification",
+    value: (
+      <>
+        <StatusBadge status={request.emailNotification.status} />
+        {request.emailNotification.errorMessage ? (
+          <p className="mt-2 text-xs text-red-600">
+            {request.emailNotification.errorMessage}
+          </p>
+        ) : null}
+      </>
+    ),
+  },
+];
+
 const AdminDeliveryRequestsTable = () => {
   const {
     data: deliveryRequests = [],
@@ -196,41 +234,84 @@ const AdminDeliveryRequestsTable = () => {
   } = useGetDeliveryRequestsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+  const [selectedRequest, setSelectedRequest] =
+    useState<AdminDeliveryRequest | null>(null);
 
   return (
-    <Table
-      columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns"
-      columns={deliveryRequestColumns}
-      emptyMessage="No delivery requests yet."
-      errorMessage={getRtkQueryErrorMessage(
-        error,
-        "We could not load delivery requests right now.",
-      )}
-      getRowKey={(request) => request.id}
-      isLoading={isLoading}
-      loadingMessage="Loading delivery requests..."
-      minWidthClassName="min-w-[1280px]"
-      rows={deliveryRequests}
-      searchPlaceholder="Search delivery requests..."
-      searchValue={(request) => [
-        formatDateTime(request.submittedAt),
-        request.source,
-        request.pickup,
-        request.delivery,
-        formatDateTime(request.datetime),
-        request.vehicle,
-        request.name,
-        request.email,
-        request.phone,
-        request.rush,
-        request.instructions,
-        request.status,
-        request.emailNotification.status,
-        request.emailNotification.errorMessage,
-      ]}
-      subtitle={`${deliveryRequests.length} total`}
-      title="Delivery Requests"
-    />
+    <>
+      <Table
+        actionsColumn={{
+          header: "Actions",
+          render: (request) => (
+            <AdminRequestRowActions
+              email={request.email}
+              emailSubject={`Re: your delivery request (${formatDateTime(
+                request.submittedAt,
+              )})`}
+              name={request.name}
+              phone={request.phone}
+              onView={() => setSelectedRequest(request)}
+            />
+          ),
+        }}
+        columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns"
+        columns={deliveryRequestColumns}
+        emptyMessage="No delivery requests yet."
+        errorMessage={getRtkQueryErrorMessage(
+          error,
+          "We could not load delivery requests right now.",
+        )}
+        getRowKey={(request) => request.id}
+        isLoading={isLoading}
+        loadingMessage="Loading delivery requests..."
+        minWidthClassName="min-w-[1280px]"
+        rows={deliveryRequests}
+        searchPlaceholder="Search delivery requests..."
+        searchValue={(request) => [
+          formatDateTime(request.submittedAt),
+          request.source,
+          request.pickup,
+          request.delivery,
+          formatDateTime(request.datetime),
+          request.vehicle,
+          request.name,
+          request.email,
+          request.phone,
+          request.rush,
+          request.instructions,
+          request.status,
+          request.emailNotification.status,
+          request.emailNotification.errorMessage,
+        ]}
+        subtitle={`${deliveryRequests.length} total`}
+        title="Delivery Requests"
+      />
+
+      <RequestDetailsModal
+        email={selectedRequest?.email}
+        emailSubject={
+          selectedRequest
+            ? `Re: your delivery request (${formatDateTime(
+                selectedRequest.submittedAt,
+              )})`
+            : undefined
+        }
+        fields={
+          selectedRequest
+            ? getDeliveryRequestDetailsFields(selectedRequest)
+            : []
+        }
+        isOpen={Boolean(selectedRequest)}
+        phone={selectedRequest?.phone}
+        subtitle={
+          selectedRequest
+            ? `Submitted ${formatDateTime(selectedRequest.submittedAt)}`
+            : undefined
+        }
+        title={`Delivery request from ${selectedRequest?.name ?? ""}`.trim()}
+        onClose={() => setSelectedRequest(null)}
+      />
+    </>
   );
 };
 

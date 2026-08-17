@@ -17,6 +17,7 @@ import TableHeaderCell from "./table/TableHeaderCell";
 import TableSearchControl from "./table/TableSearchControl";
 import type {
   SortState,
+  TableActionsColumn,
   TableColumn,
   TableDateRangeFilterValue,
   TableFilterState,
@@ -38,16 +39,21 @@ import {
   isColumnSortable,
   isDateRangeFilterValue,
   isFilterValueActive,
+  stickyActionsCellClassName,
+  stickyActionsHeaderClassName,
+  stickyActionsShadowClassName,
   tableControlButtonClassName,
 } from "./table/tableUtils";
 
 export type {
+  TableActionsColumn,
   TableColumn,
   TableRenderContext,
   TableSortValue,
 } from "./table/tableTypes";
 
 type TableProps<Row> = {
+  actionsColumn?: TableActionsColumn<Row>;
   className?: string;
   columns: Array<TableColumn<Row>>;
   columnVisibilityStorageKey?: string;
@@ -65,6 +71,7 @@ type TableProps<Row> = {
 };
 
 const Table = <Row,>({
+  actionsColumn,
   className,
   columns,
   columnVisibilityStorageKey,
@@ -85,6 +92,8 @@ const Table = <Row,>({
   const filterControlsId = useId();
   const filterControlsRef = useRef<HTMLDivElement>(null);
   const searchInputId = useId();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [hasScrollableColumns, setHasScrollableColumns] = useState(false);
   const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(() =>
     getStoredHiddenColumnKeys(columnVisibilityStorageKey),
   );
@@ -237,6 +246,38 @@ const Table = <Row,>({
       JSON.stringify(hiddenColumnKeys),
     );
   }, [columnVisibilityStorageKey, hiddenColumnKeys]);
+
+  // Keep the pinned actions column's edge shadow in sync with how much of the
+  // table is still hidden to its right.
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!actionsColumn || !scrollContainer) {
+      return;
+    }
+
+    const updateScrollableColumns = () => {
+      const remainingScroll =
+        scrollContainer.scrollWidth -
+        scrollContainer.clientWidth -
+        scrollContainer.scrollLeft;
+
+      setHasScrollableColumns(remainingScroll > 1);
+    };
+
+    updateScrollableColumns();
+
+    const resizeObserver = new ResizeObserver(updateScrollableColumns);
+    resizeObserver.observe(scrollContainer);
+    scrollContainer.addEventListener("scroll", updateScrollableColumns, {
+      passive: true,
+    });
+
+    return () => {
+      resizeObserver.disconnect();
+      scrollContainer.removeEventListener("scroll", updateScrollableColumns);
+    };
+  }, [actionsColumn, shouldShowTable, visibleColumns]);
 
   useEffect(() => {
     if (!isColumnPanelOpen && !isFilterPanelOpen) {
@@ -514,7 +555,7 @@ const Table = <Row,>({
       ) : null}
 
       {shouldShowTable ? (
-        <div className="overflow-x-auto rounded-b-xl">
+        <div ref={scrollContainerRef} className="overflow-x-auto rounded-b-xl">
           <table
             className={cx(
               minWidthClassName,
@@ -536,13 +577,28 @@ const Table = <Row,>({
                     onToggleSort={toggleColumnSort}
                   />
                 ))}
+
+                {actionsColumn ? (
+                  <th
+                    scope="col"
+                    className={cx(
+                      stickyActionsHeaderClassName,
+                      hasScrollableColumns && stickyActionsShadowClassName,
+                      actionsColumn.headerClassName,
+                    )}
+                  >
+                    {actionsColumn.header ?? (
+                      <span className="sr-only">Actions</span>
+                    )}
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {sortedRows.map((row, index) => (
                 <tr
                   key={getRowKey(row, index)}
-                  className="align-top transition-colors hover:bg-slate-50/70"
+                  className="group align-top transition-colors hover:bg-slate-50/70"
                 >
                   {visibleColumns.map((column) => (
                     <td
@@ -552,6 +608,21 @@ const Table = <Row,>({
                       {column.render(row, renderContext)}
                     </td>
                   ))}
+
+                  {actionsColumn ? (
+                    <td
+                      className={cx(
+                        stickyActionsCellClassName,
+                        // The pinned cell paints over the row, so it repeats the
+                        // row's hover background itself.
+                        "bg-white transition-colors group-hover:bg-slate-50",
+                        hasScrollableColumns && stickyActionsShadowClassName,
+                        actionsColumn.cellClassName,
+                      )}
+                    >
+                      {actionsColumn.render(row, renderContext)}
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>

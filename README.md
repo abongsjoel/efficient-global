@@ -61,7 +61,7 @@ The app is served at the URL printed in the terminal (typically `http://localhos
 | Script                  | Description                                                       |
 | ----------------------- | ----------------------------------------------------------------- |
 | `npm run dev`           | Start the Vite development server                                 |
-| `npm run build`         | Type-check and build the production bundle to `dist`              |
+| `npm run build`         | Build the production bundle to `dist`                             |
 | `npm run preview`       | Preview the production build locally                              |
 | `npm run lint`          | Run ESLint across the project                                     |
 | `npm run prepare-deploy`| Assemble the `deploy` folder from `dist` (runs as part of deploy) |

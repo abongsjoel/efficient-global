@@ -66,6 +66,17 @@ export type FilterableTableColumn<Row> = TableColumn<Row> & {
   filter: TableFilterConfig<Row>;
 };
 
+/**
+ * A trailing column pinned to the right edge of the scroll area. It is not part
+ * of `columns`, so it is never sortable, filterable, or hideable.
+ */
+export type TableActionsColumn<Row> = {
+  cellClassName?: string;
+  header?: ReactNode;
+  headerClassName?: string;
+  render: (row: Row, context: TableRenderContext) => ReactNode;
+};
+
 export type ActiveFilterSummary = {
   key: string;
   label: string;
