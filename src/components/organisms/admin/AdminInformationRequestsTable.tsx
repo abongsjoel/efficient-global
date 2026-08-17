@@ -234,6 +234,7 @@ const AdminInformationRequestsTable = () => {
         minWidthClassName="min-w-[1160px]"
         rows={informationRequests}
         searchPlaceholder="Search information requests..."
+        shortTitle="Information Reqs"
         searchValue={(request) => [
           request.id,
           formatDateTime(request.submittedAt),

@@ -72,6 +72,7 @@ type TableProps<Row> = {
   rows: Row[];
   searchPlaceholder?: string;
   searchValue?: (row: Row) => TableSearchValue;
+  shortTitle?: ReactNode;
   subtitle?: ReactNode;
   title?: ReactNode;
 };
@@ -90,6 +91,7 @@ const Table = <Row,>({
   rows,
   searchPlaceholder = "Search table...",
   searchValue,
+  shortTitle,
   subtitle,
   title,
 }: TableProps<Row>) => {
@@ -99,6 +101,7 @@ const Table = <Row,>({
   const titleRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const labeledControlsWidthRef = useRef(0);
+  const longTitleWidthRef = useRef(0);
   const toolbarDensityRef = useRef<TableToolbarDensity>("full");
   const [toolbarDensity, setToolbarDensity] =
     useState<TableToolbarDensity>("full");
@@ -241,6 +244,8 @@ const Table = <Row,>({
   );
 
   const hasHeader = Boolean(title || subtitle);
+  const isToolbarIconOnly =
+    toolbarDensity === "iconsOnly" || toolbarDensity === "shortTitle";
   const shouldShowTable =
     !isLoading && !errorMessage && filteredRows.length > 0;
   const shouldShowColumnControls = hideableColumns.length > 1;
@@ -277,33 +282,47 @@ const Table = <Row,>({
       );
       const gapsWidth = TOOLBAR_GAP * Math.max(0, controls.length - 1);
 
-      // Only trust a live measurement of the other controls while their labels
-      // are still rendered. Once they are icon-only, their measured width says
-      // nothing about how much room restoring the labels would need, so the last
-      // labelled measurement is reused instead.
-      if (toolbarDensityRef.current !== "iconsOnly") {
+      // Only trust live measurements of the parts that are still rendered in
+      // their wide form. Once the labels are dropped or the title is shortened,
+      // their measured width says nothing about how much room restoring them
+      // would need, so the last wide measurement is reused instead.
+      if (
+        toolbarDensityRef.current === "full" ||
+        toolbarDensityRef.current === "compactSearch"
+      ) {
         labeledControlsWidthRef.current = otherControls.reduce(
           (total, control) => total + control.getBoundingClientRect().width,
           0,
         );
       }
 
+      if (toolbarDensityRef.current !== "shortTitle") {
+        longTitleWidthRef.current =
+          titleRef.current?.getBoundingClientRect().width ?? 0;
+      }
+
       const headerStyle = window.getComputedStyle(header);
+      // Always measured against the long title, so the decision stays the same
+      // whichever title is currently on screen.
       const availableWidth =
         header.clientWidth -
         parseFloat(headerStyle.paddingLeft) -
         parseFloat(headerStyle.paddingRight) -
-        (titleRef.current?.getBoundingClientRect().width ?? 0) -
+        longTitleWidthRef.current -
         TOOLBAR_GAP;
       const labeledControlsWidth = labeledControlsWidthRef.current;
       const searchIconWidth = searchElement ? ICON_ONLY_BUTTON_WIDTH : 0;
       const expandedSearchWidth = searchElement ? EXPANDED_SEARCH_WIDTH : 0;
+      const iconsOnlyWidth =
+        ICON_ONLY_BUTTON_WIDTH * controls.length + gapsWidth;
       const nextDensity: TableToolbarDensity =
         availableWidth >= expandedSearchWidth + labeledControlsWidth + gapsWidth
           ? "full"
           : availableWidth >= searchIconWidth + labeledControlsWidth + gapsWidth
             ? "compactSearch"
-            : "iconsOnly";
+            : availableWidth >= iconsOnlyWidth
+              ? "iconsOnly"
+              : "shortTitle";
 
       toolbarDensityRef.current = nextDensity;
       setToolbarDensity(nextDensity);
@@ -538,7 +557,11 @@ const Table = <Row,>({
         >
           <div ref={titleRef}>
             {title ? (
-              <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+              <h2 className="text-lg font-bold text-slate-950">
+                {toolbarDensity === "shortTitle" && shortTitle
+                  ? shortTitle
+                  : title}
+              </h2>
             ) : null}
             {subtitle ? (
               <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
@@ -568,7 +591,7 @@ const Table = <Row,>({
                   filteredRowCount={filteredRows.length}
                   filters={filters}
                   hasActiveFilters={hasActiveFilters}
-                  isIconOnly={toolbarDensity === "iconsOnly"}
+                  isIconOnly={isToolbarIconOnly}
                   isOpen={isFilterPanelOpen}
                   panelId={filterControlsId}
                   rowsCount={rows.length}
@@ -588,9 +611,7 @@ const Table = <Row,>({
 
               {shouldShowSortControls ? (
                 <Button
-                  aria-label={
-                    toolbarDensity === "iconsOnly" ? "Sort" : undefined
-                  }
+                  aria-label={isToolbarIconOnly ? "Sort" : undefined}
                   aria-pressed={isSortingEnabled}
                   className={cx(
                     tableControlButtonClassName,
@@ -603,7 +624,7 @@ const Table = <Row,>({
                   onClick={toggleSorting}
                 >
                   <SortIcon />
-                  {toolbarDensity === "iconsOnly" ? null : "Sort"}
+                  {isToolbarIconOnly ? null : "Sort"}
                 </Button>
               ) : null}
 
@@ -611,7 +632,7 @@ const Table = <Row,>({
                 <TableColumnControls
                   containerRef={columnControlsRef}
                   hiddenColumnKeySet={hiddenColumnKeySet}
-                  isIconOnly={toolbarDensity === "iconsOnly"}
+                  isIconOnly={isToolbarIconOnly}
                   isOpen={isColumnPanelOpen}
                   panelId={columnControlsId}
                   tableColumns={columns}

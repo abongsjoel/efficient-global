@@ -284,6 +284,7 @@ const AdminDeliveryRequestsTable = () => {
         minWidthClassName="min-w-[1360px]"
         rows={deliveryRequests}
         searchPlaceholder="Search delivery requests..."
+        shortTitle="Delivery Reqs"
         searchValue={(request) => [
           request.id,
           formatDateTime(request.submittedAt),
