@@ -91,10 +91,11 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "text",
       value: (request) => request.organization,
     },
-    render: (request, { highlightSearchText }) => (
-      <span title={request.organization}>
-        {highlightSearchText(request.organization || "-")}
-      </span>
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText
+        highlightQuery={searchQuery}
+        text={request.organization}
+      />
     ),
     sortValue: (request) => request.organization,
   },
