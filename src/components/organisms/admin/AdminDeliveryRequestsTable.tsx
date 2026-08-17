@@ -35,6 +35,19 @@ const getTimestamp = (value: string) => {
 
 const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
+    key: "id",
+    header: "Request ID",
+    cellClassName: "whitespace-nowrap font-mono text-xs text-slate-600",
+    filter: {
+      placeholder: "Search request ID",
+      type: "text",
+      value: (request) => request.id,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.id),
+    sortValue: (request) => request.id,
+  },
+  {
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
@@ -198,6 +211,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
 const getDeliveryRequestDetailsFields = (
   request: AdminDeliveryRequest,
 ): RequestDetailsField[] => [
+  { label: "Request ID", value: request.id },
   { label: "Submitted", value: formatDateTime(request.submittedAt) },
   { label: "Needed by", value: formatDateTime(request.datetime) },
   { label: "Requester", value: request.name },
@@ -265,10 +279,11 @@ const AdminDeliveryRequestsTable = () => {
         getRowKey={(request) => request.id}
         isLoading={isLoading}
         loadingMessage="Loading delivery requests..."
-        minWidthClassName="min-w-[1280px]"
+        minWidthClassName="min-w-[1480px]"
         rows={deliveryRequests}
         searchPlaceholder="Search delivery requests..."
         searchValue={(request) => [
+          request.id,
           formatDateTime(request.submittedAt),
           request.source,
           request.pickup,

@@ -35,6 +35,19 @@ const getTimestamp = (value: string) => {
 
 const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
+    key: "id",
+    header: "Request ID",
+    cellClassName: "whitespace-nowrap font-mono text-xs text-slate-600",
+    filter: {
+      placeholder: "Search request ID",
+      type: "text",
+      value: (request) => request.id,
+    },
+    render: (request, { highlightSearchText }) =>
+      highlightSearchText(request.id),
+    sortValue: (request) => request.id,
+  },
+  {
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
@@ -157,6 +170,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
 const getInformationRequestDetailsFields = (
   request: AdminInformationRequest,
 ): RequestDetailsField[] => [
+  { label: "Request ID", value: request.id },
   { label: "Submitted", value: formatDateTime(request.submittedAt) },
   { label: "Source", value: request.source },
   { label: "Contact", value: request.name },
@@ -216,10 +230,11 @@ const AdminInformationRequestsTable = () => {
         getRowKey={(request) => request.id}
         isLoading={isLoading}
         loadingMessage="Loading information requests..."
-        minWidthClassName="min-w-[1080px]"
+        minWidthClassName="min-w-[1280px]"
         rows={informationRequests}
         searchPlaceholder="Search information requests..."
         searchValue={(request) => [
+          request.id,
           formatDateTime(request.submittedAt),
           request.source,
           request.name,
