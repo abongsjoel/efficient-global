@@ -44,6 +44,9 @@ import {
   stickyActionsHeaderClassName,
   stickyActionsShadowClassName,
   tableControlButtonClassName,
+  EXPANDED_SEARCH_WIDTH,
+  TABLE_SEARCH_ATTRIBUTE,
+  TOOLBAR_GAP,
 } from "./table/tableUtils";
 
 export type {
@@ -90,6 +93,10 @@ const Table = <Row,>({
 }: TableProps<Row>) => {
   const columnControlsId = useId();
   const columnControlsRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [isSearchCompact, setIsSearchCompact] = useState(false);
   const filterControlsId = useId();
   const filterControlsRef = useRef<HTMLDivElement>(null);
   const searchInputId = useId();
@@ -239,6 +246,64 @@ const Table = <Row,>({
     shouldShowFilterControls ||
     shouldShowSearchControl ||
     shouldShowSortControls;
+
+  // Collapse the search field to its icon exactly when the expanded field would
+  // no longer fit beside the title and the other controls, instead of at a fixed
+  // breakpoint. The space is measured against the header row rather than the
+  // toolbar's own width, because below `sm` the toolbar drops onto its own line
+  // and would otherwise always look roomy enough to re-expand. The requirement
+  // is always computed as if the field were expanded, so the result never
+  // depends on the current state and cannot oscillate.
+  useEffect(() => {
+    const header = headerRef.current;
+    const toolbar = toolbarRef.current;
+
+    if (!header || !toolbar || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const measureToolbar = () => {
+      const searchElement = toolbar.querySelector(
+        `[${TABLE_SEARCH_ATTRIBUTE}]`,
+      );
+
+      if (!searchElement) {
+        return;
+      }
+
+      const controls = Array.from(toolbar.children);
+      const controlsWidth = controls
+        .filter((control) => control !== searchElement)
+        .reduce(
+          (total, control) => total + control.getBoundingClientRect().width,
+          0,
+        );
+      const gapsWidth = TOOLBAR_GAP * Math.max(0, controls.length - 1);
+      const headerStyle = window.getComputedStyle(header);
+      const availableWidth =
+        header.clientWidth -
+        parseFloat(headerStyle.paddingLeft) -
+        parseFloat(headerStyle.paddingRight) -
+        (titleRef.current?.getBoundingClientRect().width ?? 0) -
+        TOOLBAR_GAP;
+
+      setIsSearchCompact(
+        controlsWidth + gapsWidth + EXPANDED_SEARCH_WIDTH > availableWidth,
+      );
+    };
+
+    measureToolbar();
+
+    const observer = new ResizeObserver(measureToolbar);
+
+    observer.observe(header);
+
+    if (titleRef.current) {
+      observer.observe(titleRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [shouldShowSearchControl, shouldShowToolbar]);
 
   useEffect(() => {
     if (!columnVisibilityStorageKey || typeof window === "undefined") {
@@ -450,8 +515,11 @@ const Table = <Row,>({
       )}
     >
       {hasHeader ? (
-        <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        <div
+          ref={headerRef}
+          className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div ref={titleRef}>
             {title ? (
               <h2 className="text-lg font-bold text-slate-950">{title}</h2>
             ) : null}
@@ -460,11 +528,15 @@ const Table = <Row,>({
             ) : null}
           </div>
           {shouldShowToolbar ? (
-            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <div
+              ref={toolbarRef}
+              className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1 sm:justify-end"
+            >
               {shouldShowSearchControl ? (
                 <TableSearchControl
                   hasActiveSearch={hasActiveSearch}
                   inputId={searchInputId}
+                  isCompact={isSearchCompact}
                   placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={setSearchQuery}
