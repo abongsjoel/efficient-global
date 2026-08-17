@@ -38,6 +38,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
     key: "id",
     header: "Request ID",
     cellClassName: "whitespace-nowrap font-mono text-xs text-slate-600",
+    isHideable: false,
     filter: {
       placeholder: "Search request ID",
       type: "text",

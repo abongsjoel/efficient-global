@@ -38,6 +38,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     key: "id",
     header: "Request ID",
     cellClassName: "whitespace-nowrap font-mono text-xs text-slate-600",
+    isHideable: false,
     filter: {
       placeholder: "Search request ID",
       type: "text",

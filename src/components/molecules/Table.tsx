@@ -229,7 +229,8 @@ const Table = <Row,>({
   );
 
   const hasHeader = Boolean(title || subtitle);
-  const shouldShowTable = !isLoading && !errorMessage && filteredRows.length > 0;
+  const shouldShowTable =
+    !isLoading && !errorMessage && filteredRows.length > 0;
   const shouldShowColumnControls = hideableColumns.length > 1;
   const shouldShowFilterControls = filterableColumns.length > 0;
   const shouldShowSortControls = sortableColumnByKey.size > 0;
@@ -388,6 +389,13 @@ const Table = <Row,>({
   };
 
   const toggleColumnVisibility = (columnKey: string) => {
+    // Pinned columns are rendered as disabled checkboxes, so this is a guard.
+    if (
+      columns.find((column) => column.key === columnKey)?.isHideable === false
+    ) {
+      return;
+    }
+
     if (
       sortState?.columnKey === columnKey &&
       !hiddenColumnKeySet.has(columnKey)
@@ -474,7 +482,9 @@ const Table = <Row,>({
                   isOpen={isFilterPanelOpen}
                   panelId={filterControlsId}
                   rowsCount={rows.length}
-                  selectFilterOptionsByColumnKey={selectFilterOptionsByColumnKey}
+                  selectFilterOptionsByColumnKey={
+                    selectFilterOptionsByColumnKey
+                  }
                   tableColumns={filterableColumns}
                   onClearFilters={clearFilters}
                   onDateRangeFilterChange={updateDateRangeFilter}
@@ -510,7 +520,7 @@ const Table = <Row,>({
                   hiddenColumnKeySet={hiddenColumnKeySet}
                   isOpen={isColumnPanelOpen}
                   panelId={columnControlsId}
-                  tableColumns={hideableColumns}
+                  tableColumns={columns}
                   onResetColumns={() =>
                     setHiddenColumnKeys(getDefaultHiddenColumnKeys(columns))
                   }
