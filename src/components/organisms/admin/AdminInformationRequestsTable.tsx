@@ -35,10 +35,10 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
     },
     render: (request, { highlightSearchText }) => (
       <div className="flex items-center gap-1.5">
-        <CopyButton label="Copy request ID" value={request.id} />
         <Tooltip label={request.id}>
           {highlightSearchText(formatShortId(request.id))}
         </Tooltip>
+        <CopyButton label="Copy request ID" value={request.id} />
       </div>
     ),
     sortValue: (request) => request.id,
