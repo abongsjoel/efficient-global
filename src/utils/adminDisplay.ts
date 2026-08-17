@@ -1,5 +1,15 @@
 export const formatAdminRole = (role = "") => role.replace(/_/g, " ");
 
+const SHORT_ID_PREFIX_LENGTH = 2;
+const SHORT_ID_SUFFIX_LENGTH = 4;
+
+// Record ids are 24-character ObjectIds, far too wide for a table column. Only
+// shorten when doing so is actually shorter than the id itself.
+export const formatShortId = (id = "") =>
+  id.length > SHORT_ID_PREFIX_LENGTH + SHORT_ID_SUFFIX_LENGTH + 3
+    ? `${id.slice(0, SHORT_ID_PREFIX_LENGTH)}...${id.slice(-SHORT_ID_SUFFIX_LENGTH)}`
+    : id;
+
 const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
   timeStyle: "short",

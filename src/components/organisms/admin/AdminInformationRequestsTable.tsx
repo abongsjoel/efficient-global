@@ -5,13 +5,14 @@ import RequestDetailsModal, {
 } from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
+import Tooltip from "../../molecules/Tooltip";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
 import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminInformationRequest,
   useGetInformationRequestsQuery,
 } from "../../../services/adminApi";
-import { formatDateTime } from "../../../utils/adminDisplay";
+import { formatDateTime, formatShortId } from "../../../utils/adminDisplay";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
 const getTimestamp = (value: string) => {
@@ -31,8 +32,11 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "text",
       value: (request) => request.id,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(request.id),
+    render: (request, { highlightSearchText }) => (
+      <Tooltip label={request.id}>
+        {highlightSearchText(formatShortId(request.id))}
+      </Tooltip>
+    ),
     sortValue: (request) => request.id,
   },
   {
@@ -222,7 +226,7 @@ const AdminInformationRequestsTable = () => {
         getRowKey={(request) => request.id}
         isLoading={isLoading}
         loadingMessage="Loading information requests..."
-        minWidthClassName="min-w-[1280px]"
+        minWidthClassName="min-w-[1160px]"
         rows={informationRequests}
         searchPlaceholder="Search information requests..."
         searchValue={(request) => [

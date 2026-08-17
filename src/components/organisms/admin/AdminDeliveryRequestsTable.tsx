@@ -5,13 +5,14 @@ import RequestDetailsModal, {
 } from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
+import Tooltip from "../../molecules/Tooltip";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
 import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminDeliveryRequest,
   useGetDeliveryRequestsQuery,
 } from "../../../services/adminApi";
-import { formatDateTime } from "../../../utils/adminDisplay";
+import { formatDateTime, formatShortId } from "../../../utils/adminDisplay";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
 const getTimestamp = (value: string) => {
@@ -31,8 +32,11 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.id,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(request.id),
+    render: (request, { highlightSearchText }) => (
+      <Tooltip label={request.id}>
+        {highlightSearchText(formatShortId(request.id))}
+      </Tooltip>
+    ),
     sortValue: (request) => request.id,
   },
   {
@@ -275,7 +279,7 @@ const AdminDeliveryRequestsTable = () => {
         getRowKey={(request) => request.id}
         isLoading={isLoading}
         loadingMessage="Loading delivery requests..."
-        minWidthClassName="min-w-[1480px]"
+        minWidthClassName="min-w-[1360px]"
         rows={deliveryRequests}
         searchPlaceholder="Search delivery requests..."
         searchValue={(request) => [
