@@ -8,6 +8,7 @@ import { getColumnLabel, tableControlButtonClassName } from "./tableUtils";
 type TableColumnControlsProps<Row> = {
   containerRef: RefObject<HTMLDivElement | null>;
   hiddenColumnKeySet: Set<string>;
+  isIconOnly: boolean;
   isOpen: boolean;
   onResetColumns: () => void;
   onToggle: () => void;
@@ -19,6 +20,7 @@ type TableColumnControlsProps<Row> = {
 const TableColumnControls = <Row,>({
   containerRef,
   hiddenColumnKeySet,
+  isIconOnly,
   isOpen,
   onResetColumns,
   onToggle,
@@ -39,6 +41,7 @@ const TableColumnControls = <Row,>({
       <Button
         aria-controls={panelId}
         aria-expanded={isOpen}
+        aria-label={isIconOnly ? "Columns" : undefined}
         className={tableControlButtonClassName}
         size="sm"
         type="button"
@@ -46,7 +49,7 @@ const TableColumnControls = <Row,>({
         onClick={onToggle}
       >
         <ColumnsIcon />
-        Columns
+        {isIconOnly ? null : "Columns"}
       </Button>
 
       {isOpen ? (

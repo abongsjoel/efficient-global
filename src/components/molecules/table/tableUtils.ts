@@ -13,11 +13,13 @@ import type {
 export const tableControlButtonClassName =
   "rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:border-primary-200 hover:bg-slate-50 hover:text-primary-200";
 
-// Kept in sync with the expanded search field's `w-64` and the toolbar's
-// `gap-2`. The toolbar measures against these to decide whether the expanded
-// field still fits on one line.
+// Kept in sync with the expanded search field's `w-64`, the toolbar's `gap-2`,
+// and the rendered width of a label-less `tableControlButtonClassName` button
+// (px-3 + a 16px icon + borders). The toolbar measures against these to decide
+// how much of itself still fits on one line.
 export const TOOLBAR_GAP = 8;
 export const EXPANDED_SEARCH_WIDTH = 256;
+export const ICON_ONLY_BUTTON_WIDTH = 42;
 export const TABLE_SEARCH_ATTRIBUTE = "data-table-search";
 
 // The pinned body cells carry a tint just strong enough to lift them off the

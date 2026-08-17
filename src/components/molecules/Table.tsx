@@ -24,6 +24,7 @@ import type {
   TableFilterStateValue,
   TableRenderContext,
   TableSearchValue,
+  TableToolbarDensity,
 } from "./table/tableTypes";
 import {
   compareSortValues,
@@ -45,6 +46,7 @@ import {
   stickyActionsShadowClassName,
   tableControlButtonClassName,
   EXPANDED_SEARCH_WIDTH,
+  ICON_ONLY_BUTTON_WIDTH,
   TABLE_SEARCH_ATTRIBUTE,
   TOOLBAR_GAP,
 } from "./table/tableUtils";
@@ -96,7 +98,10 @@ const Table = <Row,>({
   const headerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const [isSearchCompact, setIsSearchCompact] = useState(false);
+  const labeledControlsWidthRef = useRef(0);
+  const toolbarDensityRef = useRef<TableToolbarDensity>("full");
+  const [toolbarDensity, setToolbarDensity] =
+    useState<TableToolbarDensity>("full");
   const filterControlsId = useId();
   const filterControlsRef = useRef<HTMLDivElement>(null);
   const searchInputId = useId();
@@ -266,19 +271,23 @@ const Table = <Row,>({
       const searchElement = toolbar.querySelector(
         `[${TABLE_SEARCH_ATTRIBUTE}]`,
       );
-
-      if (!searchElement) {
-        return;
-      }
-
       const controls = Array.from(toolbar.children);
-      const controlsWidth = controls
-        .filter((control) => control !== searchElement)
-        .reduce(
+      const otherControls = controls.filter(
+        (control) => control !== searchElement,
+      );
+      const gapsWidth = TOOLBAR_GAP * Math.max(0, controls.length - 1);
+
+      // Only trust a live measurement of the other controls while their labels
+      // are still rendered. Once they are icon-only, their measured width says
+      // nothing about how much room restoring the labels would need, so the last
+      // labelled measurement is reused instead.
+      if (toolbarDensityRef.current !== "iconsOnly") {
+        labeledControlsWidthRef.current = otherControls.reduce(
           (total, control) => total + control.getBoundingClientRect().width,
           0,
         );
-      const gapsWidth = TOOLBAR_GAP * Math.max(0, controls.length - 1);
+      }
+
       const headerStyle = window.getComputedStyle(header);
       const availableWidth =
         header.clientWidth -
@@ -286,10 +295,18 @@ const Table = <Row,>({
         parseFloat(headerStyle.paddingRight) -
         (titleRef.current?.getBoundingClientRect().width ?? 0) -
         TOOLBAR_GAP;
+      const labeledControlsWidth = labeledControlsWidthRef.current;
+      const searchIconWidth = searchElement ? ICON_ONLY_BUTTON_WIDTH : 0;
+      const expandedSearchWidth = searchElement ? EXPANDED_SEARCH_WIDTH : 0;
+      const nextDensity: TableToolbarDensity =
+        availableWidth >= expandedSearchWidth + labeledControlsWidth + gapsWidth
+          ? "full"
+          : availableWidth >= searchIconWidth + labeledControlsWidth + gapsWidth
+            ? "compactSearch"
+            : "iconsOnly";
 
-      setIsSearchCompact(
-        controlsWidth + gapsWidth + EXPANDED_SEARCH_WIDTH > availableWidth,
-      );
+      toolbarDensityRef.current = nextDensity;
+      setToolbarDensity(nextDensity);
     };
 
     measureToolbar();
@@ -517,7 +534,7 @@ const Table = <Row,>({
       {hasHeader ? (
         <div
           ref={headerRef}
-          className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4"
         >
           <div ref={titleRef}>
             {title ? (
@@ -530,13 +547,13 @@ const Table = <Row,>({
           {shouldShowToolbar ? (
             <div
               ref={toolbarRef}
-              className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1 sm:justify-end"
+              className="flex flex-wrap items-center justify-end gap-2"
             >
               {shouldShowSearchControl ? (
                 <TableSearchControl
                   hasActiveSearch={hasActiveSearch}
                   inputId={searchInputId}
-                  isCompact={isSearchCompact}
+                  isCompact={toolbarDensity !== "full"}
                   placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={setSearchQuery}
@@ -551,6 +568,7 @@ const Table = <Row,>({
                   filteredRowCount={filteredRows.length}
                   filters={filters}
                   hasActiveFilters={hasActiveFilters}
+                  isIconOnly={toolbarDensity === "iconsOnly"}
                   isOpen={isFilterPanelOpen}
                   panelId={filterControlsId}
                   rowsCount={rows.length}
@@ -570,6 +588,9 @@ const Table = <Row,>({
 
               {shouldShowSortControls ? (
                 <Button
+                  aria-label={
+                    toolbarDensity === "iconsOnly" ? "Sort" : undefined
+                  }
                   aria-pressed={isSortingEnabled}
                   className={cx(
                     tableControlButtonClassName,
@@ -582,7 +603,7 @@ const Table = <Row,>({
                   onClick={toggleSorting}
                 >
                   <SortIcon />
-                  Sort
+                  {toolbarDensity === "iconsOnly" ? null : "Sort"}
                 </Button>
               ) : null}
 
@@ -590,6 +611,7 @@ const Table = <Row,>({
                 <TableColumnControls
                   containerRef={columnControlsRef}
                   hiddenColumnKeySet={hiddenColumnKeySet}
+                  isIconOnly={toolbarDensity === "iconsOnly"}
                   isOpen={isColumnPanelOpen}
                   panelId={columnControlsId}
                   tableColumns={columns}

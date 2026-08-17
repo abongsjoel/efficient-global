@@ -84,3 +84,7 @@ export type ActiveFilterSummary = {
   label: string;
   valueLabel: string;
 };
+
+// How much of the toolbar still fits on the header row: everything, the search
+// field reduced to its icon, or every control reduced to its icon.
+export type TableToolbarDensity = "full" | "compactSearch" | "iconsOnly";

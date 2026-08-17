@@ -21,6 +21,7 @@ type TableFilterControlsProps<Row> = {
   filteredRowCount: number;
   filters: TableFilterState;
   hasActiveFilters: boolean;
+  isIconOnly: boolean;
   isOpen: boolean;
   onClearFilters: () => void;
   onDateRangeFilterChange: (
@@ -42,6 +43,7 @@ const TableFilterControls = <Row,>({
   filteredRowCount,
   filters,
   hasActiveFilters,
+  isIconOnly,
   isOpen,
   onClearFilters,
   onDateRangeFilterChange,
@@ -153,11 +155,18 @@ const TableFilterControls = <Row,>({
     );
   };
 
+  // Keeps the active-filter count reachable as the accessible name once the
+  // visible label is dropped.
+  const filterButtonLabel = hasActiveFilters
+    ? `Filters (${activeFilterCount})`
+    : "Filters";
+
   return (
     <div ref={containerRef} className="relative shrink-0">
       <Button
         aria-controls={panelId}
         aria-expanded={isOpen}
+        aria-label={isIconOnly ? filterButtonLabel : undefined}
         aria-pressed={hasActiveFilters}
         className={cx(
           tableControlButtonClassName,
@@ -170,7 +179,7 @@ const TableFilterControls = <Row,>({
         onClick={onToggle}
       >
         <FilterIcon />
-        {hasActiveFilters ? `Filters (${activeFilterCount})` : "Filters"}
+        {isIconOnly ? null : filterButtonLabel}
       </Button>
 
       {isOpen ? (
