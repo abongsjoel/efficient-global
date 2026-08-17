@@ -1,5 +1,6 @@
 import { useState } from "react";
 import StatusBadge from "../../atoms/StatusBadge";
+import CopyButton from "../../molecules/CopyButton";
 import RequestDetailsModal, {
   type RequestDetailsField,
 } from "../../molecules/RequestDetailsModal";
@@ -33,9 +34,12 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       value: (request) => request.id,
     },
     render: (request, { highlightSearchText }) => (
-      <Tooltip label={request.id}>
-        {highlightSearchText(formatShortId(request.id))}
-      </Tooltip>
+      <div className="flex items-center gap-1.5">
+        <CopyButton label="Copy request ID" value={request.id} />
+        <Tooltip label={request.id}>
+          {highlightSearchText(formatShortId(request.id))}
+        </Tooltip>
+      </div>
     ),
     sortValue: (request) => request.id,
   },
