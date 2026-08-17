@@ -30,6 +30,7 @@ import {
   doesRowMatchFilter,
   getActiveFilterCount,
   getActiveFilterSummaries,
+  getDefaultHiddenColumnKeys,
   getDefaultSearchStringValue,
   getFilterStringValue,
   getSearchStringValue,
@@ -94,8 +95,10 @@ const Table = <Row,>({
   const searchInputId = useId();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [hasScrollableColumns, setHasScrollableColumns] = useState(false);
-  const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(() =>
-    getStoredHiddenColumnKeys(columnVisibilityStorageKey),
+  const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(
+    () =>
+      getStoredHiddenColumnKeys(columnVisibilityStorageKey) ??
+      getDefaultHiddenColumnKeys(columns),
   );
   const [filters, setFilters] = useState<TableFilterState>({});
   const [isColumnPanelOpen, setIsColumnPanelOpen] = useState(false);
@@ -508,7 +511,9 @@ const Table = <Row,>({
                   isOpen={isColumnPanelOpen}
                   panelId={columnControlsId}
                   tableColumns={hideableColumns}
-                  onResetColumns={() => setHiddenColumnKeys([])}
+                  onResetColumns={() =>
+                    setHiddenColumnKeys(getDefaultHiddenColumnKeys(columns))
+                  }
                   onToggle={() => {
                     setIsFilterPanelOpen(false);
                     setIsColumnPanelOpen((currentValue) => !currentValue);

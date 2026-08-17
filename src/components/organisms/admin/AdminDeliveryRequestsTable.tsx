@@ -155,6 +155,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
     key: "status",
     header: "Status",
+    isHiddenByDefault: true,
     filter: {
       type: "select",
       value: (request) => request.status,
@@ -167,6 +168,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
     key: "email",
     header: "Email",
+    isHiddenByDefault: true,
     filter: {
       label: "Email status",
       type: "select",
@@ -254,7 +256,7 @@ const AdminDeliveryRequestsTable = () => {
             />
           ),
         }}
-        columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns"
+        columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns_v2"
         columns={deliveryRequestColumns}
         emptyMessage="No delivery requests yet."
         errorMessage={getRtkQueryErrorMessage(

@@ -43,24 +43,40 @@ export const getColumnLabel = <Row,>(column: TableColumn<Row>) => {
   return typeof column.header === "string" ? column.header : column.key;
 };
 
+/**
+ * Returns null when the viewer has no stored preference, so callers can tell
+ * "never chose" apart from "chose to show every column".
+ */
 export const getStoredHiddenColumnKeys = (storageKey: string | undefined) => {
   if (!storageKey || typeof window === "undefined") {
-    return [];
+    return null;
   }
 
   try {
     const storedValue = window.localStorage.getItem(storageKey);
-    const parsedValue = storedValue ? JSON.parse(storedValue) : [];
+
+    if (!storedValue) {
+      return null;
+    }
+
+    const parsedValue = JSON.parse(storedValue);
 
     return Array.isArray(parsedValue)
       ? parsedValue.filter(
         (value): value is string => typeof value === "string",
       )
-      : [];
+      : null;
   } catch {
-    return [];
+    return null;
   }
 };
+
+export const getDefaultHiddenColumnKeys = <Row,>(
+  columns: Array<TableColumn<Row>>,
+) =>
+  columns
+    .filter((column) => column.isHiddenByDefault && column.isHideable !== false)
+    .map((column) => column.key);
 
 export const hasColumnFilter = <Row,>(
   column: TableColumn<Row>,

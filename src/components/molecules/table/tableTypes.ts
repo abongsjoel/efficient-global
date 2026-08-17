@@ -55,6 +55,8 @@ export type TableColumn<Row> = {
   header: ReactNode;
   headerClassName?: string;
   isHideable?: boolean;
+  /** Hidden until the viewer turns it on, unless a stored preference says otherwise. */
+  isHiddenByDefault?: boolean;
   isSortable?: boolean;
   key: string;
   label?: string;

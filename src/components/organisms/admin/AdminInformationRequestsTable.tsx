@@ -114,6 +114,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
     key: "status",
     header: "Status",
+    isHiddenByDefault: true,
     filter: {
       type: "select",
       value: (request) => request.status,
@@ -126,6 +127,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
     key: "email",
     header: "Email",
+    isHiddenByDefault: true,
     filter: {
       label: "Email status",
       type: "select",
@@ -205,7 +207,7 @@ const AdminInformationRequestsTable = () => {
             />
           ),
         }}
-        columnVisibilityStorageKey="efficient_global_information_requests_table_columns"
+        columnVisibilityStorageKey="efficient_global_information_requests_table_columns_v2"
         columns={informationRequestColumns}
         emptyMessage="No information requests yet."
         errorMessage={getRtkQueryErrorMessage(
