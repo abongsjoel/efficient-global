@@ -36,7 +36,7 @@ const TableSearchControl = ({
   return (
     <div
       className={cx(
-        "relative lg:w-64",
+        "relative md:w-64",
         isCollapsedOnMobile ? "w-auto" : "w-full",
       )}
     >
