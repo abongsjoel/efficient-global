@@ -1,13 +1,12 @@
 import Button from "../../atoms/Button";
-import { MailIcon, PhoneIcon } from "../../icons";
-import { getMailtoHref, getTelHref } from "../../../utils/contactLinks";
+import { MailIcon } from "../../icons";
+import { getMailtoHref } from "../../../utils/contactLinks";
 
 type AdminRequestRowActionsProps = {
   email?: string;
   emailSubject?: string;
   name: string;
   onView: () => void;
-  phone?: string;
 };
 
 const contactLinkClassName =
@@ -18,10 +17,8 @@ const AdminRequestRowActions = ({
   emailSubject,
   name,
   onView,
-  phone,
 }: AdminRequestRowActionsProps) => {
   const mailtoHref = getMailtoHref(email, emailSubject);
-  const telHref = getTelHref(phone);
 
   return (
     <div className="flex items-center justify-end gap-1.5">
@@ -43,17 +40,6 @@ const AdminRequestRowActions = ({
           title={email}
         >
           <MailIcon className="h-3.5 w-3.5" />
-        </a>
-      ) : null}
-
-      {telHref ? (
-        <a
-          aria-label={`Call ${name}`}
-          className={contactLinkClassName}
-          href={telHref}
-          title={phone}
-        >
-          <PhoneIcon className="h-3.5 w-3.5" />
         </a>
       ) : null}
     </div>

@@ -251,7 +251,6 @@ const AdminDeliveryRequestsTable = () => {
                 request.submittedAt,
               )})`}
               name={request.name}
-              phone={request.phone}
               onView={() => setSelectedRequest(request)}
             />
           ),
@@ -304,7 +303,6 @@ const AdminDeliveryRequestsTable = () => {
             : []
         }
         isOpen={Boolean(selectedRequest)}
-        phone={selectedRequest?.phone}
         subtitle={
           selectedRequest
             ? `Submitted ${formatDateTime(selectedRequest.submittedAt)}`

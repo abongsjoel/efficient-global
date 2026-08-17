@@ -14,12 +14,3 @@ export const getMailtoHref = (email?: string, subject?: string) => {
     ? `mailto:${trimmedEmail}?subject=${encodeURIComponent(trimmedSubject)}`
     : `mailto:${trimmedEmail}`;
 };
-
-export const getTelHref = (phone?: string) => {
-  // tel: links only accept digits and a leading "+", so drop formatting.
-  const dialablePhone = getTrimmedValue(phone).replace(/(?!^\+)\D/g, "");
-
-  return dialablePhone.replace(/\D/g, "").length >= 7
-    ? `tel:${dialablePhone}`
-    : "";
-};

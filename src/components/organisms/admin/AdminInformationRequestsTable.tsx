@@ -202,7 +202,6 @@ const AdminInformationRequestsTable = () => {
               email={request.email}
               emailSubject="Re: your inquiry to Efficient Global"
               name={request.name}
-              phone={request.phone}
               onView={() => setSelectedRequest(request)}
             />
           ),
@@ -245,7 +244,6 @@ const AdminInformationRequestsTable = () => {
             : []
         }
         isOpen={Boolean(selectedRequest)}
-        phone={selectedRequest?.phone}
         subtitle={
           selectedRequest
             ? `Submitted ${formatDateTime(selectedRequest.submittedAt)}`

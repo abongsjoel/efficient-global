@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { cx } from "../atoms/formFieldStyles";
-import { CloseIcon, MailIcon, PhoneIcon } from "../icons";
-import { getMailtoHref, getTelHref } from "../../utils/contactLinks";
+import { CloseIcon, MailIcon } from "../icons";
+import { getMailtoHref } from "../../utils/contactLinks";
 
 export type RequestDetailsField = {
   isWide?: boolean;
@@ -15,7 +15,6 @@ type RequestDetailsModalProps = {
   fields: RequestDetailsField[];
   isOpen: boolean;
   onClose: () => void;
-  phone?: string;
   subtitle?: ReactNode;
   title: string;
 };
@@ -26,14 +25,12 @@ const RequestDetailsModal = ({
   fields,
   isOpen,
   onClose,
-  phone,
   subtitle,
   title,
 }: RequestDetailsModalProps) => {
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mailtoHref = getMailtoHref(email, emailSubject);
-  const telHref = getTelHref(phone);
 
   useEffect(() => {
     if (!isOpen) {
@@ -109,26 +106,15 @@ const RequestDetailsModal = ({
           ))}
         </dl>
 
-        {mailtoHref || telHref ? (
+        {mailtoHref ? (
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
-            {telHref ? (
-              <a
-                className="inline-flex items-center gap-2 rounded border border-primary-200 bg-white px-4 py-2 text-sm font-semibold text-primary-200 transition-colors hover:bg-primary-100 hover:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30"
-                href={telHref}
-              >
-                <PhoneIcon />
-                Call
-              </a>
-            ) : null}
-            {mailtoHref ? (
-              <a
-                className="inline-flex items-center gap-2 rounded bg-primary-200 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30"
-                href={mailtoHref}
-              >
-                <MailIcon />
-                Email
-              </a>
-            ) : null}
+            <a
+              className="inline-flex items-center gap-2 rounded bg-primary-200 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-200/30"
+              href={mailtoHref}
+            >
+              <MailIcon />
+              Email
+            </a>
           </div>
         ) : null}
       </div>
