@@ -108,18 +108,6 @@ const AdminDashboardSummary = ({ admin }: AdminDashboardSummaryProps) => {
         isLoading: isLoadingInformationRequests,
       }),
     },
-    {
-      description: "Access level for the current admin session.",
-      label: "Role",
-      value: formatAdminRole(admin?.role),
-      valueClassName: "capitalize",
-    },
-    {
-      description: "Account standing for dashboard access.",
-      label: "Status",
-      value: admin?.status || "Active",
-      valueClassName: "capitalize",
-    },
   ];
 
   return (
