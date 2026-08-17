@@ -4,28 +4,15 @@ import RequestDetailsModal, {
   type RequestDetailsField,
 } from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
+import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
 import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminDeliveryRequest,
   useGetDeliveryRequestsQuery,
 } from "../../../services/adminApi";
+import { formatDateTime } from "../../../utils/adminDisplay";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
-
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-const formatDateTime = (value: string) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
-};
 
 const getTimestamp = (value: string) => {
   const timestamp = new Date(value).getTime();
@@ -56,8 +43,12 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "dateRange",
       value: (request) => request.submittedAt,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(formatDateTime(request.submittedAt)),
+    render: (request, { highlightSearchText }) => (
+      <TableDateTimeCell
+        highlightSearchText={highlightSearchText}
+        value={request.submittedAt}
+      />
+    ),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
@@ -121,8 +112,12 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "dateRange",
       value: (request) => request.datetime,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(formatDateTime(request.datetime)),
+    render: (request, { highlightSearchText }) => (
+      <TableDateTimeCell
+        highlightSearchText={highlightSearchText}
+        value={request.datetime}
+      />
+    ),
     sortValue: (request) => getTimestamp(request.datetime),
   },
   {
