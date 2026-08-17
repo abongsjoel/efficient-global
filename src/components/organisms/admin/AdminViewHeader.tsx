@@ -1,10 +1,7 @@
-import type { Admin } from "../../../utils/adminAuth";
 import type { AdminPageContent } from "./adminPageConfig";
 
 type AdminViewHeaderProps = {
-  admin?: Admin;
   content: AdminPageContent;
-  showSessionSummary?: boolean;
 };
 
 const AdminViewHeader = ({ content }: AdminViewHeaderProps) => (

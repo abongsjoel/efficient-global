@@ -2,13 +2,6 @@ import {
   useGetDeliveryRequestsQuery,
   useGetInformationRequestsQuery,
 } from "../../../services/adminApi";
-import type { Admin } from "../../../utils/adminAuth";
-import { formatAdminRole } from "../../../utils/adminDisplay";
-
-type AdminDashboardSummaryProps = {
-  admin?: Admin;
-};
-
 type AdminSummaryCard = {
   description: string;
   label: string;
@@ -47,7 +40,7 @@ const getCountDescription = ({
   hasError: boolean;
 }) => (hasError ? "We could not load this count right now." : description);
 
-const AdminDashboardSummary = ({ admin }: AdminDashboardSummaryProps) => {
+const AdminDashboardSummary = () => {
   const {
     data: deliveryRequests = [],
     error: deliveryRequestsError,

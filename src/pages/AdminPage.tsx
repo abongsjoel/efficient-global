@@ -42,16 +42,10 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
 
           <main className="min-w-0 flex-1">
             {shouldShowViewHeader ? (
-              <AdminViewHeader
-                admin={admin}
-                content={currentPage}
-                showSessionSummary={view === "dashboard"}
-              />
+              <AdminViewHeader content={currentPage} />
             ) : null}
 
-            {view === "dashboard" ? (
-              <AdminDashboardSummary admin={admin} />
-            ) : null}
+            {view === "dashboard" ? <AdminDashboardSummary /> : null}
 
             {view === "deliveryRequests" ? (
               <AdminDeliveryRequestsTable />
