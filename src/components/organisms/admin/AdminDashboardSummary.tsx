@@ -108,7 +108,7 @@ const AdminDashboardSummary = () => {
       {summaryCards.map((card) => (
         <div
           key={card.label}
-          className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5"
+          className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5 transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-900/10"
         >
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
             {card.label}
