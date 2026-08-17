@@ -547,7 +547,7 @@ const Table = <Row,>({
           {shouldShowToolbar ? (
             <div
               ref={toolbarRef}
-              className="flex flex-wrap items-center justify-end gap-2"
+              className="ml-auto flex flex-wrap items-center justify-end gap-2"
             >
               {shouldShowSearchControl ? (
                 <TableSearchControl
