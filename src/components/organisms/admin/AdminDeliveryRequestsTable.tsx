@@ -91,8 +91,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.pickup,
     },
-    render: (request, { highlightSearchText }) => (
-      <span title={request.pickup}>{highlightSearchText(request.pickup)}</span>
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText highlightQuery={searchQuery} text={request.pickup} />
     ),
     sortValue: (request) => request.pickup,
   },
@@ -105,10 +105,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.delivery,
     },
-    render: (request, { highlightSearchText }) => (
-      <span title={request.delivery}>
-        {highlightSearchText(request.delivery)}
-      </span>
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText highlightQuery={searchQuery} text={request.delivery} />
     ),
     sortValue: (request) => request.delivery,
   },
