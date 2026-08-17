@@ -1,4 +1,5 @@
 import Button from "../../atoms/Button";
+import Tooltip from "../../molecules/Tooltip";
 import { MailIcon } from "../../icons";
 import { getMailtoHref } from "../../../utils/contactLinks";
 
@@ -22,25 +23,28 @@ const AdminRequestRowActions = ({
 
   return (
     <div className="flex items-center justify-end gap-1.5">
-      <Button
-        aria-label={`View details for ${name}`}
-        className="rounded-full border border-slate-200 px-2.5 py-1.5 hover:border-primary-200"
-        size="sm"
-        variant="link"
-        onClick={onView}
-      >
-        View
-      </Button>
+      <Tooltip label="View Request Details">
+        <Button
+          aria-label={`View details for ${name}`}
+          className="rounded-full border border-slate-200 px-2.5 py-1.5 hover:border-primary-200"
+          size="sm"
+          variant="link"
+          onClick={onView}
+        >
+          View
+        </Button>
+      </Tooltip>
 
       {mailtoHref ? (
-        <a
-          aria-label={`Email ${name}`}
-          className={contactLinkClassName}
-          href={mailtoHref}
-          title={email}
-        >
-          <MailIcon className="h-3.5 w-3.5" />
-        </a>
+        <Tooltip label="Message sender">
+          <a
+            aria-label={`Email ${name}`}
+            className={contactLinkClassName}
+            href={mailtoHref}
+          >
+            <MailIcon className="h-3.5 w-3.5" />
+          </a>
+        </Tooltip>
       ) : null}
     </div>
   );
