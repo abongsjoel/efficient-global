@@ -1,3 +1,7 @@
+import {
+  useGetDeliveryRequestsQuery,
+  useGetInformationRequestsQuery,
+} from "../../../services/adminApi";
 import type { Admin } from "../../../utils/adminAuth";
 import { formatAdminRole } from "../../../utils/adminDisplay";
 
@@ -12,13 +16,97 @@ type AdminSummaryCard = {
   valueClassName?: string;
 };
 
+const loadingValue = "...";
+const unavailableValue = "-";
+
+const getCountValue = ({
+  count,
+  hasError,
+  isLoading,
+}: {
+  count: number;
+  hasError: boolean;
+  isLoading: boolean;
+}) => {
+  if (isLoading) {
+    return loadingValue;
+  }
+
+  if (hasError) {
+    return unavailableValue;
+  }
+
+  return count.toLocaleString();
+};
+
+const getCountDescription = ({
+  description,
+  hasError,
+}: {
+  description: string;
+  hasError: boolean;
+}) => (hasError ? "We could not load this count right now." : description);
+
 const AdminDashboardSummary = ({ admin }: AdminDashboardSummaryProps) => {
+  const {
+    data: deliveryRequests = [],
+    error: deliveryRequestsError,
+    isLoading: isLoadingDeliveryRequests,
+  } = useGetDeliveryRequestsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const {
+    data: informationRequests = [],
+    error: informationRequestsError,
+    isLoading: isLoadingInformationRequests,
+  } = useGetInformationRequestsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  const hasDeliveryRequestsError = Boolean(deliveryRequestsError);
+  const hasInformationRequestsError = Boolean(informationRequestsError);
+  // A total built from one healthy response and one failed one would understate
+  // the real figure, so the total is only shown when both requests succeed.
+  const hasTotalError = hasDeliveryRequestsError || hasInformationRequestsError;
+  const isLoadingTotal =
+    isLoadingDeliveryRequests || isLoadingInformationRequests;
+
   const summaryCards: AdminSummaryCard[] = [
     {
-      description:
-        "Request review tools can live here when submissions are stored.",
+      description: getCountDescription({
+        description: "Delivery and information requests received in total.",
+        hasError: hasTotalError,
+      }),
       label: "Requests",
-      value: "0",
+      value: getCountValue({
+        count: deliveryRequests.length + informationRequests.length,
+        hasError: hasTotalError,
+        isLoading: isLoadingTotal,
+      }),
+    },
+    {
+      description: getCountDescription({
+        description: "Deliveries requested through the site.",
+        hasError: hasDeliveryRequestsError,
+      }),
+      label: "Delivery Requests",
+      value: getCountValue({
+        count: deliveryRequests.length,
+        hasError: hasDeliveryRequestsError,
+        isLoading: isLoadingDeliveryRequests,
+      }),
+    },
+    {
+      description: getCountDescription({
+        description: "Enquiries submitted through the contact form.",
+        hasError: hasInformationRequestsError,
+      }),
+      label: "Information Requests",
+      value: getCountValue({
+        count: informationRequests.length,
+        hasError: hasInformationRequestsError,
+        isLoading: isLoadingInformationRequests,
+      }),
     },
     {
       description: "Access level for the current admin session.",
