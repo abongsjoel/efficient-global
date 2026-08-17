@@ -614,8 +614,8 @@ const Table = <Row,>({
                       className={cx(
                         stickyActionsCellClassName,
                         // The pinned cell paints over the row, so it repeats the
-                        // row's hover background itself.
-                        "bg-white transition-colors group-hover:bg-slate-50",
+                        // row's hover state itself, a step darker than its tint.
+                        "transition-colors group-hover:bg-slate-100",
                         hasScrollableColumns && stickyActionsShadowClassName,
                         actionsColumn.cellClassName,
                       )}

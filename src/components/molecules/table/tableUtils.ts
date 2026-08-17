@@ -13,8 +13,12 @@ import type {
 export const tableControlButtonClassName =
   "rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:border-primary-200 hover:bg-slate-50 hover:text-primary-200";
 
+// The pinned body cells carry a tint just strong enough to lift them off the
+// white rows, sitting between slate-50 and slate-100. It has to be opaque — a
+// translucent tint would let scrolled columns show through. The header cell
+// keeps the header row's own slate-50 instead.
 export const stickyActionsCellClassName =
-  "sticky right-0 px-4 py-4 text-right align-middle";
+  "sticky right-0 bg-[#f9f9f9] px-4 py-4 text-right align-middle";
 
 export const stickyActionsHeaderClassName =
   "sticky right-0 z-20 bg-slate-50 px-4 py-3 text-right font-semibold";
@@ -50,8 +54,8 @@ export const getStoredHiddenColumnKeys = (storageKey: string | undefined) => {
 
     return Array.isArray(parsedValue)
       ? parsedValue.filter(
-          (value): value is string => typeof value === "string",
-        )
+        (value): value is string => typeof value === "string",
+      )
       : [];
   } catch {
     return [];
