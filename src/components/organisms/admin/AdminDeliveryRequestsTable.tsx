@@ -1,26 +1,20 @@
+import { useState } from "react";
 import StatusBadge from "../../atoms/StatusBadge";
+import CopyButton from "../../molecules/CopyButton";
+import RequestDetailsModal, {
+  type RequestDetailsField,
+} from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
+import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
+import Tooltip from "../../molecules/Tooltip";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
+import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminDeliveryRequest,
   useGetDeliveryRequestsQuery,
 } from "../../../services/adminApi";
+import { formatDateTime, formatShortId } from "../../../utils/adminDisplay";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
-
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-const formatDateTime = (value: string) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
-};
 
 const getTimestamp = (value: string) => {
   const timestamp = new Date(value).getTime();
@@ -30,6 +24,26 @@ const getTimestamp = (value: string) => {
 
 const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
+    key: "id",
+    header: "Request ID",
+    cellClassName: "whitespace-nowrap font-mono text-xs text-slate-600",
+    isHideable: false,
+    filter: {
+      placeholder: "Search request ID",
+      type: "text",
+      value: (request) => request.id,
+    },
+    render: (request, { highlightSearchText }) => (
+      <div className="flex items-center gap-1.5">
+        <Tooltip label={request.id}>
+          {highlightSearchText(formatShortId(request.id))}
+        </Tooltip>
+        <CopyButton label="Copy request ID" value={request.id} />
+      </div>
+    ),
+    sortValue: (request) => request.id,
+  },
+  {
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
@@ -37,8 +51,12 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "dateRange",
       value: (request) => request.submittedAt,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(formatDateTime(request.submittedAt)),
+    render: (request, { highlightSearchText }) => (
+      <TableDateTimeCell
+        highlightSearchText={highlightSearchText}
+        value={request.submittedAt}
+      />
+    ),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
@@ -73,8 +91,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.pickup,
     },
-    render: (request, { highlightSearchText }) => (
-      <span title={request.pickup}>{highlightSearchText(request.pickup)}</span>
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText highlightQuery={searchQuery} text={request.pickup} />
     ),
     sortValue: (request) => request.pickup,
   },
@@ -87,10 +105,8 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "text",
       value: (request) => request.delivery,
     },
-    render: (request, { highlightSearchText }) => (
-      <span title={request.delivery}>
-        {highlightSearchText(request.delivery)}
-      </span>
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText highlightQuery={searchQuery} text={request.delivery} />
     ),
     sortValue: (request) => request.delivery,
   },
@@ -102,8 +118,12 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       type: "dateRange",
       value: (request) => request.datetime,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(formatDateTime(request.datetime)),
+    render: (request, { highlightSearchText }) => (
+      <TableDateTimeCell
+        highlightSearchText={highlightSearchText}
+        value={request.datetime}
+      />
+    ),
     sortValue: (request) => getTimestamp(request.datetime),
   },
   {
@@ -150,6 +170,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
     key: "status",
     header: "Status",
+    isHiddenByDefault: true,
     filter: {
       type: "select",
       value: (request) => request.status,
@@ -162,6 +183,7 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   {
     key: "email",
     header: "Email",
+    isHiddenByDefault: true,
     filter: {
       label: "Email status",
       type: "select",
@@ -188,6 +210,40 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
   },
 ];
 
+const getDeliveryRequestDetailsFields = (
+  request: AdminDeliveryRequest,
+): RequestDetailsField[] => [
+  { label: "Request ID", value: request.id },
+  { label: "Submitted", value: formatDateTime(request.submittedAt) },
+  { label: "Needed by", value: formatDateTime(request.datetime) },
+  { label: "Requester", value: request.name },
+  { label: "Organization contact", value: request.email },
+  { label: "Phone", value: request.phone },
+  { label: "Request type", value: request.vehicle },
+  { label: "Rush", value: request.rush },
+  { label: "Source", value: request.source },
+  { isWide: true, label: "Pickup", value: request.pickup },
+  { isWide: true, label: "Delivery", value: request.delivery },
+  { isWide: true, label: "Instructions", value: request.instructions },
+  {
+    label: "Status",
+    value: <StatusBadge status={request.status} />,
+  },
+  {
+    label: "Email notification",
+    value: (
+      <>
+        <StatusBadge status={request.emailNotification.status} />
+        {request.emailNotification.errorMessage ? (
+          <p className="mt-2 text-xs text-red-600">
+            {request.emailNotification.errorMessage}
+          </p>
+        ) : null}
+      </>
+    ),
+  },
+];
+
 const AdminDeliveryRequestsTable = () => {
   const {
     data: deliveryRequests = [],
@@ -196,41 +252,84 @@ const AdminDeliveryRequestsTable = () => {
   } = useGetDeliveryRequestsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+  const [selectedRequest, setSelectedRequest] =
+    useState<AdminDeliveryRequest | null>(null);
 
   return (
-    <Table
-      columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns"
-      columns={deliveryRequestColumns}
-      emptyMessage="No delivery requests yet."
-      errorMessage={getRtkQueryErrorMessage(
-        error,
-        "We could not load delivery requests right now.",
-      )}
-      getRowKey={(request) => request.id}
-      isLoading={isLoading}
-      loadingMessage="Loading delivery requests..."
-      minWidthClassName="min-w-[1280px]"
-      rows={deliveryRequests}
-      searchPlaceholder="Search delivery requests..."
-      searchValue={(request) => [
-        formatDateTime(request.submittedAt),
-        request.source,
-        request.pickup,
-        request.delivery,
-        formatDateTime(request.datetime),
-        request.vehicle,
-        request.name,
-        request.email,
-        request.phone,
-        request.rush,
-        request.instructions,
-        request.status,
-        request.emailNotification.status,
-        request.emailNotification.errorMessage,
-      ]}
-      subtitle={`${deliveryRequests.length} total`}
-      title="Delivery Requests"
-    />
+    <>
+      <Table
+        actionsColumn={{
+          header: "Actions",
+          render: (request) => (
+            <AdminRequestRowActions
+              email={request.email}
+              emailSubject={`Re: your delivery request (${formatDateTime(
+                request.submittedAt,
+              )})`}
+              name={request.name}
+              onView={() => setSelectedRequest(request)}
+            />
+          ),
+        }}
+        columnVisibilityStorageKey="efficient_global_delivery_requests_table_columns_v2"
+        columns={deliveryRequestColumns}
+        emptyMessage="No delivery requests yet."
+        errorMessage={getRtkQueryErrorMessage(
+          error,
+          "We could not load delivery requests right now.",
+        )}
+        getRowKey={(request) => request.id}
+        isLoading={isLoading}
+        loadingMessage="Loading delivery requests..."
+        minWidthClassName="min-w-[1360px]"
+        rows={deliveryRequests}
+        searchPlaceholder="Search delivery requests..."
+        shortTitle="Delivery Reqs"
+        searchValue={(request) => [
+          request.id,
+          formatDateTime(request.submittedAt),
+          request.source,
+          request.pickup,
+          request.delivery,
+          formatDateTime(request.datetime),
+          request.vehicle,
+          request.name,
+          request.email,
+          request.phone,
+          request.rush,
+          request.instructions,
+          request.status,
+          request.emailNotification.status,
+          request.emailNotification.errorMessage,
+        ]}
+        subtitle={`${deliveryRequests.length} total`}
+        title="Delivery Requests"
+      />
+
+      <RequestDetailsModal
+        email={selectedRequest?.email}
+        emailSubject={
+          selectedRequest
+            ? `Re: your delivery request (${formatDateTime(
+                selectedRequest.submittedAt,
+              )})`
+            : undefined
+        }
+        fields={
+          selectedRequest
+            ? getDeliveryRequestDetailsFields(selectedRequest)
+            : []
+        }
+        isOpen={Boolean(selectedRequest)}
+        subtitle={
+          selectedRequest
+            ? `Submitted ${formatDateTime(selectedRequest.submittedAt)}`
+            : undefined
+        }
+        title={`Delivery request from ${selectedRequest?.name ?? ""}`.trim()}
+        onClose={() => setSelectedRequest(null)}
+      />
+    </>
   );
 };
 

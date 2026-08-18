@@ -55,6 +55,8 @@ export type TableColumn<Row> = {
   header: ReactNode;
   headerClassName?: string;
   isHideable?: boolean;
+  /** Hidden until the viewer turns it on, unless a stored preference says otherwise. */
+  isHiddenByDefault?: boolean;
   isSortable?: boolean;
   key: string;
   label?: string;
@@ -66,8 +68,28 @@ export type FilterableTableColumn<Row> = TableColumn<Row> & {
   filter: TableFilterConfig<Row>;
 };
 
+/**
+ * A trailing column pinned to the right edge of the scroll area. It is not part
+ * of `columns`, so it is never sortable, filterable, or hideable.
+ */
+export type TableActionsColumn<Row> = {
+  cellClassName?: string;
+  header?: ReactNode;
+  headerClassName?: string;
+  render: (row: Row, context: TableRenderContext) => ReactNode;
+};
+
 export type ActiveFilterSummary = {
   key: string;
   label: string;
   valueLabel: string;
 };
+
+// How much of the header row still fits, in the order it degrades: everything,
+// the search field reduced to its icon, every control reduced to its icon, and
+// finally the title swapped for its shortened form.
+export type TableToolbarDensity =
+  | "full"
+  | "compactSearch"
+  | "iconsOnly"
+  | "shortTitle";

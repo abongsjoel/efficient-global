@@ -1,26 +1,20 @@
+import { useState } from "react";
 import StatusBadge from "../../atoms/StatusBadge";
+import CopyButton from "../../molecules/CopyButton";
+import RequestDetailsModal, {
+  type RequestDetailsField,
+} from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
+import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
+import Tooltip from "../../molecules/Tooltip";
 import TruncatedHoverText from "../../molecules/TruncatedHoverText";
+import AdminRequestRowActions from "./AdminRequestRowActions";
 import {
   type AdminInformationRequest,
   useGetInformationRequestsQuery,
 } from "../../../services/adminApi";
+import { formatDateTime, formatShortId } from "../../../utils/adminDisplay";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
-
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-const formatDateTime = (value: string) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime()) ? value : dateTimeFormatter.format(date);
-};
 
 const getTimestamp = (value: string) => {
   const timestamp = new Date(value).getTime();
@@ -30,6 +24,26 @@ const getTimestamp = (value: string) => {
 
 const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
+    key: "id",
+    header: "Request ID",
+    cellClassName: "whitespace-nowrap font-mono text-xs text-slate-600",
+    isHideable: false,
+    filter: {
+      placeholder: "Search request ID",
+      type: "text",
+      value: (request) => request.id,
+    },
+    render: (request, { highlightSearchText }) => (
+      <div className="flex items-center gap-1.5">
+        <Tooltip label={request.id}>
+          {highlightSearchText(formatShortId(request.id))}
+        </Tooltip>
+        <CopyButton label="Copy request ID" value={request.id} />
+      </div>
+    ),
+    sortValue: (request) => request.id,
+  },
+  {
     key: "submitted",
     header: "Submitted",
     cellClassName: "whitespace-nowrap text-slate-600",
@@ -37,8 +51,12 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "dateRange",
       value: (request) => request.submittedAt,
     },
-    render: (request, { highlightSearchText }) =>
-      highlightSearchText(formatDateTime(request.submittedAt)),
+    render: (request, { highlightSearchText }) => (
+      <TableDateTimeCell
+        highlightSearchText={highlightSearchText}
+        value={request.submittedAt}
+      />
+    ),
     sortValue: (request) => getTimestamp(request.submittedAt),
   },
   {
@@ -73,10 +91,11 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
       type: "text",
       value: (request) => request.organization,
     },
-    render: (request, { highlightSearchText }) => (
-      <span title={request.organization}>
-        {highlightSearchText(request.organization || "-")}
-      </span>
+    render: (request, { searchQuery }) => (
+      <TruncatedHoverText
+        highlightQuery={searchQuery}
+        text={request.organization}
+      />
     ),
     sortValue: (request) => request.organization,
   },
@@ -109,6 +128,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
     key: "status",
     header: "Status",
+    isHiddenByDefault: true,
     filter: {
       type: "select",
       value: (request) => request.status,
@@ -121,6 +141,7 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   {
     key: "email",
     header: "Email",
+    isHiddenByDefault: true,
     filter: {
       label: "Email status",
       type: "select",
@@ -147,43 +168,108 @@ const informationRequestColumns: Array<TableColumn<AdminInformationRequest>> = [
   },
 ];
 
+const getInformationRequestDetailsFields = (
+  request: AdminInformationRequest,
+): RequestDetailsField[] => [
+  { label: "Request ID", value: request.id },
+  { label: "Submitted", value: formatDateTime(request.submittedAt) },
+  { label: "Source", value: request.source },
+  { label: "Contact", value: request.name },
+  { label: "Email", value: request.email },
+  { label: "Phone", value: request.phone },
+  { label: "Organization", value: request.organization },
+  { isWide: true, label: "Message", value: request.message },
+  {
+    label: "Status",
+    value: <StatusBadge status={request.status} />,
+  },
+  {
+    label: "Email notification",
+    value: (
+      <>
+        <StatusBadge status={request.emailNotification.status} />
+        {request.emailNotification.errorMessage ? (
+          <p className="mt-2 text-xs text-red-600">
+            {request.emailNotification.errorMessage}
+          </p>
+        ) : null}
+      </>
+    ),
+  },
+];
+
 const AdminInformationRequestsTable = () => {
   const {
     data: informationRequests = [],
     error,
     isLoading,
   } = useGetInformationRequestsQuery();
+  const [selectedRequest, setSelectedRequest] =
+    useState<AdminInformationRequest | null>(null);
 
   return (
-    <Table
-      columnVisibilityStorageKey="efficient_global_information_requests_table_columns"
-      columns={informationRequestColumns}
-      emptyMessage="No information requests yet."
-      errorMessage={getRtkQueryErrorMessage(
-        error,
-        "We could not load information requests right now.",
-      )}
-      getRowKey={(request) => request.id}
-      isLoading={isLoading}
-      loadingMessage="Loading information requests..."
-      minWidthClassName="min-w-[1080px]"
-      rows={informationRequests}
-      searchPlaceholder="Search information requests..."
-      searchValue={(request) => [
-        formatDateTime(request.submittedAt),
-        request.source,
-        request.name,
-        request.email,
-        request.phone,
-        request.organization,
-        request.message,
-        request.status,
-        request.emailNotification.status,
-        request.emailNotification.errorMessage,
-      ]}
-      subtitle={`${informationRequests.length} total`}
-      title="Information Requests"
-    />
+    <>
+      <Table
+        actionsColumn={{
+          header: "Actions",
+          render: (request) => (
+            <AdminRequestRowActions
+              email={request.email}
+              emailSubject="Re: your inquiry to Efficient Global"
+              name={request.name}
+              onView={() => setSelectedRequest(request)}
+            />
+          ),
+        }}
+        columnVisibilityStorageKey="efficient_global_information_requests_table_columns_v2"
+        columns={informationRequestColumns}
+        emptyMessage="No information requests yet."
+        errorMessage={getRtkQueryErrorMessage(
+          error,
+          "We could not load information requests right now.",
+        )}
+        getRowKey={(request) => request.id}
+        isLoading={isLoading}
+        loadingMessage="Loading information requests..."
+        minWidthClassName="min-w-[1160px]"
+        rows={informationRequests}
+        searchPlaceholder="Search information requests..."
+        shortTitle="Information Reqs"
+        searchValue={(request) => [
+          request.id,
+          formatDateTime(request.submittedAt),
+          request.source,
+          request.name,
+          request.email,
+          request.phone,
+          request.organization,
+          request.message,
+          request.status,
+          request.emailNotification.status,
+          request.emailNotification.errorMessage,
+        ]}
+        subtitle={`${informationRequests.length} total`}
+        title="Information Requests"
+      />
+
+      <RequestDetailsModal
+        email={selectedRequest?.email}
+        emailSubject="Re: your inquiry to Efficient Global"
+        fields={
+          selectedRequest
+            ? getInformationRequestDetailsFields(selectedRequest)
+            : []
+        }
+        isOpen={Boolean(selectedRequest)}
+        subtitle={
+          selectedRequest
+            ? `Submitted ${formatDateTime(selectedRequest.submittedAt)}`
+            : undefined
+        }
+        title={`Information request from ${selectedRequest?.name ?? ""}`.trim()}
+        onClose={() => setSelectedRequest(null)}
+      />
+    </>
   );
 };
 

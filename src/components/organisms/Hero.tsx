@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import city from "../../assets/images/city.jpg";
 import Button from "../atoms/Button";
 
@@ -18,7 +18,6 @@ const HeroParagraph = ({
 
 const Hero = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const goRequestDelivery = () => {
     // navigate to the Contact page with the delivery form selected

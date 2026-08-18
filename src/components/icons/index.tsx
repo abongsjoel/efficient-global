@@ -138,6 +138,26 @@ export const ColumnsIcon = ({
   </svg>
 );
 
+export const CopyIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+
 export const DashboardIcon = ({
   className,
   ...props
@@ -272,6 +292,25 @@ export const PasswordVisibilityIcon = ({
         <path d="M6.61 6.61A13.1 13.1 0 002 12c1.5 4 5 8 10 8a10.6 10.6 0 005.39-1.48" />
       </>
     )}
+  </svg>
+);
+
+export const PhoneIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4 shrink-0")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M6.5 3h3l1.5 4.5-2 1.5a13 13 0 0 0 6 6l1.5-2 4.5 1.5v3a2 2 0 0 1-2.2 2A17.5 17.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3Z" />
   </svg>
 );
 

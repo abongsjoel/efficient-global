@@ -17,18 +17,21 @@ import TableHeaderCell from "./table/TableHeaderCell";
 import TableSearchControl from "./table/TableSearchControl";
 import type {
   SortState,
+  TableActionsColumn,
   TableColumn,
   TableDateRangeFilterValue,
   TableFilterState,
   TableFilterStateValue,
   TableRenderContext,
   TableSearchValue,
+  TableToolbarDensity,
 } from "./table/tableTypes";
 import {
   compareSortValues,
   doesRowMatchFilter,
   getActiveFilterCount,
   getActiveFilterSummaries,
+  getDefaultHiddenColumnKeys,
   getDefaultSearchStringValue,
   getFilterStringValue,
   getSearchStringValue,
@@ -38,16 +41,25 @@ import {
   isColumnSortable,
   isDateRangeFilterValue,
   isFilterValueActive,
+  stickyActionsCellClassName,
+  stickyActionsHeaderClassName,
+  stickyActionsShadowClassName,
   tableControlButtonClassName,
+  EXPANDED_SEARCH_WIDTH,
+  ICON_ONLY_BUTTON_WIDTH,
+  TABLE_SEARCH_ATTRIBUTE,
+  TOOLBAR_GAP,
 } from "./table/tableUtils";
 
 export type {
+  TableActionsColumn,
   TableColumn,
   TableRenderContext,
   TableSortValue,
 } from "./table/tableTypes";
 
 type TableProps<Row> = {
+  actionsColumn?: TableActionsColumn<Row>;
   className?: string;
   columns: Array<TableColumn<Row>>;
   columnVisibilityStorageKey?: string;
@@ -60,11 +72,13 @@ type TableProps<Row> = {
   rows: Row[];
   searchPlaceholder?: string;
   searchValue?: (row: Row) => TableSearchValue;
+  shortTitle?: ReactNode;
   subtitle?: ReactNode;
   title?: ReactNode;
 };
 
 const Table = <Row,>({
+  actionsColumn,
   className,
   columns,
   columnVisibilityStorageKey,
@@ -77,16 +91,29 @@ const Table = <Row,>({
   rows,
   searchPlaceholder = "Search table...",
   searchValue,
+  shortTitle,
   subtitle,
   title,
 }: TableProps<Row>) => {
   const columnControlsId = useId();
   const columnControlsRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const labeledControlsWidthRef = useRef(0);
+  const longTitleWidthRef = useRef(0);
+  const toolbarDensityRef = useRef<TableToolbarDensity>("full");
+  const [toolbarDensity, setToolbarDensity] =
+    useState<TableToolbarDensity>("full");
   const filterControlsId = useId();
   const filterControlsRef = useRef<HTMLDivElement>(null);
   const searchInputId = useId();
-  const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(() =>
-    getStoredHiddenColumnKeys(columnVisibilityStorageKey),
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [hasScrollableColumns, setHasScrollableColumns] = useState(false);
+  const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>(
+    () =>
+      getStoredHiddenColumnKeys(columnVisibilityStorageKey) ??
+      getDefaultHiddenColumnKeys(columns),
   );
   const [filters, setFilters] = useState<TableFilterState>({});
   const [isColumnPanelOpen, setIsColumnPanelOpen] = useState(false);
@@ -217,7 +244,10 @@ const Table = <Row,>({
   );
 
   const hasHeader = Boolean(title || subtitle);
-  const shouldShowTable = !isLoading && !errorMessage && filteredRows.length > 0;
+  const isToolbarIconOnly =
+    toolbarDensity === "iconsOnly" || toolbarDensity === "shortTitle";
+  const shouldShowTable =
+    !isLoading && !errorMessage && filteredRows.length > 0;
   const shouldShowColumnControls = hideableColumns.length > 1;
   const shouldShowFilterControls = filterableColumns.length > 0;
   const shouldShowSortControls = sortableColumnByKey.size > 0;
@@ -226,6 +256,90 @@ const Table = <Row,>({
     shouldShowFilterControls ||
     shouldShowSearchControl ||
     shouldShowSortControls;
+
+  // Collapse the search field to its icon exactly when the expanded field would
+  // no longer fit beside the title and the other controls, instead of at a fixed
+  // breakpoint. The space is measured against the header row rather than the
+  // toolbar's own width, because below `sm` the toolbar drops onto its own line
+  // and would otherwise always look roomy enough to re-expand. The requirement
+  // is always computed as if the field were expanded, so the result never
+  // depends on the current state and cannot oscillate.
+  useEffect(() => {
+    const header = headerRef.current;
+    const toolbar = toolbarRef.current;
+
+    if (!header || !toolbar || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const measureToolbar = () => {
+      const searchElement = toolbar.querySelector(
+        `[${TABLE_SEARCH_ATTRIBUTE}]`,
+      );
+      const controls = Array.from(toolbar.children);
+      const otherControls = controls.filter(
+        (control) => control !== searchElement,
+      );
+      const gapsWidth = TOOLBAR_GAP * Math.max(0, controls.length - 1);
+
+      // Only trust live measurements of the parts that are still rendered in
+      // their wide form. Once the labels are dropped or the title is shortened,
+      // their measured width says nothing about how much room restoring them
+      // would need, so the last wide measurement is reused instead.
+      if (
+        toolbarDensityRef.current === "full" ||
+        toolbarDensityRef.current === "compactSearch"
+      ) {
+        labeledControlsWidthRef.current = otherControls.reduce(
+          (total, control) => total + control.getBoundingClientRect().width,
+          0,
+        );
+      }
+
+      if (toolbarDensityRef.current !== "shortTitle") {
+        longTitleWidthRef.current =
+          titleRef.current?.getBoundingClientRect().width ?? 0;
+      }
+
+      const headerStyle = window.getComputedStyle(header);
+      // Always measured against the long title, so the decision stays the same
+      // whichever title is currently on screen.
+      const availableWidth =
+        header.clientWidth -
+        parseFloat(headerStyle.paddingLeft) -
+        parseFloat(headerStyle.paddingRight) -
+        longTitleWidthRef.current -
+        TOOLBAR_GAP;
+      const labeledControlsWidth = labeledControlsWidthRef.current;
+      const searchIconWidth = searchElement ? ICON_ONLY_BUTTON_WIDTH : 0;
+      const expandedSearchWidth = searchElement ? EXPANDED_SEARCH_WIDTH : 0;
+      const iconsOnlyWidth =
+        ICON_ONLY_BUTTON_WIDTH * controls.length + gapsWidth;
+      const nextDensity: TableToolbarDensity =
+        availableWidth >= expandedSearchWidth + labeledControlsWidth + gapsWidth
+          ? "full"
+          : availableWidth >= searchIconWidth + labeledControlsWidth + gapsWidth
+            ? "compactSearch"
+            : availableWidth >= iconsOnlyWidth
+              ? "iconsOnly"
+              : "shortTitle";
+
+      toolbarDensityRef.current = nextDensity;
+      setToolbarDensity(nextDensity);
+    };
+
+    measureToolbar();
+
+    const observer = new ResizeObserver(measureToolbar);
+
+    observer.observe(header);
+
+    if (titleRef.current) {
+      observer.observe(titleRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [shouldShowSearchControl, shouldShowToolbar]);
 
   useEffect(() => {
     if (!columnVisibilityStorageKey || typeof window === "undefined") {
@@ -237,6 +351,38 @@ const Table = <Row,>({
       JSON.stringify(hiddenColumnKeys),
     );
   }, [columnVisibilityStorageKey, hiddenColumnKeys]);
+
+  // Keep the pinned actions column's edge shadow in sync with how much of the
+  // table is still hidden to its right.
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!actionsColumn || !scrollContainer) {
+      return;
+    }
+
+    const updateScrollableColumns = () => {
+      const remainingScroll =
+        scrollContainer.scrollWidth -
+        scrollContainer.clientWidth -
+        scrollContainer.scrollLeft;
+
+      setHasScrollableColumns(remainingScroll > 1);
+    };
+
+    updateScrollableColumns();
+
+    const resizeObserver = new ResizeObserver(updateScrollableColumns);
+    resizeObserver.observe(scrollContainer);
+    scrollContainer.addEventListener("scroll", updateScrollableColumns, {
+      passive: true,
+    });
+
+    return () => {
+      resizeObserver.disconnect();
+      scrollContainer.removeEventListener("scroll", updateScrollableColumns);
+    };
+  }, [actionsColumn, shouldShowTable, visibleColumns]);
 
   useEffect(() => {
     if (!isColumnPanelOpen && !isFilterPanelOpen) {
@@ -344,6 +490,13 @@ const Table = <Row,>({
   };
 
   const toggleColumnVisibility = (columnKey: string) => {
+    // Pinned columns are rendered as disabled checkboxes, so this is a guard.
+    if (
+      columns.find((column) => column.key === columnKey)?.isHideable === false
+    ) {
+      return;
+    }
+
     if (
       sortState?.columnKey === columnKey &&
       !hiddenColumnKeySet.has(columnKey)
@@ -398,21 +551,32 @@ const Table = <Row,>({
       )}
     >
       {hasHeader ? (
-        <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        <div
+          ref={headerRef}
+          className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-4"
+        >
+          <div ref={titleRef}>
             {title ? (
-              <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+              <h2 className="text-lg font-bold text-slate-950">
+                {toolbarDensity === "shortTitle" && shortTitle
+                  ? shortTitle
+                  : title}
+              </h2>
             ) : null}
             {subtitle ? (
               <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
             ) : null}
           </div>
           {shouldShowToolbar ? (
-            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <div
+              ref={toolbarRef}
+              className="ml-auto flex flex-wrap items-center justify-end gap-2"
+            >
               {shouldShowSearchControl ? (
                 <TableSearchControl
                   hasActiveSearch={hasActiveSearch}
                   inputId={searchInputId}
+                  isCompact={toolbarDensity !== "full"}
                   placeholder={searchPlaceholder}
                   value={searchQuery}
                   onChange={setSearchQuery}
@@ -427,10 +591,13 @@ const Table = <Row,>({
                   filteredRowCount={filteredRows.length}
                   filters={filters}
                   hasActiveFilters={hasActiveFilters}
+                  isIconOnly={isToolbarIconOnly}
                   isOpen={isFilterPanelOpen}
                   panelId={filterControlsId}
                   rowsCount={rows.length}
-                  selectFilterOptionsByColumnKey={selectFilterOptionsByColumnKey}
+                  selectFilterOptionsByColumnKey={
+                    selectFilterOptionsByColumnKey
+                  }
                   tableColumns={filterableColumns}
                   onClearFilters={clearFilters}
                   onDateRangeFilterChange={updateDateRangeFilter}
@@ -444,6 +611,7 @@ const Table = <Row,>({
 
               {shouldShowSortControls ? (
                 <Button
+                  aria-label={isToolbarIconOnly ? "Sort" : undefined}
                   aria-pressed={isSortingEnabled}
                   className={cx(
                     tableControlButtonClassName,
@@ -456,7 +624,7 @@ const Table = <Row,>({
                   onClick={toggleSorting}
                 >
                   <SortIcon />
-                  Sort
+                  {isToolbarIconOnly ? null : "Sort"}
                 </Button>
               ) : null}
 
@@ -464,10 +632,13 @@ const Table = <Row,>({
                 <TableColumnControls
                   containerRef={columnControlsRef}
                   hiddenColumnKeySet={hiddenColumnKeySet}
+                  isIconOnly={isToolbarIconOnly}
                   isOpen={isColumnPanelOpen}
                   panelId={columnControlsId}
-                  tableColumns={hideableColumns}
-                  onResetColumns={() => setHiddenColumnKeys([])}
+                  tableColumns={columns}
+                  onResetColumns={() =>
+                    setHiddenColumnKeys(getDefaultHiddenColumnKeys(columns))
+                  }
                   onToggle={() => {
                     setIsFilterPanelOpen(false);
                     setIsColumnPanelOpen((currentValue) => !currentValue);
@@ -514,7 +685,7 @@ const Table = <Row,>({
       ) : null}
 
       {shouldShowTable ? (
-        <div className="overflow-x-auto rounded-b-xl">
+        <div ref={scrollContainerRef} className="overflow-x-auto rounded-b-xl">
           <table
             className={cx(
               minWidthClassName,
@@ -536,13 +707,28 @@ const Table = <Row,>({
                     onToggleSort={toggleColumnSort}
                   />
                 ))}
+
+                {actionsColumn ? (
+                  <th
+                    scope="col"
+                    className={cx(
+                      stickyActionsHeaderClassName,
+                      hasScrollableColumns && stickyActionsShadowClassName,
+                      actionsColumn.headerClassName,
+                    )}
+                  >
+                    {actionsColumn.header ?? (
+                      <span className="sr-only">Actions</span>
+                    )}
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {sortedRows.map((row, index) => (
                 <tr
                   key={getRowKey(row, index)}
-                  className="align-top transition-colors hover:bg-slate-50/70"
+                  className="group align-top transition-colors hover:bg-slate-50/70"
                 >
                   {visibleColumns.map((column) => (
                     <td
@@ -552,6 +738,21 @@ const Table = <Row,>({
                       {column.render(row, renderContext)}
                     </td>
                   ))}
+
+                  {actionsColumn ? (
+                    <td
+                      className={cx(
+                        stickyActionsCellClassName,
+                        // The pinned cell paints over the row, so it repeats the
+                        // row's hover state itself, a step darker than its tint.
+                        "transition-colors group-hover:bg-slate-100",
+                        hasScrollableColumns && stickyActionsShadowClassName,
+                        actionsColumn.cellClassName,
+                      )}
+                    >
+                      {actionsColumn.render(row, renderContext)}
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>

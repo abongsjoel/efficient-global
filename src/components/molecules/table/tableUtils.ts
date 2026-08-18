@@ -13,6 +13,29 @@ import type {
 export const tableControlButtonClassName =
   "rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:border-primary-200 hover:bg-slate-50 hover:text-primary-200";
 
+// Kept in sync with the expanded search field's `w-64`, the toolbar's `gap-2`,
+// and the rendered width of a label-less `tableControlButtonClassName` button
+// (px-3 + a 16px icon + borders). The toolbar measures against these to decide
+// how much of itself still fits on one line.
+export const TOOLBAR_GAP = 8;
+export const EXPANDED_SEARCH_WIDTH = 256;
+export const ICON_ONLY_BUTTON_WIDTH = 42;
+export const TABLE_SEARCH_ATTRIBUTE = "data-table-search";
+
+// The pinned body cells carry a tint just strong enough to lift them off the
+// white rows, sitting between slate-50 and slate-100. It has to be opaque — a
+// translucent tint would let scrolled columns show through. The header cell
+// keeps the header row's own slate-50 instead.
+export const stickyActionsCellClassName =
+  "sticky right-0 bg-[#f9f9f9] px-4 py-4 text-right align-middle";
+
+export const stickyActionsHeaderClassName =
+  "sticky right-0 z-20 bg-slate-50 px-4 py-3 text-right font-semibold";
+
+// Only drawn while columns are still hidden to the right of the pinned cell.
+export const stickyActionsShadowClassName =
+  "shadow-[-8px_0_12px_-10px_rgba(15,23,42,0.35)]";
+
 export const filterControlClassName =
   "mt-1.5 w-full rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-sm text-slate-900 outline-none transition hover:border-slate-300 focus:border-primary-200 focus:bg-white focus:ring-4 focus:ring-primary-200/20";
 
@@ -29,24 +52,40 @@ export const getColumnLabel = <Row,>(column: TableColumn<Row>) => {
   return typeof column.header === "string" ? column.header : column.key;
 };
 
+/**
+ * Returns null when the viewer has no stored preference, so callers can tell
+ * "never chose" apart from "chose to show every column".
+ */
 export const getStoredHiddenColumnKeys = (storageKey: string | undefined) => {
   if (!storageKey || typeof window === "undefined") {
-    return [];
+    return null;
   }
 
   try {
     const storedValue = window.localStorage.getItem(storageKey);
-    const parsedValue = storedValue ? JSON.parse(storedValue) : [];
+
+    if (!storedValue) {
+      return null;
+    }
+
+    const parsedValue = JSON.parse(storedValue);
 
     return Array.isArray(parsedValue)
       ? parsedValue.filter(
-          (value): value is string => typeof value === "string",
-        )
-      : [];
+        (value): value is string => typeof value === "string",
+      )
+      : null;
   } catch {
-    return [];
+    return null;
   }
 };
+
+export const getDefaultHiddenColumnKeys = <Row,>(
+  columns: Array<TableColumn<Row>>,
+) =>
+  columns
+    .filter((column) => column.isHiddenByDefault && column.isHideable !== false)
+    .map((column) => column.key);
 
 export const hasColumnFilter = <Row,>(
   column: TableColumn<Row>,
