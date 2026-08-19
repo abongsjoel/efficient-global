@@ -140,4 +140,4 @@ Set `VITE_API_BASE_URL` to the production API URL before building, and make sure
 
 ## License
 
-This project is private and not licensed for public use.
+Released under the [MIT License](LICENSE). Copyright (c) 2025-2026 Joel Chi.
