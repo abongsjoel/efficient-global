@@ -8,7 +8,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
-    <BrowserRouter basename="/logistics">
+    <BrowserRouter basename="/">
       <AppErrorBoundary>
         <Routes>
           <Route path="/" element={<MainLayout />}>
@@ -27,10 +27,7 @@ function App() {
               path="admin/information-requests"
               element={<AdminRoute view="informationRequests" />}
             />
-            <Route
-              path="admin/admins"
-              element={<AdminRoute view="admins" />}
-            />
+            <Route path="admin/admins" element={<AdminRoute view="admins" />} />
             <Route
               path="admin/profile"
               element={<AdminRoute view="profile" />}

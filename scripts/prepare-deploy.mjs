@@ -2,7 +2,6 @@ import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 const distDirectory = "dist";
 const deployDirectory = "deploy";
-const logisticsDirectory = `${deployDirectory}/logistics`;
 
 if (!existsSync(distDirectory)) {
   throw new Error('The dist folder does not exist. Run "npm run build" first.');
@@ -14,33 +13,15 @@ rmSync(deployDirectory, {
   force: true,
 });
 
-// Create /deploy/logistics.
-mkdirSync(logisticsDirectory, {
+// Create the root deploy directory for the site hosted at /.
+mkdirSync(deployDirectory, {
   recursive: true,
 });
 
-// Copy the Vite build into /logistics.
-cpSync(distDirectory, logisticsDirectory, {
+// Copy the Vite build into the root of the deploy directory.
+cpSync(distDirectory, deployDirectory, {
   recursive: true,
 });
-
-// GitHub Pages uses the root-level 404 page for direct SPA routes.
-cpSync(`${distDirectory}/404.html`, `${deployDirectory}/404.html`);
-
-// Leave the root domain visually empty.
-writeFileSync(
-  `${deployDirectory}/index.html`,
-  `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Efficient Global</title>
-  </head>
-  <body></body>
-</html>
-`,
-);
 
 // Preserve the GitHub Pages custom domain.
 writeFileSync(`${deployDirectory}/CNAME`, "www.efficientgloba.com\n");
