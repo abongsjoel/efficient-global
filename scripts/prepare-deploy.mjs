@@ -24,6 +24,6 @@ cpSync(distDirectory, deployDirectory, {
 });
 
 // Preserve the GitHub Pages custom domain.
-writeFileSync(`${deployDirectory}/CNAME`, "www.efficientgloba.com\n");
+writeFileSync(`${deployDirectory}/CNAME`, "efficientglobalogistics.com\n");
 
 console.log("Deployment folder prepared successfully.");
