@@ -123,7 +123,7 @@ To make repeat submissions easier, the site can remember a visitor's name, email
 
 ## Deployment
 
-The site is deployed to GitHub Pages at `www.efficientgloba.com/logistics`.
+The site is deployed to GitHub Pages at `https://efficientglobalogistics.com/`.
 
 ```bash
 npm run deploy
@@ -131,10 +131,9 @@ npm run deploy
 
 This runs `predeploy` (build + prepare-deploy) and then publishes the `deploy` folder. [scripts/prepare-deploy.mjs](scripts/prepare-deploy.mjs) assembles that folder by:
 
-1. Copying the Vite build from `dist` into `deploy/logistics`.
-2. Copying `404.html` to the root so GitHub Pages can redirect deep links back into the SPA (paired with the restore script in [index.html](index.html)).
-3. Writing an empty root `index.html` so the bare domain renders nothing.
-4. Writing the `CNAME` file that preserves the custom domain.
+1. Copying the Vite build from `dist` into the root of `deploy`.
+2. Copying `404.html` to the root so GitHub Pages can redirect deep links back into the SPA.
+3. Writing the `CNAME` file that preserves the custom domain.
 
 Set `VITE_API_BASE_URL` to the production API URL before building, and make sure that origin is listed in the backend's `CORS_ORIGIN`.
 
