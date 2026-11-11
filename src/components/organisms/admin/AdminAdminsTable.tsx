@@ -129,9 +129,9 @@ const AdminAdminsTable = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <Button>
+        <Button size="sm" variant="inverse">
           <PlusIcon />
-          Create admin
+          Add admin
         </Button>
       </div>
 
