@@ -18,9 +18,8 @@ type AdminPageProps = {
 
 const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
-  const currentPage = adminPageContent[view];
-  const shouldShowViewHeader =
-    view !== "deliveryRequests" && view !== "informationRequests";
+  const currentPage =
+    view === "dashboard" || view === "admins" ? adminPageContent[view] : null;
 
   return (
     <section
@@ -41,7 +40,7 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
           />
 
           <main className="min-w-0 flex-1">
-            {shouldShowViewHeader ? (
+            {currentPage ? (
               <AdminViewHeader content={currentPage} />
             ) : null}
 
