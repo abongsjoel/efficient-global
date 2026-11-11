@@ -1,3 +1,5 @@
+import { getAdminPasswordError } from "./adminPassword";
+
 export type ContactFieldErrors = Partial<Record<"email" | "phone", string>>;
 
 export type AdminLoginFieldErrors = Partial<
@@ -21,6 +23,17 @@ export type DeliveryRequestFieldErrors = Partial<
     string
   >
 >;
+
+export type AddAdminFields = {
+  confirmPassword: string;
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+  status: string;
+};
+
+export type AddAdminFieldErrors = Partial<Record<keyof AddAdminFields, string>>;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const phoneCharacterPattern = /^\+?[0-9\s().-]+$/;
@@ -145,4 +158,53 @@ export const validateDeliveryRequestFields = (formData: FormData) => {
     ...errors,
     ...validateContactFields(formData),
   };
+};
+
+const maxAdminNameLength = 80;
+
+export const validateAddAdminFields = ({
+  confirmPassword,
+  email,
+  name,
+  password,
+  role,
+  status,
+}: AddAdminFields) => {
+  const errors: AddAdminFieldErrors = {};
+  const normalizedName = name.trim();
+  const normalizedEmail = email.trim();
+
+  if (!normalizedName) {
+    errors.name = "Enter the admin's name.";
+  } else if (normalizedName.length > maxAdminNameLength) {
+    errors.name = `Name must be ${maxAdminNameLength} characters or fewer.`;
+  }
+
+  if (!normalizedEmail) {
+    errors.email = "Enter the admin's email.";
+  } else if (!emailPattern.test(normalizedEmail)) {
+    errors.email = "Enter a valid email address.";
+  }
+
+  if (!role) {
+    errors.role = "Choose a role.";
+  }
+
+  if (!status) {
+    errors.status = "Choose a status.";
+  }
+
+  const passwordError = getAdminPasswordError(password, "Enter a password.");
+
+  if (passwordError) {
+    errors.password = passwordError;
+  }
+
+  if (!confirmPassword.trim()) {
+    errors.confirmPassword = "Confirm the password.";
+  } else if (password && confirmPassword !== password) {
+    errors.confirmPassword = "Passwords do not match.";
+  }
+
+  return errors;
 };

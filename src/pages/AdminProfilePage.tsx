@@ -9,7 +9,8 @@ import { Link } from "react-router-dom";
 import Button from "../components/atoms/Button";
 import Input from "../components/atoms/Input";
 import PasswordVisibilityButton from "../components/atoms/PasswordVisibilityButton";
-import { CheckIcon, EditIcon, TrashIcon, UploadIcon } from "../components/icons";
+import { EditIcon, TrashIcon, UploadIcon } from "../components/icons";
+import PasswordRequirements from "../components/molecules/PasswordRequirements";
 import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
 import Toast from "../components/molecules/Toast";
 import type {
@@ -20,6 +21,11 @@ import type {
   AdminProfileUpdateResult,
 } from "../utils/adminAuth";
 import { formatAdminRole } from "../utils/adminDisplay";
+import {
+  getAdminPasswordError,
+  maxAdminPasswordLength,
+  minAdminPasswordLength,
+} from "../utils/adminPassword";
 import { scrollToFirstErrorField } from "../utils/formFocus";
 
 type AdminProfilePageProps = {
@@ -70,10 +76,6 @@ const profileImageAcceptValue = Array.from(supportedProfileImageTypes).join(
 );
 const maxSourceImageBytes = 8 * 1024 * 1024;
 const maxStoredProfileImageBytes = 1_000_000;
-const minAdminPasswordLength = 8;
-const maxAdminPasswordLength = 72;
-const adminPasswordRequirementMessage =
-  "Password must include a lowercase letter, uppercase letter, number, and special character.";
 const initialPasswordFields: PasswordFields = {
   confirmPassword: "",
   currentPassword: "",
@@ -123,31 +125,6 @@ const getBase64ByteLength = (dataUrl: string) => {
 
 const normalizeDisplayName = (name: string) => name.trim().replace(/\s+/g, " ");
 
-const getPasswordRequirementStatuses = (password: string) => [
-  {
-    label: `${minAdminPasswordLength}-${maxAdminPasswordLength} characters`,
-    isMet:
-      password.length >= minAdminPasswordLength &&
-      password.length <= maxAdminPasswordLength,
-  },
-  {
-    label: "Lowercase letter",
-    isMet: /[a-z]/.test(password),
-  },
-  {
-    label: "Uppercase letter",
-    isMet: /[A-Z]/.test(password),
-  },
-  {
-    label: "Number",
-    isMet: /[0-9]/.test(password),
-  },
-  {
-    label: "Special character",
-    isMet: /[^A-Za-z0-9\s]/.test(password),
-  },
-];
-
 const validatePasswordFields = ({
   confirmPassword,
   currentPassword,
@@ -159,19 +136,13 @@ const validatePasswordFields = ({
     errors.currentPassword = "Enter your current password.";
   }
 
-  if (!newPassword.trim()) {
-    errors.newPassword = "Enter a new password.";
-  } else if (newPassword.length < minAdminPasswordLength) {
-    errors.newPassword = `Password must be at least ${minAdminPasswordLength} characters.`;
-  } else if (newPassword.length > maxAdminPasswordLength) {
-    errors.newPassword = `Password must be ${maxAdminPasswordLength} characters or fewer.`;
-  } else if (
-    !/[a-z]/.test(newPassword) ||
-    !/[A-Z]/.test(newPassword) ||
-    !/[0-9]/.test(newPassword) ||
-    !/[^A-Za-z0-9\s]/.test(newPassword)
-  ) {
-    errors.newPassword = adminPasswordRequirementMessage;
+  const newPasswordError = getAdminPasswordError(
+    newPassword,
+    "Enter a new password.",
+  );
+
+  if (newPasswordError) {
+    errors.newPassword = newPasswordError;
   }
 
   if (!confirmPassword.trim()) {
@@ -230,12 +201,6 @@ const AdminProfilePage = ({
   const hasDisplayNameChanges =
     normalizeDisplayName(displayNameDraft) !== admin.name;
   const hasPasswordChanges = Object.values(passwordFields).some(Boolean);
-  const passwordRequirementStatuses = getPasswordRequirementStatuses(
-    passwordFields.newPassword,
-  );
-  const shouldShowPasswordRequirements =
-    passwordFields.newPassword.length > 0 &&
-    passwordRequirementStatuses.some((requirement) => !requirement.isMet);
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -740,35 +705,10 @@ const AdminProfilePage = ({
                         required
                       />
 
-                      {shouldShowPasswordRequirements ? (
-                        <ul
-                          aria-label="New password requirements"
-                          aria-live="polite"
-                          className="mt-3 grid gap-1.5 text-xs"
-                        >
-                          {passwordRequirementStatuses.map((requirement) => (
-                            <li
-                              key={requirement.label}
-                              className={`flex items-center gap-2 transition-colors ${
-                                requirement.isMet
-                                  ? "text-green-700"
-                                  : "text-slate-500"
-                              }`}
-                            >
-                              <span
-                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
-                                  requirement.isMet
-                                    ? "border-green-600 bg-green-600 text-white"
-                                    : "border-slate-300 bg-white text-transparent"
-                                }`}
-                              >
-                                <CheckIcon className="h-3 w-3" />
-                              </span>
-                              <span>{requirement.label}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
+                      <PasswordRequirements
+                        label="New password requirements"
+                        password={passwordFields.newPassword}
+                      />
                     </div>
 
                     <Input

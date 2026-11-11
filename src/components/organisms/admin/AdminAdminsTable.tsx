@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Button from "../../atoms/Button";
 import StatusBadge from "../../atoms/StatusBadge";
 import { PlusIcon } from "../../icons";
@@ -5,6 +6,7 @@ import CopyButton from "../../molecules/CopyButton";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
 import Tooltip from "../../molecules/Tooltip";
+import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
 import {
   type AdminListItem,
   useGetAdminsQuery,
@@ -123,13 +125,24 @@ const adminColumns: Array<TableColumn<AdminListItem>> = [
   },
 ];
 
+// Placeholder until the backend has a create-admin endpoint.
+const submitNewAdmin = async (): Promise<AddAdminSubmitResult> => ({
+  success: false,
+  message: "Adding admins isn't available yet.",
+});
+
 const AdminAdminsTable = () => {
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
+  const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <Button size="sm" variant="inverse">
+        <Button
+          size="sm"
+          variant="inverse"
+          onClick={() => setIsAddAdminOpen(true)}
+        >
           <PlusIcon />
           Add admin
         </Button>
@@ -161,6 +174,13 @@ const AdminAdminsTable = () => {
         subtitle={`${admins.length} total`}
         title="Admins"
       />
+
+      {isAddAdminOpen ? (
+        <AddAdminModal
+          onClose={() => setIsAddAdminOpen(false)}
+          onSubmit={submitNewAdmin}
+        />
+      ) : null}
     </div>
   );
 };
