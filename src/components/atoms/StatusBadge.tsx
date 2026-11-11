@@ -15,6 +15,7 @@ const statusBadgeStyles = {
 
 const getStatusBadgeTone = (status: string) => {
   switch (status) {
+    case "active":
     case "sent":
     case "new":
       return "success";

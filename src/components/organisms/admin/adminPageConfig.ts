@@ -64,13 +64,9 @@ export const adminPanelItems: AdminPanelItem[] = [
   },
 ];
 
-export type AdminHeaderView = Extract<AdminPageView, "admins" | "dashboard">;
+export type AdminHeaderView = Extract<AdminPageView, "dashboard">;
 
 export const adminPageContent: Record<AdminHeaderView, AdminPageContent> = {
-  admins: {
-    description: "Admin management tools will live here.",
-    title: "Admins",
-  },
   dashboard: {
     description: "This area is reserved for Efficient Global administrators.",
     title: "Dashboard",

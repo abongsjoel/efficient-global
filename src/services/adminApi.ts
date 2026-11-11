@@ -57,6 +57,20 @@ export type AdminDeliveryRequest = {
   updatedAt: string;
 };
 
+export type AdminListItem = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AdminsResponse = {
+  admins?: AdminListItem[];
+};
+
 type AdminInformationRequestsResponse = {
   informationRequests?: AdminInformationRequest[];
 };
@@ -96,8 +110,20 @@ const adminBaseQuery: BaseQueryFn<
 export const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: adminBaseQuery,
-  tagTypes: ["DeliveryRequests", "InformationRequests"],
+  tagTypes: ["Admins", "DeliveryRequests", "InformationRequests"],
   endpoints: (builder) => ({
+    getAdmins: builder.query<AdminListItem[], void>({
+      query: () => "/admins",
+      transformResponse: (response: AdminsResponse) => response.admins || [],
+      keepUnusedDataFor: 300,
+      providesTags: (result) =>
+        result
+          ? [
+              { type: "Admins", id: "LIST" },
+              ...result.map(({ id }) => ({ type: "Admins" as const, id })),
+            ]
+          : [{ type: "Admins", id: "LIST" }],
+    }),
     getDeliveryRequests: builder.query<AdminDeliveryRequest[], void>({
       query: () => "/delivery-requests",
       transformResponse: (response: AdminDeliveryRequestsResponse) =>
@@ -134,6 +160,7 @@ export const adminApi = createApi({
 });
 
 export const {
+  useGetAdminsQuery,
   useGetDeliveryRequestsQuery,
   useGetInformationRequestsQuery,
 } = adminApi;
