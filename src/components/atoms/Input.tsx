@@ -136,7 +136,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className={cx(
             formControlStyles,
             error && formErrorControlStyles,
-            trailingElement && "pr-12",
+            trailingElement ? "pr-12" : undefined,
             className
           )}
           onBlur={handleBlur}

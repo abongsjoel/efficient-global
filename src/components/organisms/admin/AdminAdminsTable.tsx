@@ -1,4 +1,6 @@
+import Button from "../../atoms/Button";
 import StatusBadge from "../../atoms/StatusBadge";
+import { PlusIcon } from "../../icons";
 import CopyButton from "../../molecules/CopyButton";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
@@ -125,32 +127,41 @@ const AdminAdminsTable = () => {
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
 
   return (
-    <Table
-      columnVisibilityStorageKey="efficient_global_admins_table_columns_v1"
-      columns={adminColumns}
-      emptyMessage="No admins found."
-      errorMessage={getRtkQueryErrorMessage(
-        error,
-        "We could not load admins right now.",
-      )}
-      getRowKey={(admin) => admin.id}
-      isLoading={isLoading}
-      loadingMessage="Loading admins..."
-      minWidthClassName="min-w-[720px]"
-      rows={admins}
-      searchPlaceholder="Search admins..."
-      searchValue={(admin) => [
-        admin.id,
-        admin.name,
-        admin.email,
-        formatAdminRole(admin.role),
-        admin.status,
-        formatDateTime(admin.createdAt),
-        formatDateTime(admin.updatedAt),
-      ]}
-      subtitle={`${admins.length} total`}
-      title="Admins"
-    />
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-end">
+        <Button>
+          <PlusIcon />
+          Create admin
+        </Button>
+      </div>
+
+      <Table
+        columnVisibilityStorageKey="efficient_global_admins_table_columns_v1"
+        columns={adminColumns}
+        emptyMessage="No admins found."
+        errorMessage={getRtkQueryErrorMessage(
+          error,
+          "We could not load admins right now.",
+        )}
+        getRowKey={(admin) => admin.id}
+        isLoading={isLoading}
+        loadingMessage="Loading admins..."
+        minWidthClassName="min-w-[720px]"
+        rows={admins}
+        searchPlaceholder="Search admins..."
+        searchValue={(admin) => [
+          admin.id,
+          admin.name,
+          admin.email,
+          formatAdminRole(admin.role),
+          admin.status,
+          formatDateTime(admin.createdAt),
+          formatDateTime(admin.updatedAt),
+        ]}
+        subtitle={`${admins.length} total`}
+        title="Admins"
+      />
+    </div>
   );
 };
 
