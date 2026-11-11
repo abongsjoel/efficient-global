@@ -71,6 +71,20 @@ type AdminsResponse = {
   admins?: AdminListItem[];
 };
 
+export type CreateAdminRequest = {
+  confirmPassword: string;
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+  status: string;
+};
+
+type CreateAdminResponse = {
+  admin?: AdminListItem;
+  message?: string;
+};
+
 type AdminInformationRequestsResponse = {
   informationRequests?: AdminInformationRequest[];
 };
@@ -124,6 +138,14 @@ export const adminApi = createApi({
             ]
           : [{ type: "Admins", id: "LIST" }],
     }),
+    createAdmin: builder.mutation<CreateAdminResponse, CreateAdminRequest>({
+      query: (body) => ({
+        url: "/admins",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Admins", id: "LIST" }],
+    }),
     getDeliveryRequests: builder.query<AdminDeliveryRequest[], void>({
       query: () => "/delivery-requests",
       transformResponse: (response: AdminDeliveryRequestsResponse) =>
@@ -160,6 +182,7 @@ export const adminApi = createApi({
 });
 
 export const {
+  useCreateAdminMutation,
   useGetAdminsQuery,
   useGetDeliveryRequestsQuery,
   useGetInformationRequestsQuery,

@@ -5,10 +5,12 @@ import { PlusIcon } from "../../icons";
 import CopyButton from "../../molecules/CopyButton";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
+import Toast from "../../molecules/Toast";
 import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
 import {
   type AdminListItem,
+  useCreateAdminMutation,
   useGetAdminsQuery,
 } from "../../../services/adminApi";
 import {
@@ -16,6 +18,10 @@ import {
   formatDateTime,
   formatShortId,
 } from "../../../utils/adminDisplay";
+import type {
+  AddAdminFieldErrors,
+  AddAdminFields,
+} from "../../../utils/formValidation";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
 const getTimestamp = (value: string) => {
@@ -125,15 +131,49 @@ const adminColumns: Array<TableColumn<AdminListItem>> = [
   },
 ];
 
-// Placeholder until the backend has a create-admin endpoint.
-const submitNewAdmin = async (): Promise<AddAdminSubmitResult> => ({
-  success: false,
-  message: "Adding admins isn't available yet.",
-});
+// The backend returns field-level validation errors as `{ errors: {...} }`.
+const getFieldErrors = (data: unknown): AddAdminFieldErrors | undefined => {
+  if (data && typeof data === "object" && "errors" in data) {
+    const errors = data.errors;
+
+    return errors && typeof errors === "object"
+      ? (errors as AddAdminFieldErrors)
+      : undefined;
+  }
+
+  return undefined;
+};
 
 const AdminTable = () => {
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
+  const [createAdmin] = useCreateAdminMutation();
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleAddAdmin = async (
+    fields: AddAdminFields,
+  ): Promise<AddAdminSubmitResult> => {
+    const result = await createAdmin(fields);
+
+    if (result.error) {
+      return {
+        success: false,
+        errors:
+          "status" in result.error
+            ? getFieldErrors(result.error.data)
+            : undefined,
+        message: getRtkQueryErrorMessage(
+          result.error,
+          "We could not add this admin right now.",
+        ),
+      };
+    }
+
+    setIsAddAdminOpen(false);
+    setToastMessage(`${fields.name} was added as an admin.`);
+
+    return { success: true };
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -178,7 +218,14 @@ const AdminTable = () => {
       {isAddAdminOpen ? (
         <AddAdminModal
           onClose={() => setIsAddAdminOpen(false)}
-          onSubmit={submitNewAdmin}
+          onSubmit={handleAddAdmin}
+        />
+      ) : null}
+
+      {toastMessage ? (
+        <Toast
+          message={toastMessage}
+          onDismiss={() => setToastMessage("")}
         />
       ) : null}
     </div>
