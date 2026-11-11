@@ -131,7 +131,7 @@ const submitNewAdmin = async (): Promise<AddAdminSubmitResult> => ({
   message: "Adding admins isn't available yet.",
 });
 
-const AdminAdminsTable = () => {
+const AdminTable = () => {
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
 
@@ -185,4 +185,4 @@ const AdminAdminsTable = () => {
   );
 };
 
-export default AdminAdminsTable;
+export default AdminTable;

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { cx } from "../components/atoms/formFieldStyles";
-import AdminAdminsTable from "../components/organisms/admin/AdminAdminsTable";
 import AdminDashboardSummary from "../components/organisms/admin/AdminDashboardSummary";
 import AdminDeliveryRequestsTable from "../components/organisms/admin/AdminDeliveryRequestsTable";
 import AdminInformationRequestsTable from "../components/organisms/admin/AdminInformationRequestsTable";
 import AdminSidebar from "../components/organisms/admin/AdminSidebar";
+import AdminTable from "../components/organisms/admin/AdminTable";
 import AdminViewHeader from "../components/organisms/admin/AdminViewHeader";
 import {
   adminPageContent,
@@ -54,7 +54,7 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
               <AdminInformationRequestsTable />
             ) : null}
 
-            {view === "admins" ? <AdminAdminsTable /> : null}
+            {view === "admins" ? <AdminTable /> : null}
           </main>
         </div>
       </div>
