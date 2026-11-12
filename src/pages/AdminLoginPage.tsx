@@ -4,6 +4,7 @@ import Input from "../components/atoms/Input";
 import PasswordVisibilityButton from "../components/atoms/PasswordVisibilityButton";
 import { loginAdmin, type Admin } from "../utils/adminAuth";
 import { scrollToFirstErrorField } from "../utils/formFocus";
+import { useFormBlurValidation } from "../utils/useFormBlurValidation";
 import {
   type AdminLoginFieldErrors,
   validateAdminLoginFields,
@@ -26,6 +27,11 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<AdminLoginFieldErrors>({});
   const [loginError, setLoginError] = useState("");
+  const { formProps: blurValidationProps } = useFormBlurValidation({
+    fields: adminLoginFieldOrder,
+    setErrors,
+    validate: validateAdminLoginFields,
+  });
 
   const clearFieldError = (field: keyof AdminLoginFieldErrors) => {
     setErrors((currentErrors) => {
@@ -90,7 +96,12 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
             Enter your admin credentials to continue.
           </p>
 
-          <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
+          <form
+            {...blurValidationProps}
+            className="mt-8 space-y-5"
+            onSubmit={handleSubmit}
+            noValidate
+          >
             <Input
               label="Username/Email"
               name="identifier"

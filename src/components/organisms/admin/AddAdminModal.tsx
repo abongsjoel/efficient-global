@@ -1,12 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FocusEvent,
-  type FormEvent,
-  type MouseEvent,
-} from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import Button from "../../atoms/Button";
 import Dropdown, { type DropdownOption } from "../../atoms/Dropdown";
 import Input from "../../atoms/Input";
@@ -23,6 +15,10 @@ import {
   type AddAdminFields,
   validateAddAdminFields,
 } from "../../../utils/formValidation";
+import {
+  preventBlurOnMouseDown,
+  useFormBlurValidation,
+} from "../../../utils/useFormBlurValidation";
 
 export type AddAdminSubmitResult =
   | { success: true }
@@ -39,13 +35,16 @@ type AddAdminModalProps = {
 
 type PasswordField = "confirmPassword" | "password";
 
-type BlurValidatedField = "confirmPassword" | "email" | "name" | "password";
+// Role and status always hold a valid choice, so they're only checked on submit.
+const blurValidatedFields = [
+  "name",
+  "email",
+  "password",
+  "confirmPassword",
+] as const;
 
-// Keeps the focused field from blurring when a dismiss control is pressed, so a
-// blur error can't appear, shift the layout, and make the click miss.
-const preventBlurOnMouseDown = (event: MouseEvent) => {
-  event.preventDefault();
-};
+// A changed password can make an already-typed confirmation stop matching.
+const blurRelatedFields = { password: ["confirmPassword"] } as const;
 
 // Mirrors the backend roles and statuses in constants/admin.js.
 const roleOptions: DropdownOption[] = [
@@ -81,11 +80,14 @@ const fieldOrder: Array<keyof AddAdminFields> = [
 const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
   const titleId = useId();
   const nameInputRef = useRef<HTMLInputElement>(null);
-  // Fields the user has typed in. Blur only validates these, so tabbing past an
-  // empty field doesn't flag it before the user has had a chance to fill it in.
-  const editedFieldsRef = useRef(new Set<keyof AddAdminFields>());
   const [fields, setFields] = useState<AddAdminFields>(initialFields);
   const [errors, setErrors] = useState<AddAdminFieldErrors>({});
+  const { formProps: blurValidationProps } = useFormBlurValidation({
+    fields: blurValidatedFields,
+    relatedFields: blurRelatedFields,
+    setErrors,
+    validate: () => validateAddAdminFields(fields),
+  });
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState<
@@ -111,7 +113,6 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
   }, [isSubmitting, onClose]);
 
   const handleFieldChange = (field: keyof AddAdminFields, value: string) => {
-    editedFieldsRef.current.add(field);
     setFields((currentFields) => ({ ...currentFields, [field]: value }));
     setFormError("");
     setErrors((currentErrors) => {
@@ -124,46 +125,6 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
       return nextErrors;
     });
   };
-
-  const handleFieldBlur =
-    (field: BlurValidatedField) => (event: FocusEvent<HTMLInputElement>) => {
-      const nextFocusTarget = event.relatedTarget;
-
-      // Focus moved to the field's own show/hide password button.
-      if (
-        nextFocusTarget instanceof Node &&
-        event.currentTarget.parentElement?.contains(nextFocusTarget)
-      ) {
-        return;
-      }
-
-      // A changed password can make an already-typed confirmation stop matching.
-      const fieldsToValidate: BlurValidatedField[] =
-        field === "password" ? ["password", "confirmPassword"] : [field];
-      const editedFieldsToValidate = fieldsToValidate.filter((fieldName) =>
-        editedFieldsRef.current.has(fieldName),
-      );
-
-      if (editedFieldsToValidate.length === 0) {
-        return;
-      }
-
-      const validationErrors = validateAddAdminFields(fields);
-
-      setErrors((currentErrors) => {
-        const nextErrors = { ...currentErrors };
-
-        editedFieldsToValidate.forEach((fieldName) => {
-          if (validationErrors[fieldName]) {
-            nextErrors[fieldName] = validationErrors[fieldName];
-          } else {
-            delete nextErrors[fieldName];
-          }
-        });
-
-        return nextErrors;
-      });
-    };
 
   const togglePasswordVisibility = (field: PasswordField) => {
     setPasswordVisibility((currentVisibility) => ({
@@ -273,6 +234,7 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
         </div>
 
         <form
+          {...blurValidationProps}
           className="flex min-h-0 flex-1 flex-col"
           onSubmit={handleSubmit}
           noValidate
@@ -287,7 +249,6 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
               value={fields.name}
               error={errors.name}
               maxLength={80}
-              onBlur={handleFieldBlur("name")}
               onChange={(event) =>
                 handleFieldChange("name", event.currentTarget.value)
               }
@@ -301,7 +262,6 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
               autoComplete="off"
               value={fields.email}
               error={errors.email}
-              onBlur={handleFieldBlur("email")}
               onChange={(event) =>
                 handleFieldChange("email", event.currentTarget.value)
               }
@@ -342,7 +302,6 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
                 error={errors.password}
                 minLength={minAdminPasswordLength}
                 maxLength={maxAdminPasswordLength}
-                onBlur={handleFieldBlur("password")}
                 onChange={(event) =>
                   handleFieldChange("password", event.currentTarget.value)
                 }
@@ -365,7 +324,6 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
               error={errors.confirmPassword}
               minLength={minAdminPasswordLength}
               maxLength={maxAdminPasswordLength}
-              onBlur={handleFieldBlur("confirmPassword")}
               onChange={(event) =>
                 handleFieldChange("confirmPassword", event.currentTarget.value)
               }

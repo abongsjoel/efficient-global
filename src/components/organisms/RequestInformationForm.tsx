@@ -11,6 +11,7 @@ import {
   saveFormSuggestions,
 } from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
+import { useFormBlurValidation } from "../../utils/useFormBlurValidation";
 import {
   applySavedUserInfoValues,
   clearSavedUserInfoValues,
@@ -76,6 +77,12 @@ const RequestInformationForm = () => {
   const [suggestions, setSuggestions] = useState(() =>
     getFormSuggestions(requestInformationSuggestionFields),
   );
+  const { formProps: blurValidationProps, resetEditedFields } =
+    useFormBlurValidation({
+      fields: requestInformationFieldOrder,
+      setErrors,
+      validate: validateRequestInformationFields,
+    });
 
   const clearFieldError = (field: keyof RequestInformationFieldErrors) => {
     setErrors((currentErrors) => {
@@ -193,6 +200,7 @@ const RequestInformationForm = () => {
       setSavedUserInfo(nextSavedUserInfo);
       setUserInfoValues(nextUserInfoValues);
       form.reset();
+      resetEditedFields();
       setErrors({});
       setIsConfirmationOpen(true);
     } catch {
@@ -225,6 +233,7 @@ const RequestInformationForm = () => {
       description="Tell us about your needs and we will respond with pricing, timelines, and next steps."
     >
       <form
+        {...blurValidationProps}
         onSubmit={handleSubmit}
         noValidate
         className="space-y-8 px-6 py-8 sm:px-10"

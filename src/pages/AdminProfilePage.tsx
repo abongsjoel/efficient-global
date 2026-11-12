@@ -27,6 +27,10 @@ import {
   minAdminPasswordLength,
 } from "../utils/adminPassword";
 import { scrollToFirstErrorField } from "../utils/formFocus";
+import {
+  preventBlurOnMouseDown,
+  useFormBlurValidation,
+} from "../utils/useFormBlurValidation";
 
 type AdminProfilePageProps = {
   admin: Admin;
@@ -154,6 +158,29 @@ const validatePasswordFields = ({
   return errors;
 };
 
+const getFormDataString = (formData: FormData, name: string) => {
+  const value = formData.get(name);
+
+  return typeof value === "string" ? value : "";
+};
+
+const validatePasswordFormData = (formData: FormData) =>
+  validatePasswordFields({
+    confirmPassword: getFormDataString(formData, "confirmPassword"),
+    currentPassword: getFormDataString(formData, "currentPassword"),
+    newPassword: getFormDataString(formData, "newPassword"),
+  });
+
+const validateDisplayNameFormData = (formData: FormData) =>
+  normalizeDisplayName(getFormDataString(formData, "displayName"))
+    ? {}
+    : { displayName: "Enter your display name." };
+
+const displayNameBlurFields = ["displayName"] as const;
+const passwordRelatedBlurFields = {
+  newPassword: ["confirmPassword"],
+} as const;
+
 const validateProfileImageFile = (file: File) => {
   if (!supportedProfileImageTypes.has(file.type)) {
     return "Upload a PNG, JPG, or WebP profile image.";
@@ -201,6 +228,28 @@ const AdminProfilePage = ({
   const hasDisplayNameChanges =
     normalizeDisplayName(displayNameDraft) !== admin.name;
   const hasPasswordChanges = Object.values(passwordFields).some(Boolean);
+  const {
+    formProps: displayNameBlurValidationProps,
+    resetEditedFields: resetEditedDisplayName,
+  } = useFormBlurValidation({
+    fields: displayNameBlurFields,
+    // The display name keeps a single error string rather than an errors map.
+    setErrors: (update) =>
+      setDisplayNameError(
+        (currentError) =>
+          update({ displayName: currentError || undefined }).displayName ?? "",
+      ),
+    validate: validateDisplayNameFormData,
+  });
+  const {
+    formProps: passwordBlurValidationProps,
+    resetEditedFields: resetEditedPasswordFields,
+  } = useFormBlurValidation({
+    fields: passwordFieldOrder,
+    relatedFields: passwordRelatedBlurFields,
+    setErrors: setPasswordErrors,
+    validate: validatePasswordFormData,
+  });
 
   useEffect(() => {
     if (!pendingProfileImageCrop) {
@@ -211,6 +260,7 @@ const AdminProfilePage = ({
   }, [pendingProfileImageCrop]);
 
   const resetPasswordFields = () => {
+    resetEditedPasswordFields();
     setPasswordFields(initialPasswordFields);
     setPasswordErrors({});
     setPasswordVisibility(initialPasswordVisibility);
@@ -272,6 +322,7 @@ const AdminProfilePage = ({
   };
 
   const handleProfileEdit = () => {
+    resetEditedDisplayName();
     setDisplayNameDraft(admin.name);
     setDisplayNameError("");
     resetPasswordFields();
@@ -284,6 +335,7 @@ const AdminProfilePage = ({
       return;
     }
 
+    resetEditedDisplayName();
     setDisplayNameDraft(admin.name);
     setDisplayNameError("");
   };
@@ -519,6 +571,7 @@ const AdminProfilePage = ({
             <div className="min-w-0 flex-1">
               {isEditingProfile ? (
                 <form
+                  {...displayNameBlurValidationProps}
                   className="max-w-sm"
                   onSubmit={handleDisplayNameSubmit}
                   noValidate
@@ -554,6 +607,7 @@ const AdminProfilePage = ({
                       type="button"
                       variant="link"
                       onClick={handleDisplayNameCancel}
+                      onMouseDown={preventBlurOnMouseDown}
                     >
                       Cancel
                     </Button>
@@ -655,6 +709,7 @@ const AdminProfilePage = ({
                 </p>
 
                 <form
+                  {...passwordBlurValidationProps}
                   className="mt-5 grid gap-4"
                   onSubmit={handlePasswordSubmit}
                   noValidate
@@ -753,6 +808,7 @@ const AdminProfilePage = ({
                       type="button"
                       variant="link"
                       onClick={resetPasswordFields}
+                      onMouseDown={preventBlurOnMouseDown}
                     >
                       Clear
                     </Button>
