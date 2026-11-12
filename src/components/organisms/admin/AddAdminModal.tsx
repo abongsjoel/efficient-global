@@ -100,6 +100,11 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
   const [passwordVisibility, setPasswordVisibility] = useState<
     Record<PasswordField, boolean>
   >({ confirmPassword: false, password: false });
+  // Every field passes the local checks and nothing is flagged, including an
+  // email the server reported as taken.
+  const isFormComplete =
+    Object.keys(validateAddAdminFields(fields)).length === 0 &&
+    Object.keys(errors).length === 0;
 
   useEffect(() => {
     nameInputRef.current?.focus();
@@ -390,7 +395,7 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
             >
               Cancel
             </Button>
-            <Button disabled={isSubmitting} type="submit">
+            <Button disabled={isSubmitting || !isFormComplete} type="submit">
               {isSubmitting ? "Adding..." : "Add admin"}
             </Button>
           </div>
