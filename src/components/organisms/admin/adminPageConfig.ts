@@ -49,7 +49,7 @@ export const adminPanelItems: AdminPanelItem[] = [
     label: "Information Requests",
   },
   {
-    description: "Access management",
+    description: "Manage Admins",
     href: "/admin/admins",
     icon: UsersIcon,
     id: "admins",
