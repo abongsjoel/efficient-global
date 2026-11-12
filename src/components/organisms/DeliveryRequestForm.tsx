@@ -99,7 +99,7 @@ const DeliveryRequestForm = () => {
   const [suggestions, setSuggestions] = useState(() =>
     getFormSuggestions(deliveryRequestSuggestionFields),
   );
-  const { formProps: blurValidationProps, resetEditedFields } =
+  const { formProps: blurValidationProps, isFormValid, resetEditedFields } =
     useFormBlurValidation({
       fields: deliveryRequestFieldOrder,
       setErrors,
@@ -405,7 +405,10 @@ const DeliveryRequestForm = () => {
           </p>
         ) : null}
 
-        <FormSubmitButton disabled={isSubmitting} isLoading={isSubmitting}>
+        <FormSubmitButton
+          disabled={isSubmitting || !isFormValid}
+          isLoading={isSubmitting}
+        >
           Submit Request
         </FormSubmitButton>
       </form>

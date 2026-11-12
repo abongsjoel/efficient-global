@@ -1,4 +1,11 @@
-import { useRef, type FocusEvent, type FormEvent, type MouseEvent } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type FormEvent,
+  type MouseEvent,
+} from "react";
 
 type FieldErrors<Field extends string> = Partial<Record<Field, string>>;
 
@@ -34,6 +41,9 @@ export const preventBlurOnMouseDown = (event: MouseEvent) => {
 // so the individual fields need no extra handlers. Untouched fields (including
 // prefilled ones) are only checked on submit, so tabbing past an empty field
 // doesn't flag it before the user has had a chance to fill it in.
+//
+// Also reports `isFormValid` (the whole form passes `validate`), so the submit
+// button can stay disabled until every field is filled in correctly.
 export const useFormBlurValidation = <Field extends string>({
   fields,
   relatedFields,
@@ -41,6 +51,24 @@ export const useFormBlurValidation = <Field extends string>({
   validate,
 }: UseFormBlurValidationOptions<Field>) => {
   const editedFieldsRef = useRef(new Set<string>());
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const updateFormValidity = () => {
+    const form = formRef.current;
+
+    if (form) {
+      setIsFormValid(Object.keys(validate(new FormData(form))).length === 0);
+    }
+  };
+
+  // Re-checked after every render as well as on change: controlled values set
+  // in code (prefill, reset) don't fire change events, and typing in an
+  // uncontrolled field doesn't re-render. React skips the update when the
+  // result hasn't changed, so this settles after at most one extra render.
+  useLayoutEffect(() => {
+    updateFormValidity();
+  });
 
   const isValidatedField = (name: string): name is Field =>
     (fields as readonly string[]).includes(name);
@@ -51,6 +79,8 @@ export const useFormBlurValidation = <Field extends string>({
     if (name) {
       editedFieldsRef.current.add(name);
     }
+
+    updateFormValidity();
   };
 
   const handleBlur = (event: FocusEvent<HTMLFormElement>) => {
@@ -103,7 +133,8 @@ export const useFormBlurValidation = <Field extends string>({
   };
 
   return {
-    formProps: { onBlur: handleBlur, onChange: handleChange },
+    formProps: { onBlur: handleBlur, onChange: handleChange, ref: formRef },
+    isFormValid,
     resetEditedFields,
   };
 };

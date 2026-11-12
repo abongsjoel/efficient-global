@@ -27,7 +27,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<AdminLoginFieldErrors>({});
   const [loginError, setLoginError] = useState("");
-  const { formProps: blurValidationProps } = useFormBlurValidation({
+  const { formProps: blurValidationProps, isFormValid } = useFormBlurValidation({
     fields: adminLoginFieldOrder,
     setErrors,
     validate: validateAdminLoginFields,
@@ -162,7 +162,7 @@ const AdminLoginPage = ({ onLogin }: AdminLoginPageProps) => {
             ) : null}
 
             <FormSubmitButton
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isFormValid}
               isLoading={isSubmitting}
               loadingLabel="Signing in"
             >

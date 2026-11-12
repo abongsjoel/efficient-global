@@ -230,6 +230,7 @@ const AdminProfilePage = ({
   const hasPasswordChanges = Object.values(passwordFields).some(Boolean);
   const {
     formProps: displayNameBlurValidationProps,
+    isFormValid: isDisplayNameValid,
     resetEditedFields: resetEditedDisplayName,
   } = useFormBlurValidation({
     fields: displayNameBlurFields,
@@ -243,6 +244,7 @@ const AdminProfilePage = ({
   });
   const {
     formProps: passwordBlurValidationProps,
+    isFormValid: isPasswordFormValid,
     resetEditedFields: resetEditedPasswordFields,
   } = useFormBlurValidation({
     fields: passwordFieldOrder,
@@ -593,7 +595,7 @@ const AdminProfilePage = ({
 
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <Button
-                      disabled={isSavingProfileChange}
+                      disabled={isSavingProfileChange || !isDisplayNameValid}
                       size="sm"
                       type="submit"
                       variant="link"
@@ -794,7 +796,7 @@ const AdminProfilePage = ({
 
                   <div className="flex flex-wrap items-center gap-3">
                     <Button
-                      disabled={isSavingProfileChange}
+                      disabled={isSavingProfileChange || !isPasswordFormValid}
                       size="sm"
                       type="submit"
                       variant="link"

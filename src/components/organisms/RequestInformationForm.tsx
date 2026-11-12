@@ -77,7 +77,7 @@ const RequestInformationForm = () => {
   const [suggestions, setSuggestions] = useState(() =>
     getFormSuggestions(requestInformationSuggestionFields),
   );
-  const { formProps: blurValidationProps, resetEditedFields } =
+  const { formProps: blurValidationProps, isFormValid, resetEditedFields } =
     useFormBlurValidation({
       fields: requestInformationFieldOrder,
       setErrors,
@@ -325,7 +325,10 @@ const RequestInformationForm = () => {
           </p>
         ) : null}
 
-        <FormSubmitButton disabled={isSubmitting} isLoading={isSubmitting}>
+        <FormSubmitButton
+          disabled={isSubmitting || !isFormValid}
+          isLoading={isSubmitting}
+        >
           Send Message
         </FormSubmitButton>
       </form>
