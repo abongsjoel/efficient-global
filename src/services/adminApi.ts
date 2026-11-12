@@ -80,6 +80,11 @@ export type CreateAdminRequest = {
   status: string;
 };
 
+export type AdminEmailAvailability = {
+  available: boolean;
+  message?: string;
+};
+
 type CreateAdminResponse = {
   admin?: AdminListItem;
   message?: string;
@@ -138,6 +143,14 @@ export const adminApi = createApi({
             ]
           : [{ type: "Admins", id: "LIST" }],
     }),
+    // Tagged with the admins list so adding an admin clears cached answers.
+    checkAdminEmailAvailability: builder.query<AdminEmailAvailability, string>({
+      query: (email) => ({
+        url: "/admins/email-availability",
+        params: { email },
+      }),
+      providesTags: [{ type: "Admins", id: "LIST" }],
+    }),
     createAdmin: builder.mutation<CreateAdminResponse, CreateAdminRequest>({
       query: (body) => ({
         url: "/admins",
@@ -183,6 +196,7 @@ export const adminApi = createApi({
 
 export const {
   useCreateAdminMutation,
+  useLazyCheckAdminEmailAvailabilityQuery,
   useGetAdminsQuery,
   useGetDeliveryRequestsQuery,
   useGetInformationRequestsQuery,

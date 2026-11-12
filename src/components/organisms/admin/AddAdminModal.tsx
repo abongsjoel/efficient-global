@@ -5,6 +5,7 @@ import Input from "../../atoms/Input";
 import PasswordVisibilityButton from "../../atoms/PasswordVisibilityButton";
 import { CloseIcon } from "../../icons";
 import PasswordRequirements from "../../molecules/PasswordRequirements";
+import { useLazyCheckAdminEmailAvailabilityQuery } from "../../../services/adminApi";
 import {
   maxAdminPasswordLength,
   minAdminPasswordLength,
@@ -77,9 +78,15 @@ const fieldOrder: Array<keyof AddAdminFields> = [
   "confirmPassword",
 ];
 
+const duplicateEmailMessage = "An admin with this email already exists.";
+
 const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
   const titleId = useId();
   const nameInputRef = useRef<HTMLInputElement>(null);
+  // The email as typed right now, so a slow availability answer for an email
+  // the user has since changed can be ignored.
+  const latestEmailRef = useRef(initialFields.email);
+  const [checkEmailAvailability] = useLazyCheckAdminEmailAvailabilityQuery();
   const [fields, setFields] = useState<AddAdminFields>(initialFields);
   const [errors, setErrors] = useState<AddAdminFieldErrors>({});
   const { formProps: blurValidationProps } = useFormBlurValidation({
@@ -113,6 +120,10 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
   }, [isSubmitting, onClose]);
 
   const handleFieldChange = (field: keyof AddAdminFields, value: string) => {
+    if (field === "email") {
+      latestEmailRef.current = value;
+    }
+
     setFields((currentFields) => ({ ...currentFields, [field]: value }));
     setFormError("");
     setErrors((currentErrors) => {
@@ -124,6 +135,31 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
       delete nextErrors[field];
       return nextErrors;
     });
+  };
+
+  // Flags a taken email before submit. Only runs once the email passes the
+  // local checks; the blur validation above reports format problems.
+  const handleEmailBlur = async () => {
+    const email = fields.email.trim();
+
+    if (!email || validateAddAdminFields(fields).email) {
+      return;
+    }
+
+    // `true` reuses a cached answer, so leaving the field again doesn't refetch.
+    const result = await checkEmailAvailability(email, true);
+
+    if (latestEmailRef.current.trim() !== email) {
+      return;
+    }
+
+    // A failed check is ignored here; submitting still checks on the server.
+    if (result.data && !result.data.available) {
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        email: result.data?.message || duplicateEmailMessage,
+      }));
+    }
   };
 
   const togglePasswordVisibility = (field: PasswordField) => {
@@ -262,6 +298,7 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
               autoComplete="off"
               value={fields.email}
               error={errors.email}
+              onBlur={handleEmailBlur}
               onChange={(event) =>
                 handleFieldChange("email", event.currentTarget.value)
               }
