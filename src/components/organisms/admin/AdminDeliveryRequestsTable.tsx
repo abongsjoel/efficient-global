@@ -106,7 +106,10 @@ const deliveryRequestColumns: Array<TableColumn<AdminDeliveryRequest>> = [
       value: (request) => request.delivery,
     },
     render: (request, { searchQuery }) => (
-      <TruncatedHoverText highlightQuery={searchQuery} text={request.delivery} />
+      <TruncatedHoverText
+        highlightQuery={searchQuery}
+        text={request.delivery}
+      />
     ),
     sortValue: (request) => request.delivery,
   },

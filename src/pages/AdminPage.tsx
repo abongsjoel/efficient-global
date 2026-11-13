@@ -4,6 +4,7 @@ import AdminDashboardSummary from "../components/organisms/admin/AdminDashboardS
 import AdminDeliveryRequestsTable from "../components/organisms/admin/AdminDeliveryRequestsTable";
 import AdminInformationRequestsTable from "../components/organisms/admin/AdminInformationRequestsTable";
 import AdminSidebar from "../components/organisms/admin/AdminSidebar";
+import AdminTable from "../components/organisms/admin/AdminTable";
 import AdminViewHeader from "../components/organisms/admin/AdminViewHeader";
 import {
   adminPageContent,
@@ -18,9 +19,7 @@ type AdminPageProps = {
 
 const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
-  const currentPage = adminPageContent[view];
-  const shouldShowViewHeader =
-    view !== "deliveryRequests" && view !== "informationRequests";
+  const currentPage = view === "dashboard" ? adminPageContent[view] : null;
 
   return (
     <section
@@ -41,7 +40,7 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
           />
 
           <main className="min-w-0 flex-1">
-            {shouldShowViewHeader ? (
+            {currentPage ? (
               <AdminViewHeader content={currentPage} />
             ) : null}
 
@@ -54,6 +53,8 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
             {view === "informationRequests" ? (
               <AdminInformationRequestsTable />
             ) : null}
+
+            {view === "admins" ? <AdminTable /> : null}
           </main>
         </div>
       </div>

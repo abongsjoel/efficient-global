@@ -94,7 +94,7 @@ export type AdminPasswordUpdateResult =
 
 const adminEndpoint = `${apiBaseUrl}/api/admin`;
 
-const getAdminAuthorizationHeaders = () => {
+const getAdminAuthorizationHeaders = (): Record<string, string> => {
   const token = getStoredAdminSessionToken();
 
   return token ? { Authorization: `Bearer ${token}` } : {};

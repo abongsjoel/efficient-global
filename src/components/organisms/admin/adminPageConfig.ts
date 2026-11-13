@@ -49,7 +49,7 @@ export const adminPanelItems: AdminPanelItem[] = [
     label: "Information Requests",
   },
   {
-    description: "Access management",
+    description: "Manage Admins",
     href: "/admin/admins",
     icon: UsersIcon,
     id: "admins",
@@ -64,21 +64,11 @@ export const adminPanelItems: AdminPanelItem[] = [
   },
 ];
 
-export const adminPageContent: Record<AdminPageView, AdminPageContent> = {
-  admins: {
-    description: "Admin management tools will live here.",
-    title: "Admins",
-  },
+export type AdminHeaderView = Extract<AdminPageView, "dashboard">;
+
+export const adminPageContent: Record<AdminHeaderView, AdminPageContent> = {
   dashboard: {
     description: "This area is reserved for Efficient Global administrators.",
     title: "Dashboard",
-  },
-  deliveryRequests: {
-    description: "Delivery request submissions will live here.",
-    title: "Delivery Requests",
-  },
-  informationRequests: {
-    description: "Request information submissions will live here.",
-    title: "Information Requests",
   },
 };

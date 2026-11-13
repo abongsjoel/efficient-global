@@ -19,6 +19,7 @@ import {
   saveFormSuggestions,
 } from "../../utils/formSuggestions";
 import { scrollToFirstErrorField } from "../../utils/formFocus";
+import { useFormBlurValidation } from "../../utils/useFormBlurValidation";
 import {
   applySavedUserInfoValues,
   clearSavedUserInfoValues,
@@ -98,6 +99,12 @@ const DeliveryRequestForm = () => {
   const [suggestions, setSuggestions] = useState(() =>
     getFormSuggestions(deliveryRequestSuggestionFields),
   );
+  const { formProps: blurValidationProps, isFormValid, resetEditedFields } =
+    useFormBlurValidation({
+      fields: deliveryRequestFieldOrder,
+      setErrors,
+      validate: validateDeliveryRequestFields,
+    });
 
   const clearFieldError = (field: keyof DeliveryRequestFieldErrors) => {
     setErrors((currentErrors) => {
@@ -224,6 +231,7 @@ const DeliveryRequestForm = () => {
       setSavedUserInfo(nextSavedUserInfo);
       setUserInfoValues(nextUserInfoValues);
       form.reset();
+      resetEditedFields();
       setErrors({});
       setIsConfirmationOpen(true);
     } catch {
@@ -256,6 +264,7 @@ const DeliveryRequestForm = () => {
       description="Share pickup and delivery details so we can prepare the right vehicle and timing."
     >
       <form
+        {...blurValidationProps}
         onSubmit={handleSubmit}
         noValidate
         className="space-y-8 px-6 py-8 sm:px-10"
@@ -396,7 +405,10 @@ const DeliveryRequestForm = () => {
           </p>
         ) : null}
 
-        <FormSubmitButton disabled={isSubmitting} isLoading={isSubmitting}>
+        <FormSubmitButton
+          disabled={isSubmitting || !isFormValid}
+          isLoading={isSubmitting}
+        >
           Submit Request
         </FormSubmitButton>
       </form>
