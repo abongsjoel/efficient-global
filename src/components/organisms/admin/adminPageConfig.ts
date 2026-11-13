@@ -19,6 +19,8 @@ export type AdminPageContent = {
 };
 
 export type AdminPanelItem = {
+  // Admin roles that see this item; every role sees it when omitted.
+  allowedRoles?: string[];
   description?: string;
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -49,6 +51,7 @@ export const adminPanelItems: AdminPanelItem[] = [
     label: "Information Requests",
   },
   {
+    allowedRoles: ["super_admin", "manager"],
     description: "Manage Admins",
     href: "/admin/admins",
     icon: UsersIcon,

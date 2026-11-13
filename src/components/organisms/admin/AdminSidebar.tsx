@@ -16,6 +16,14 @@ type AdminSidebarProps = {
   view: AdminPageView;
 };
 
+// Role-restricted items stay hidden until the signed-in admin is known.
+const getVisiblePanelItems = (admin?: Admin) =>
+  adminPanelItems.filter(
+    (item) =>
+      !item.allowedRoles ||
+      (admin !== undefined && item.allowedRoles.includes(admin.role)),
+  );
+
 const AdminSidebar = ({
   admin,
   isCollapsed,
@@ -67,7 +75,7 @@ const AdminSidebar = ({
       aria-label="Admin dashboard"
       className="mt-6 space-y-1 lg:flex-1"
     >
-      {adminPanelItems.map((item) => {
+      {getVisiblePanelItems(admin).map((item) => {
         const Icon = item.icon;
         const isActive = item.id === view;
         const itemLayoutClassName = isCollapsed
