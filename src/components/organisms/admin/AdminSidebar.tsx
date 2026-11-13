@@ -6,6 +6,7 @@ import type { Admin } from "../../../utils/adminAuth";
 import { formatAdminRole } from "../../../utils/adminDisplay";
 import {
   adminPanelItems,
+  canAccessAdminPanelItem,
   type AdminPageView,
 } from "./adminPageConfig";
 
@@ -16,13 +17,8 @@ type AdminSidebarProps = {
   view: AdminPageView;
 };
 
-// Role-restricted items stay hidden until the signed-in admin is known.
 const getVisiblePanelItems = (admin?: Admin) =>
-  adminPanelItems.filter(
-    (item) =>
-      !item.allowedRoles ||
-      (admin !== undefined && item.allowedRoles.includes(admin.role)),
-  );
+  adminPanelItems.filter((item) => canAccessAdminPanelItem(item, admin?.role));
 
 const AdminSidebar = ({
   admin,

@@ -67,6 +67,24 @@ export const adminPanelItems: AdminPanelItem[] = [
   },
 ];
 
+// Role-restricted items stay off-limits until the signed-in admin is known.
+export const canAccessAdminPanelItem = (
+  item: AdminPanelItem,
+  role?: string,
+) =>
+  !item.allowedRoles ||
+  (role !== undefined && item.allowedRoles.includes(role));
+
+// Used by the route guard, so typing a URL can't reach a view the sidebar hides.
+export const canAccessAdminView = (
+  view: AdminPanelItem["id"],
+  role?: string,
+) => {
+  const item = adminPanelItems.find((panelItem) => panelItem.id === view);
+
+  return !item || canAccessAdminPanelItem(item, role);
+};
+
 export type AdminHeaderView = Extract<AdminPageView, "dashboard">;
 
 export const adminPageContent: Record<AdminHeaderView, AdminPageContent> = {
