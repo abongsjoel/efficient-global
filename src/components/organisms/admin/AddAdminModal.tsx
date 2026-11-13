@@ -5,6 +5,7 @@ import Input from "../../atoms/Input";
 import PasswordVisibilityButton from "../../atoms/PasswordVisibilityButton";
 import { CloseIcon } from "../../icons";
 import PasswordRequirements from "../../molecules/PasswordRequirements";
+import { adminRoles } from "../../../constants/admin";
 import { useLazyCheckAdminEmailAvailabilityQuery } from "../../../services/adminApi";
 import {
   maxAdminPasswordLength,
@@ -49,10 +50,10 @@ const blurRelatedFields = { password: ["confirmPassword"] } as const;
 
 // Mirrors the backend roles and statuses in constants/admin.js.
 const roleOptions: DropdownOption[] = [
-  { label: "Super Admin", value: "super_admin" },
-  { label: "Manager", value: "manager" },
-  { label: "Dispatcher", value: "dispatcher" },
-  { label: "Viewer", value: "viewer" },
+  { label: "Super Admin", value: adminRoles.SUPER_ADMIN },
+  { label: "Manager", value: adminRoles.MANAGER },
+  { label: "Dispatcher", value: adminRoles.DISPATCHER },
+  { label: "Viewer", value: adminRoles.VIEWER },
 ];
 
 const statusOptions: DropdownOption[] = [
@@ -65,7 +66,7 @@ const initialFields: AddAdminFields = {
   email: "",
   name: "",
   password: "",
-  role: "viewer",
+  role: adminRoles.VIEWER,
   status: "active",
 };
 

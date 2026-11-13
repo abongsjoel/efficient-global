@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from "react";
+import { adminRoles, type AdminRole } from "../../../constants/admin";
 import {
   ClipboardListIcon,
   DashboardIcon,
@@ -20,7 +21,7 @@ export type AdminPageContent = {
 
 export type AdminPanelItem = {
   // Admin roles that see this item; every role sees it when omitted.
-  allowedRoles?: string[];
+  allowedRoles?: AdminRole[];
   description?: string;
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -51,7 +52,7 @@ export const adminPanelItems: AdminPanelItem[] = [
     label: "Information Requests",
   },
   {
-    allowedRoles: ["super_admin", "manager"],
+    allowedRoles: [adminRoles.SUPER_ADMIN, adminRoles.MANAGER],
     description: "Manage Admins",
     href: "/admin/admins",
     icon: UsersIcon,
@@ -73,7 +74,7 @@ export const canAccessAdminPanelItem = (
   role?: string,
 ) =>
   !item.allowedRoles ||
-  (role !== undefined && item.allowedRoles.includes(role));
+  item.allowedRoles.some((allowedRole) => allowedRole === role);
 
 // Used by the route guard, so typing a URL can't reach a view the sidebar hides.
 export const canAccessAdminView = (

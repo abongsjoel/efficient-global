@@ -8,6 +8,7 @@ import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
 import Toast from "../../molecules/Toast";
 import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
+import { adminRoles } from "../../../constants/admin";
 import { useAdminAuth } from "../../../contexts/useAdminAuth";
 import {
   type AdminListItem,
@@ -152,7 +153,7 @@ const AdminTable = () => {
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   // Mirrors the backend, which only lets super admins add admins.
-  const canAddAdmins = currentAdmin?.role === "super_admin";
+  const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
 
   const handleAddAdmin = async (
     fields: AddAdminFields,
