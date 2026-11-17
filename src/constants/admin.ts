@@ -16,3 +16,16 @@ export const adminStatuses = {
 } as const;
 
 export type AdminStatus = (typeof adminStatuses)[keyof typeof adminStatuses];
+
+// Which roles each role may activate or deactivate, as in the backend. Roles
+// left out can't change anyone's status.
+const adminStatusManageableRoles: Partial<Record<string, readonly string[]>> = {
+  [adminRoles.SUPER_ADMIN]: Object.values(adminRoles),
+  [adminRoles.MANAGER]: [adminRoles.DISPATCHER, adminRoles.VIEWER],
+};
+
+export const canManageAnyAdminStatus = (actingRole = "") =>
+  Boolean(adminStatusManageableRoles[actingRole]);
+
+export const canManageAdminStatus = (actingRole = "", targetRole = "") =>
+  adminStatusManageableRoles[actingRole]?.includes(targetRole) ?? false;

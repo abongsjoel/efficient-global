@@ -4,7 +4,8 @@ import { UserCheckIcon, UserXIcon } from "../../icons";
 import { adminStatuses } from "../../../constants/admin";
 
 type AdminRowActionsProps = {
-  isCurrentAdmin: boolean;
+  /** Disables the button and is shown as its tooltip. */
+  disabledReason?: string;
   isUpdating: boolean;
   name: string;
   onToggleStatus: () => void;
@@ -15,17 +16,17 @@ const statusButtonClassName =
   "inline-flex cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition-colors focus:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50";
 
 const AdminRowActions = ({
-  isCurrentAdmin,
+  disabledReason,
   isUpdating,
   name,
   onToggleStatus,
   status,
 }: AdminRowActionsProps) => {
   const isActive = status === adminStatuses.ACTIVE;
-  const isDisabled = isCurrentAdmin || isUpdating;
+  const isDisabled = Boolean(disabledReason) || isUpdating;
   const actionLabel = isActive ? "Deactivate" : "Activate";
-  const tooltipLabel = isCurrentAdmin
-    ? "You can't change your own status"
+  const tooltipLabel = disabledReason
+    ? disabledReason
     : isUpdating
       ? "Updating..."
       : actionLabel;

@@ -9,7 +9,12 @@ import Toast, { type ToastVariant } from "../../molecules/Toast";
 import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
 import AdminRowActions from "./AdminRowActions";
-import { adminRoles, adminStatuses } from "../../../constants/admin";
+import {
+  adminRoles,
+  adminStatuses,
+  canManageAdminStatus,
+  canManageAnyAdminStatus,
+} from "../../../constants/admin";
 import { useAdminAuth } from "../../../contexts/useAdminAuth";
 import {
   type AdminListItem,
@@ -159,9 +164,10 @@ const AdminTable = () => {
     variant: ToastVariant;
   } | null>(null);
   const [updatingAdminIds, setUpdatingAdminIds] = useState<string[]>([]);
-  // Mirrors the backend, which only lets super admins add, activate, or
-  // deactivate admins.
-  const canManageAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
+  // Mirrors the backend, which only lets super admins add admins, and lets
+  // managers activate or deactivate dispatchers and viewers.
+  const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
+  const canManageStatuses = canManageAnyAdminStatus(currentAdmin?.role);
   // Stable, so the toast's auto-dismiss timer isn't restarted by re-renders.
   const dismissToast = useCallback(() => setToast(null), []);
 
@@ -191,6 +197,18 @@ const AdminTable = () => {
     });
 
     return { success: true };
+  };
+
+  const getStatusDisabledReason = (admin: AdminListItem) => {
+    if (admin.id === currentAdmin?.id) {
+      return "You can't change your own status";
+    }
+
+    if (!canManageAdminStatus(currentAdmin?.role, admin.role)) {
+      return `You can't change a ${formatAdminRole(admin.role)}'s status`;
+    }
+
+    return undefined;
   };
 
   const handleToggleAdminStatus = async (admin: AdminListItem) => {
@@ -230,7 +248,7 @@ const AdminTable = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      {canManageAdmins ? (
+      {canAddAdmins ? (
         <div className="flex justify-end">
           <Button
             size="sm"
@@ -245,12 +263,12 @@ const AdminTable = () => {
 
       <Table
         actionsColumn={
-          canManageAdmins
+          canManageStatuses
             ? {
                 header: "Actions",
                 render: (admin) => (
                   <AdminRowActions
-                    isCurrentAdmin={admin.id === currentAdmin?.id}
+                    disabledReason={getStatusDisabledReason(admin)}
                     isUpdating={updatingAdminIds.includes(admin.id)}
                     name={admin.name}
                     status={admin.status}
