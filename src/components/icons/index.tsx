@@ -468,7 +468,8 @@ export const UserCheckIcon = ({
   >
     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
-    <path d="m16 11 2 2 4-4" />
+    {/* The tick keeps its color whatever the person outline's color is. */}
+    <path className="stroke-emerald-600" d="m16 11 2 2 4-4" />
   </svg>
 );
 
@@ -489,8 +490,11 @@ export const UserXIcon = ({
   >
     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
-    <path d="m17 8 5 5" />
-    <path d="m22 8-5 5" />
+    {/* The cross keeps its color whatever the person outline's color is. */}
+    <g className="stroke-red-600">
+      <path d="m17 8 5 5" />
+      <path d="m22 8-5 5" />
+    </g>
   </svg>
 );
 
