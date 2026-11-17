@@ -269,6 +269,7 @@ const AdminTable = () => {
         )}
         getRowKey={(admin) => admin.id}
         isLoading={isLoading}
+        isRowMuted={(admin) => admin.status === adminStatuses.INACTIVE}
         loadingMessage="Loading admins..."
         minWidthClassName="min-w-[720px]"
         rows={admins}

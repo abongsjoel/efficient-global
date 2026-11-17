@@ -67,6 +67,11 @@ type TableProps<Row> = {
   errorMessage?: string;
   getRowKey: (row: Row, index: number) => string;
   isLoading?: boolean;
+  /**
+   * Fades a row's data cells, e.g. for disabled records. The actions column is
+   * left as is, so its controls stay easy to reach.
+   */
+  isRowMuted?: (row: Row) => boolean;
   loadingMessage?: string;
   minWidthClassName?: string;
   rows: Row[];
@@ -86,6 +91,7 @@ const Table = <Row,>({
   errorMessage = "",
   getRowKey,
   isLoading = false,
+  isRowMuted,
   loadingMessage = "Loading...",
   minWidthClassName = "min-w-full",
   rows,
@@ -734,7 +740,11 @@ const Table = <Row,>({
                   {visibleColumns.map((column) => (
                     <td
                       key={column.key}
-                      className={cx("px-4 py-4", column.cellClassName)}
+                      className={cx(
+                        "px-4 py-4",
+                        isRowMuted?.(row) && "opacity-50 grayscale",
+                        column.cellClassName,
+                      )}
                     >
                       {column.render(row, renderContext)}
                     </td>
