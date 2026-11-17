@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Button from "../../atoms/Button";
 import StatusBadge from "../../atoms/StatusBadge";
 import { PlusIcon } from "../../icons";
@@ -39,7 +39,9 @@ const getTimestamp = (value: string) => {
   return Number.isNaN(timestamp) ? null : timestamp;
 };
 
-const adminColumns: Array<TableColumn<AdminListItem>> = [
+const getAdminColumns = (
+  currentAdminId?: string,
+): Array<TableColumn<AdminListItem>> => [
   {
     key: "id",
     header: "Admin ID",
@@ -73,6 +75,9 @@ const adminColumns: Array<TableColumn<AdminListItem>> = [
       <>
         <p className="font-semibold text-slate-950">
           {highlightSearchText(admin.name)}
+          {admin.id === currentAdminId ? (
+            <span className="ml-1.5 font-medium text-slate-500">(You)</span>
+          ) : null}
         </p>
         <p className="mt-1 text-xs text-slate-500">
           {highlightSearchText(admin.email)}
@@ -156,6 +161,11 @@ const getFieldErrors = (data: unknown): AddAdminFieldErrors | undefined => {
 const AdminTable = () => {
   const { admin: currentAdmin } = useAdminAuth();
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
+  const currentAdminId = currentAdmin?.id;
+  const adminColumns = useMemo(
+    () => getAdminColumns(currentAdminId),
+    [currentAdminId],
+  );
   const [createAdmin] = useCreateAdminMutation();
   const [updateAdminStatus] = useUpdateAdminStatusMutation();
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
