@@ -1,19 +1,21 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Button from "../../atoms/Button";
 import StatusBadge from "../../atoms/StatusBadge";
 import { PlusIcon } from "../../icons";
 import CopyButton from "../../molecules/CopyButton";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
-import Toast from "../../molecules/Toast";
+import Toast, { type ToastVariant } from "../../molecules/Toast";
 import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
-import { adminRoles } from "../../../constants/admin";
+import AdminRowActions from "./AdminRowActions";
+import { adminRoles, adminStatuses } from "../../../constants/admin";
 import { useAdminAuth } from "../../../contexts/useAdminAuth";
 import {
   type AdminListItem,
   useCreateAdminMutation,
   useGetAdminsQuery,
+  useUpdateAdminStatusMutation,
 } from "../../../services/adminApi";
 import {
   formatAdminRole,
@@ -150,10 +152,18 @@ const AdminTable = () => {
   const { admin: currentAdmin } = useAdminAuth();
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
   const [createAdmin] = useCreateAdminMutation();
+  const [updateAdminStatus] = useUpdateAdminStatusMutation();
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  // Mirrors the backend, which only lets super admins add admins.
-  const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
+  const [toast, setToast] = useState<{
+    message: string;
+    variant: ToastVariant;
+  } | null>(null);
+  const [updatingAdminIds, setUpdatingAdminIds] = useState<string[]>([]);
+  // Mirrors the backend, which only lets super admins add, activate, or
+  // deactivate admins.
+  const canManageAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
+  // Stable, so the toast's auto-dismiss timer isn't restarted by re-renders.
+  const dismissToast = useCallback(() => setToast(null), []);
 
   const handleAddAdmin = async (
     fields: AddAdminFields,
@@ -175,14 +185,52 @@ const AdminTable = () => {
     }
 
     setIsAddAdminOpen(false);
-    setToastMessage(`${fields.name} was added as an admin.`);
+    setToast({
+      message: `${fields.name} was added as an admin.`,
+      variant: "success",
+    });
 
     return { success: true };
   };
 
+  const handleToggleAdminStatus = async (admin: AdminListItem) => {
+    const nextStatus =
+      admin.status === adminStatuses.ACTIVE
+        ? adminStatuses.INACTIVE
+        : adminStatuses.ACTIVE;
+
+    setUpdatingAdminIds((currentIds) => [...currentIds, admin.id]);
+    const result = await updateAdminStatus({
+      id: admin.id,
+      status: nextStatus,
+    });
+    setUpdatingAdminIds((currentIds) =>
+      currentIds.filter((id) => id !== admin.id),
+    );
+
+    if (result.error) {
+      setToast({
+        message: getRtkQueryErrorMessage(
+          result.error,
+          `We could not update ${admin.name}'s status right now.`,
+        ),
+        variant: "error",
+      });
+      return;
+    }
+
+    setToast({
+      message:
+        nextStatus === adminStatuses.ACTIVE
+          ? `${admin.name} was activated.`
+          : `${admin.name} was deactivated and signed out.`,
+      variant: "success",
+    });
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      {canAddAdmins ? (
+      {canManageAdmins ? (
         <div className="flex justify-end">
           <Button
             size="sm"
@@ -196,6 +244,22 @@ const AdminTable = () => {
       ) : null}
 
       <Table
+        actionsColumn={
+          canManageAdmins
+            ? {
+                header: "Actions",
+                render: (admin) => (
+                  <AdminRowActions
+                    isCurrentAdmin={admin.id === currentAdmin?.id}
+                    isUpdating={updatingAdminIds.includes(admin.id)}
+                    name={admin.name}
+                    status={admin.status}
+                    onToggleStatus={() => handleToggleAdminStatus(admin)}
+                  />
+                ),
+              }
+            : undefined
+        }
         columnVisibilityStorageKey="efficient_global_admins_table_columns_v1"
         columns={adminColumns}
         emptyMessage="No admins found."
@@ -229,10 +293,11 @@ const AdminTable = () => {
         />
       ) : null}
 
-      {toastMessage ? (
+      {toast ? (
         <Toast
-          message={toastMessage}
-          onDismiss={() => setToastMessage("")}
+          message={toast.message}
+          variant={toast.variant}
+          onDismiss={dismissToast}
         />
       ) : null}
     </div>

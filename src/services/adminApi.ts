@@ -90,6 +90,16 @@ type CreateAdminResponse = {
   message?: string;
 };
 
+export type UpdateAdminStatusRequest = {
+  id: string;
+  status: string;
+};
+
+type UpdateAdminStatusResponse = {
+  admin?: AdminListItem;
+  message?: string;
+};
+
 type AdminInformationRequestsResponse = {
   informationRequests?: AdminInformationRequest[];
 };
@@ -159,6 +169,43 @@ export const adminApi = createApi({
       }),
       invalidatesTags: [{ type: "Admins", id: "LIST" }],
     }),
+    updateAdminStatus: builder.mutation<
+      UpdateAdminStatusResponse,
+      UpdateAdminStatusRequest
+    >({
+      query: ({ id, status }) => ({
+        url: `/admins/${encodeURIComponent(id)}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      // Swaps the returned row into the cached list so the row flips without a
+      // refetch. A failure refetches instead, since the row may be stale (for
+      // example, already changed by another super admin).
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const updatedAdmin = data.admin;
+
+          if (!updatedAdmin) {
+            return;
+          }
+
+          dispatch(
+            adminApi.util.updateQueryData("getAdmins", undefined, (admins) => {
+              const index = admins.findIndex((admin) => admin.id === id);
+
+              if (index !== -1) {
+                admins[index] = updatedAdmin;
+              }
+            }),
+          );
+        } catch {
+          // The caller reports the error.
+        }
+      },
+      invalidatesTags: (_result, error, { id }) =>
+        error ? [{ type: "Admins", id }] : [],
+    }),
     getDeliveryRequests: builder.query<AdminDeliveryRequest[], void>({
       query: () => "/delivery-requests",
       transformResponse: (response: AdminDeliveryRequestsResponse) =>
@@ -200,4 +247,5 @@ export const {
   useGetAdminsQuery,
   useGetDeliveryRequestsQuery,
   useGetInformationRequestsQuery,
+  useUpdateAdminStatusMutation,
 } = adminApi;

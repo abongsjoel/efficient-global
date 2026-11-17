@@ -3,7 +3,7 @@ import Button from "../atoms/Button";
 import { cx } from "../atoms/formFieldStyles";
 import { CheckIcon, CloseIcon } from "../icons";
 
-type ToastVariant = "success";
+export type ToastVariant = "error" | "success";
 
 type ToastProps = {
   autoDismissMs?: number;
@@ -13,10 +13,12 @@ type ToastProps = {
 };
 
 const variantStyles: Record<ToastVariant, string> = {
+  error: "border-red-200 bg-white text-slate-800",
   success: "border-primary-200/30 bg-white text-slate-800",
 };
 
 const iconStyles: Record<ToastVariant, string> = {
+  error: "bg-red-600 text-white",
   success: "bg-primary-200 text-white",
 };
 
@@ -32,14 +34,16 @@ const Toast = ({
     return () => window.clearTimeout(dismissTimer);
   }, [autoDismissMs, message, onDismiss]);
 
+  const isError = variant === "error";
+
   return (
     <div
-      aria-live="polite"
+      aria-live={isError ? "assertive" : "polite"}
       className={cx(
         "fixed right-6 top-24 z-50 flex w-[min(calc(100vw-3rem),22rem)] items-start gap-3 rounded-xl border p-4 shadow-2xl shadow-slate-950/15",
         variantStyles[variant],
       )}
-      role="status"
+      role={isError ? "alert" : "status"}
     >
       <span
         className={cx(
@@ -47,7 +51,7 @@ const Toast = ({
           iconStyles[variant],
         )}
       >
-        <CheckIcon />
+        {isError ? <CloseIcon /> : <CheckIcon />}
       </span>
 
       <p className="min-w-0 flex-1 text-sm font-medium leading-6">{message}</p>
