@@ -23,7 +23,7 @@ const AdminRowActions = ({
 }: AdminRowActionsProps) => {
   const isActive = status === adminStatuses.ACTIVE;
   const isDisabled = isCurrentAdmin || isUpdating;
-  const actionLabel = isActive ? "Deactivate admin" : "Activate admin";
+  const actionLabel = isActive ? "Deactivate" : "Activate";
   const tooltipLabel = isCurrentAdmin
     ? "You can't change your own status"
     : isUpdating
