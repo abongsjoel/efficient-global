@@ -5,6 +5,7 @@ import Input from "../../atoms/Input";
 import PasswordVisibilityButton from "../../atoms/PasswordVisibilityButton";
 import { CloseIcon } from "../../icons";
 import PasswordRequirements from "../../molecules/PasswordRequirements";
+import { adminRoles, adminStatuses } from "../../../constants/admin";
 import { useLazyCheckAdminEmailAvailabilityQuery } from "../../../services/adminApi";
 import {
   maxAdminPasswordLength,
@@ -47,17 +48,16 @@ const blurValidatedFields = [
 // A changed password can make an already-typed confirmation stop matching.
 const blurRelatedFields = { password: ["confirmPassword"] } as const;
 
-// Mirrors the backend roles and statuses in constants/admin.js.
 const roleOptions: DropdownOption[] = [
-  { label: "Super Admin", value: "super_admin" },
-  { label: "Manager", value: "manager" },
-  { label: "Dispatcher", value: "dispatcher" },
-  { label: "Viewer", value: "viewer" },
+  { label: "Super Admin", value: adminRoles.SUPER_ADMIN },
+  { label: "Manager", value: adminRoles.MANAGER },
+  { label: "Dispatcher", value: adminRoles.DISPATCHER },
+  { label: "Viewer", value: adminRoles.VIEWER },
 ];
 
 const statusOptions: DropdownOption[] = [
-  { label: "Active", value: "active" },
-  { label: "Inactive", value: "inactive" },
+  { label: "Active", value: adminStatuses.ACTIVE },
+  { label: "Inactive", value: adminStatuses.INACTIVE },
 ];
 
 const initialFields: AddAdminFields = {
@@ -65,8 +65,8 @@ const initialFields: AddAdminFields = {
   email: "",
   name: "",
   password: "",
-  role: "viewer",
-  status: "active",
+  role: adminRoles.VIEWER,
+  status: adminStatuses.ACTIVE,
 };
 
 const fieldOrder: Array<keyof AddAdminFields> = [

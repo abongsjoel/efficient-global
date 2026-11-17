@@ -688,6 +688,7 @@ const Table = <Row,>({
         <div ref={scrollContainerRef} className="overflow-x-auto rounded-b-xl">
           <table
             className={cx(
+              "w-full",
               minWidthClassName,
               "divide-y divide-slate-100 text-left text-sm",
             )}

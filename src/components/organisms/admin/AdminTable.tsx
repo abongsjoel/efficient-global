@@ -8,6 +8,8 @@ import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
 import Toast from "../../molecules/Toast";
 import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
+import { adminRoles } from "../../../constants/admin";
+import { useAdminAuth } from "../../../contexts/useAdminAuth";
 import {
   type AdminListItem,
   useCreateAdminMutation,
@@ -145,10 +147,13 @@ const getFieldErrors = (data: unknown): AddAdminFieldErrors | undefined => {
 };
 
 const AdminTable = () => {
+  const { admin: currentAdmin } = useAdminAuth();
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
   const [createAdmin] = useCreateAdminMutation();
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  // Mirrors the backend, which only lets super admins add admins.
+  const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
 
   const handleAddAdmin = async (
     fields: AddAdminFields,
@@ -177,16 +182,18 @@ const AdminTable = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          size="sm"
-          variant="inverse"
-          onClick={() => setIsAddAdminOpen(true)}
-        >
-          <PlusIcon />
-          Add admin
-        </Button>
-      </div>
+      {canAddAdmins ? (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="inverse"
+            onClick={() => setIsAddAdminOpen(true)}
+          >
+            <PlusIcon />
+            Add admin
+          </Button>
+        </div>
+      ) : null}
 
       <Table
         columnVisibilityStorageKey="efficient_global_admins_table_columns_v1"

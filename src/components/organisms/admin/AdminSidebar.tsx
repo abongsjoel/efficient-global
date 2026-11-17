@@ -6,6 +6,7 @@ import type { Admin } from "../../../utils/adminAuth";
 import { formatAdminRole } from "../../../utils/adminDisplay";
 import {
   adminPanelItems,
+  canAccessAdminPanelItem,
   type AdminPageView,
 } from "./adminPageConfig";
 
@@ -15,6 +16,9 @@ type AdminSidebarProps = {
   onToggleCollapsed: () => void;
   view: AdminPageView;
 };
+
+const getVisiblePanelItems = (admin?: Admin) =>
+  adminPanelItems.filter((item) => canAccessAdminPanelItem(item, admin?.role));
 
 const AdminSidebar = ({
   admin,
@@ -67,7 +71,7 @@ const AdminSidebar = ({
       aria-label="Admin dashboard"
       className="mt-6 space-y-1 lg:flex-1"
     >
-      {adminPanelItems.map((item) => {
+      {getVisiblePanelItems(admin).map((item) => {
         const Icon = item.icon;
         const isActive = item.id === view;
         const itemLayoutClassName = isCollapsed

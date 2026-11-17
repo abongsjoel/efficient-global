@@ -13,6 +13,7 @@ import { EditIcon, TrashIcon, UploadIcon } from "../components/icons";
 import PasswordRequirements from "../components/molecules/PasswordRequirements";
 import ProfileImageCropModal from "../components/molecules/ProfileImageCropModal";
 import Toast from "../components/molecules/Toast";
+import { adminStatuses } from "../constants/admin";
 import type {
   Admin,
   AdminPasswordFieldErrors,
@@ -66,8 +67,8 @@ type PasswordVisibilityFields = Record<keyof PasswordFields, boolean>;
 const formatStatus = (status: string) => roleStatusLabels[status] || status;
 
 const roleStatusLabels: Record<string, string> = {
-  active: "Active",
-  inactive: "Inactive",
+  [adminStatuses.ACTIVE]: "Active",
+  [adminStatuses.INACTIVE]: "Inactive",
 };
 
 const supportedProfileImageTypes = new Set([

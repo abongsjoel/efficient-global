@@ -28,35 +28,31 @@ const AdminPage = ({ admin, view = "dashboard" }: AdminPageProps) => {
         isPanelCollapsed ? "lg:pl-28" : "lg:pl-80",
       )}
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-6">
-          <AdminSidebar
-            admin={admin}
-            isCollapsed={isPanelCollapsed}
-            view={view}
-            onToggleCollapsed={() =>
-              setIsPanelCollapsed((currentValue) => !currentValue)
-            }
-          />
+      <div className="flex flex-col gap-6">
+        <AdminSidebar
+          admin={admin}
+          isCollapsed={isPanelCollapsed}
+          view={view}
+          onToggleCollapsed={() =>
+            setIsPanelCollapsed((currentValue) => !currentValue)
+          }
+        />
 
-          <main className="min-w-0 flex-1">
-            {currentPage ? (
-              <AdminViewHeader content={currentPage} />
-            ) : null}
+        <main className="min-w-0 flex-1">
+          {currentPage ? <AdminViewHeader content={currentPage} /> : null}
 
-            {view === "dashboard" ? <AdminDashboardSummary /> : null}
+          {view === "dashboard" ? <AdminDashboardSummary /> : null}
 
-            {view === "deliveryRequests" ? (
-              <AdminDeliveryRequestsTable />
-            ) : null}
+          {view === "deliveryRequests" ? (
+            <AdminDeliveryRequestsTable />
+          ) : null}
 
-            {view === "informationRequests" ? (
-              <AdminInformationRequestsTable />
-            ) : null}
+          {view === "informationRequests" ? (
+            <AdminInformationRequestsTable />
+          ) : null}
 
-            {view === "admins" ? <AdminTable /> : null}
-          </main>
-        </div>
+          {view === "admins" ? <AdminTable /> : null}
+        </main>
       </div>
     </section>
   );

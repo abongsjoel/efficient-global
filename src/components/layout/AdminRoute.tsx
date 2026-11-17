@@ -1,8 +1,12 @@
+import { Navigate } from "react-router-dom";
 import AdminLoginPage from "../../pages/AdminLoginPage";
 import AdminPage from "../../pages/AdminPage";
 import AdminProfilePage from "../../pages/AdminProfilePage";
 import { useAdminAuth } from "../../contexts/useAdminAuth";
-import type { AdminPageView } from "../organisms/admin/adminPageConfig";
+import {
+  canAccessAdminView,
+  type AdminPageView,
+} from "../organisms/admin/adminPageConfig";
 
 type AdminRouteProps = {
   view?: AdminPageView | "profile";
@@ -33,6 +37,10 @@ const AdminRoute = ({ view = "dashboard" }: AdminRouteProps) => {
 
   if (!admin) {
     return <AdminLoginPage onLogin={loginAdminSession} />;
+  }
+
+  if (!canAccessAdminView(view, admin.role)) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (view === "profile") {
