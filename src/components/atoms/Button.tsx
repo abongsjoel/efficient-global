@@ -1,10 +1,13 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import { cx } from "./formFieldStyles";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
+  // React 19 passes `ref` to function components as a plain prop, so it
+  // reaches the <button> through the spread below.
+  ref?: Ref<HTMLButtonElement>;
   size?: "sm" | "md";
-  variant?: "primary" | "inverse" | "link" | "dangerLink";
+  variant?: "primary" | "inverse" | "link" | "danger" | "dangerLink";
 }
 
 const Button = ({
@@ -22,6 +25,8 @@ const Button = ({
     md: "gap-2 rounded px-6 py-3",
   };
   const variantStyles = {
+    danger:
+      "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-200 disabled:hover:bg-red-600",
     dangerLink:
       "text-red-700 hover:text-red-800 focus-visible:ring-red-200 disabled:hover:text-red-700",
     inverse:

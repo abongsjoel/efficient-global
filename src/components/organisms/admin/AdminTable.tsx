@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import Button from "../../atoms/Button";
 import StatusBadge from "../../atoms/StatusBadge";
 import { PlusIcon } from "../../icons";
+import ConfirmDialog from "../../molecules/ConfirmDialog";
 import CopyButton from "../../molecules/CopyButton";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
@@ -174,12 +175,20 @@ const AdminTable = () => {
     variant: ToastVariant;
   } | null>(null);
   const [updatingAdminIds, setUpdatingAdminIds] = useState<string[]>([]);
+  // The admin whose status change is waiting for confirmation.
+  const [statusChangeAdmin, setStatusChangeAdmin] =
+    useState<AdminListItem | null>(null);
+  const isDeactivating = statusChangeAdmin?.status === adminStatuses.ACTIVE;
   // Mirrors the backend, which only lets super admins add admins, and lets
   // managers activate or deactivate dispatchers and viewers.
   const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
   const canManageStatuses = canManageAnyAdminStatus(currentAdmin?.role);
   // Stable, so the toast's auto-dismiss timer isn't restarted by re-renders.
   const dismissToast = useCallback(() => setToast(null), []);
+  const closeStatusChangeDialog = useCallback(
+    () => setStatusChangeAdmin(null),
+    [],
+  );
 
   const handleAddAdmin = async (
     fields: AddAdminFields,
@@ -256,6 +265,17 @@ const AdminTable = () => {
     });
   };
 
+  // The dialog stays open, showing progress, until the request settles. The
+  // toast then reports the outcome.
+  const handleConfirmStatusChange = async () => {
+    if (!statusChangeAdmin) {
+      return;
+    }
+
+    await handleToggleAdminStatus(statusChangeAdmin);
+    setStatusChangeAdmin(null);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {canAddAdmins ? (
@@ -282,7 +302,7 @@ const AdminTable = () => {
                     isUpdating={updatingAdminIds.includes(admin.id)}
                     name={admin.name}
                     status={admin.status}
-                    onToggleStatus={() => handleToggleAdminStatus(admin)}
+                    onToggleStatus={() => setStatusChangeAdmin(admin)}
                   />
                 ),
               }
@@ -320,6 +340,38 @@ const AdminTable = () => {
           onClose={() => setIsAddAdminOpen(false)}
           onSubmit={handleAddAdmin}
         />
+      ) : null}
+
+      {statusChangeAdmin ? (
+        <ConfirmDialog
+          confirmLabel={isDeactivating ? "Deactivate" : "Activate"}
+          confirmingLabel={isDeactivating ? "Deactivating..." : "Activating..."}
+          isConfirming={updatingAdminIds.includes(statusChangeAdmin.id)}
+          title={`${isDeactivating ? "Deactivate" : "Activate"} ${
+            statusChangeAdmin.name
+          }?`}
+          tone={isDeactivating ? "danger" : "primary"}
+          onCancel={closeStatusChangeDialog}
+          onConfirm={handleConfirmStatusChange}
+        >
+          {isDeactivating ? (
+            <p>
+              This signs out{" "}
+              <span className="font-semibold text-slate-950">
+                {statusChangeAdmin.email}
+              </span>{" "}
+              right away. They can't log in again until their account is
+              reactivated.
+            </p>
+          ) : (
+            <p>
+              <span className="font-semibold text-slate-950">
+                {statusChangeAdmin.email}
+              </span>{" "}
+              will be able to log in to the admin dashboard again.
+            </p>
+          )}
+        </ConfirmDialog>
       ) : null}
 
       {toast ? (
