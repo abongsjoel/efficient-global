@@ -4,6 +4,9 @@ import StatusBadge from "../../atoms/StatusBadge";
 import { PlusIcon } from "../../icons";
 import ConfirmDialog from "../../molecules/ConfirmDialog";
 import CopyButton from "../../molecules/CopyButton";
+import RequestDetailsModal, {
+  type RequestDetailsField,
+} from "../../molecules/RequestDetailsModal";
 import Table, { type TableColumn } from "../../molecules/Table";
 import TableDateTimeCell from "../../molecules/table/TableDateTimeCell";
 import Toast, { type ToastVariant } from "../../molecules/Toast";
@@ -159,6 +162,24 @@ const getFieldErrors = (data: unknown): AddAdminFieldErrors | undefined => {
   return undefined;
 };
 
+const getAdminDetailsFields = (
+  admin: AdminListItem,
+): RequestDetailsField[] => [
+  { label: "Admin ID", value: admin.id },
+  { label: "Name", value: admin.name },
+  { label: "Email", value: admin.email },
+  {
+    label: "Role",
+    value: <span className="capitalize">{formatAdminRole(admin.role)}</span>,
+  },
+  {
+    label: "Status",
+    value: <StatusBadge status={admin.status} />,
+  },
+  { label: "Created", value: formatDateTime(admin.createdAt) },
+  { label: "Last updated", value: formatDateTime(admin.updatedAt) },
+];
+
 const AdminTable = () => {
   const { admin: currentAdmin } = useAdminAuth();
   const { data: admins = [], error, isLoading } = useGetAdminsQuery();
@@ -179,6 +200,12 @@ const AdminTable = () => {
   const [statusChangeAdmin, setStatusChangeAdmin] =
     useState<AdminListItem | null>(null);
   const isDeactivating = statusChangeAdmin?.status === adminStatuses.ACTIVE;
+  // Stored by id and looked up in the list, so an open details modal shows
+  // changes such as a status update as soon as the list has them.
+  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
+  const selectedAdmin =
+    admins.find((admin) => admin.id === selectedAdminId) ?? null;
+  const isSelectedAdminCurrent = selectedAdmin?.id === currentAdminId;
   // Mirrors the backend, which only lets super admins add admins, and lets
   // managers activate or deactivate dispatchers and viewers.
   const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
@@ -189,6 +216,9 @@ const AdminTable = () => {
     () => setStatusChangeAdmin(null),
     [],
   );
+  // Stable, since the details modal re-focuses its close button whenever this
+  // changes.
+  const closeAdminDetails = useCallback(() => setSelectedAdminId(null), []);
 
   const handleAddAdmin = async (
     fields: AddAdminFields,
@@ -292,22 +322,23 @@ const AdminTable = () => {
       ) : null}
 
       <Table
-        actionsColumn={
-          canManageStatuses
-            ? {
-                header: "Actions",
-                render: (admin) => (
-                  <AdminRowActions
-                    disabledReason={getStatusDisabledReason(admin)}
-                    isUpdating={updatingAdminIds.includes(admin.id)}
-                    name={admin.name}
-                    status={admin.status}
-                    onToggleStatus={() => setStatusChangeAdmin(admin)}
-                  />
-                ),
+        actionsColumn={{
+          header: "Actions",
+          render: (admin) => (
+            <AdminRowActions
+              disabledReason={getStatusDisabledReason(admin)}
+              isUpdating={updatingAdminIds.includes(admin.id)}
+              name={admin.name}
+              status={admin.status}
+              onToggleStatus={
+                canManageStatuses
+                  ? () => setStatusChangeAdmin(admin)
+                  : undefined
               }
-            : undefined
-        }
+              onView={() => setSelectedAdminId(admin.id)}
+            />
+          ),
+        }}
         columnVisibilityStorageKey="efficient_global_admins_table_columns_v1"
         columns={adminColumns}
         emptyMessage="No admins found."
@@ -341,6 +372,24 @@ const AdminTable = () => {
           onSubmit={handleAddAdmin}
         />
       ) : null}
+
+      <RequestDetailsModal
+        // No point offering to email yourself.
+        email={isSelectedAdminCurrent ? undefined : selectedAdmin?.email}
+        fields={selectedAdmin ? getAdminDetailsFields(selectedAdmin) : []}
+        isOpen={Boolean(selectedAdmin)}
+        subtitle={
+          selectedAdmin
+            ? `Added ${formatDateTime(selectedAdmin.createdAt)}`
+            : undefined
+        }
+        title={
+          selectedAdmin
+            ? `${selectedAdmin.name}${isSelectedAdminCurrent ? " (You)" : ""}`
+            : ""
+        }
+        onClose={closeAdminDetails}
+      />
 
       {statusChangeAdmin ? (
         <ConfirmDialog
