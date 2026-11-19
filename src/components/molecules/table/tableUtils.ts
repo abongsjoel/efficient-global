@@ -26,11 +26,16 @@ export const TABLE_SEARCH_ATTRIBUTE = "data-table-search";
 // white rows, sitting between slate-50 and slate-100. It has to be opaque — a
 // translucent tint would let scrolled columns show through. The header cell
 // keeps the header row's own slate-50 instead.
+//
+// `w-px` with `whitespace-nowrap` shrinks the column to its buttons. Otherwise a
+// table wider than its columns hands the pinned column a share of the spare
+// width, which shows up as an empty tinted strip beside the right-aligned
+// buttons.
 export const stickyActionsCellClassName =
-  "sticky right-0 bg-[#f9f9f9] px-4 py-4 text-right align-middle";
+  "sticky right-0 w-px whitespace-nowrap bg-[#f9f9f9] px-4 py-4 text-right align-middle";
 
 export const stickyActionsHeaderClassName =
-  "sticky right-0 z-20 bg-slate-50 px-4 py-3 text-right font-semibold";
+  "sticky right-0 z-20 w-px whitespace-nowrap bg-slate-50 px-4 py-3 text-right font-semibold";
 
 // Only drawn while columns are still hidden to the right of the pinned cell.
 export const stickyActionsShadowClassName =
