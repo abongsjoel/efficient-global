@@ -44,17 +44,25 @@ const ConfirmDialog = ({
     return () => previouslyFocusedElement?.focus();
   }, []);
 
+  // Listens in the capture phase and stops Escape there, so when this opens over
+  // another modal (which also closes on Escape), only this dialog responds.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !isConfirming) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      event.stopPropagation();
+
+      if (!isConfirming) {
         onCancel();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [isConfirming, onCancel]);
 

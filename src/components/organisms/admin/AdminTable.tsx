@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import Button from "../../atoms/Button";
 import StatusBadge from "../../atoms/StatusBadge";
 import { PlusIcon } from "../../icons";
@@ -13,6 +13,7 @@ import Toast, { type ToastVariant } from "../../molecules/Toast";
 import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
 import AdminRowActions from "./AdminRowActions";
+import AdminStatusToggleButton from "./AdminStatusToggleButton";
 import {
   adminRoles,
   adminStatuses,
@@ -162,8 +163,11 @@ const getFieldErrors = (data: unknown): AddAdminFieldErrors | undefined => {
   return undefined;
 };
 
+// `statusAction` is the activate/deactivate button, left out for viewers who
+// can't change statuses.
 const getAdminDetailsFields = (
   admin: AdminListItem,
+  statusAction?: ReactNode,
 ): RequestDetailsField[] => [
   { label: "Admin ID", value: admin.id },
   { label: "Name", value: admin.name },
@@ -174,7 +178,12 @@ const getAdminDetailsFields = (
   },
   {
     label: "Status",
-    value: <StatusBadge status={admin.status} />,
+    value: (
+      <div className="flex items-center gap-2">
+        <StatusBadge status={admin.status} />
+        {statusAction}
+      </div>
+    ),
   },
   { label: "Created", value: formatDateTime(admin.createdAt) },
   { label: "Last updated", value: formatDateTime(admin.updatedAt) },
@@ -401,7 +410,22 @@ const AdminTable = () => {
       <RequestDetailsModal
         // No point offering to email yourself.
         email={isSelectedAdminCurrent ? undefined : selectedAdmin?.email}
-        fields={selectedAdmin ? getAdminDetailsFields(selectedAdmin) : []}
+        fields={
+          selectedAdmin
+            ? getAdminDetailsFields(
+                selectedAdmin,
+                canManageStatuses ? (
+                  <AdminStatusToggleButton
+                    disabledReason={getStatusDisabledReason(selectedAdmin)}
+                    isUpdating={updatingAdminIds.includes(selectedAdmin.id)}
+                    name={selectedAdmin.name}
+                    status={selectedAdmin.status}
+                    onToggle={() => setStatusChangeAdmin(selectedAdmin)}
+                  />
+                ) : null,
+              )
+            : []
+        }
         isOpen={Boolean(selectedAdmin)}
         subtitle={
           selectedAdmin
