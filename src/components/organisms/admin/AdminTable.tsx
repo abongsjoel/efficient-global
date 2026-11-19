@@ -14,6 +14,7 @@ import Tooltip from "../../molecules/Tooltip";
 import AddAdminModal, { type AddAdminSubmitResult } from "./AddAdminModal";
 import AdminRowActions from "./AdminRowActions";
 import AdminStatusToggleButton from "./AdminStatusToggleButton";
+import EditAdminModal, { type EditAdminSubmitResult } from "./EditAdminModal";
 import {
   adminRoles,
   adminStatuses,
@@ -25,6 +26,7 @@ import {
   type AdminListItem,
   useCreateAdminMutation,
   useGetAdminsQuery,
+  useUpdateAdminMutation,
   useUpdateAdminStatusMutation,
 } from "../../../services/adminApi";
 import {
@@ -35,6 +37,7 @@ import {
 import type {
   AddAdminFieldErrors,
   AddAdminFields,
+  AdminDetailsFields,
 } from "../../../utils/formValidation";
 import { getRtkQueryErrorMessage } from "../../../utils/rtkQueryErrors";
 
@@ -200,7 +203,7 @@ const adminListRefreshOptions = {
 };
 
 const AdminTable = () => {
-  const { admin: currentAdmin } = useAdminAuth();
+  const { admin: currentAdmin, loginAdminSession } = useAdminAuth();
   const { data, error, isLoading } = useGetAdminsQuery(
     undefined,
     adminListRefreshOptions,
@@ -212,6 +215,7 @@ const AdminTable = () => {
     [currentAdminId],
   );
   const [createAdmin] = useCreateAdminMutation();
+  const [updateAdmin] = useUpdateAdminMutation();
   const [updateAdminStatus] = useUpdateAdminStatusMutation();
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
   const [toast, setToast] = useState<{
@@ -243,6 +247,53 @@ const AdminTable = () => {
   // Stable, since the details modal re-focuses its close button whenever this
   // changes.
   const closeAdminDetails = useCallback(() => setSelectedAdminId(null), []);
+  // Looked up by id like the details modal, so it closes if the admin
+  // disappears from the list.
+  const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
+  const editingAdmin =
+    admins.find((admin) => admin.id === editingAdminId) ?? null;
+  const closeEditAdmin = useCallback(() => setEditingAdminId(null), []);
+
+  const handleEditAdmin = async (
+    fields: AdminDetailsFields,
+  ): Promise<EditAdminSubmitResult> => {
+    if (!editingAdmin) {
+      return { success: false };
+    }
+
+    const result = await updateAdmin({ id: editingAdmin.id, ...fields });
+
+    if (result.error) {
+      return {
+        success: false,
+        errors:
+          "status" in result.error
+            ? getFieldErrors(result.error.data)
+            : undefined,
+        message: getRtkQueryErrorMessage(
+          result.error,
+          "We could not update this admin right now.",
+        ),
+      };
+    }
+
+    // Editing yourself also updates the signed-in admin shown around the app.
+    if (currentAdmin && editingAdmin.id === currentAdmin.id) {
+      loginAdminSession({
+        ...currentAdmin,
+        email: result.data.admin?.email ?? fields.email,
+        name: result.data.admin?.name ?? fields.name,
+      });
+    }
+
+    setEditingAdminId(null);
+    setToast({
+      message: `${fields.name}'s details were updated.`,
+      variant: "success",
+    });
+
+    return { success: true };
+  };
 
   const handleAddAdmin = async (
     fields: AddAdminFields,
@@ -365,6 +416,7 @@ const AdminTable = () => {
                   ? () => setStatusChangeAdmin(admin)
                   : undefined
               }
+              onEdit={() => setEditingAdminId(admin.id)}
               onView={() => setSelectedAdminId(admin.id)}
             />
           ),
@@ -406,6 +458,15 @@ const AdminTable = () => {
         <AddAdminModal
           onClose={() => setIsAddAdminOpen(false)}
           onSubmit={handleAddAdmin}
+        />
+      ) : null}
+
+      {editingAdmin ? (
+        <EditAdminModal
+          admin={editingAdmin}
+          isCurrentAdmin={editingAdmin.id === currentAdminId}
+          onClose={closeEditAdmin}
+          onSubmit={handleEditAdmin}
         />
       ) : null}
 

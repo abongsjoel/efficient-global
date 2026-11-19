@@ -35,6 +35,13 @@ export type AddAdminFields = {
 
 export type AddAdminFieldErrors = Partial<Record<keyof AddAdminFields, string>>;
 
+// The fields the edit-admin form changes, which adding an admin also sets.
+export type AdminDetailsFields = Pick<AddAdminFields, "email" | "name" | "role">;
+
+export type AdminDetailsFieldErrors = Partial<
+  Record<keyof AdminDetailsFields, string>
+>;
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const phoneCharacterPattern = /^\+?[0-9\s().-]+$/;
 
@@ -162,15 +169,13 @@ export const validateDeliveryRequestFields = (formData: FormData) => {
 
 const maxAdminNameLength = 80;
 
-export const validateAddAdminFields = ({
-  confirmPassword,
+// Shared by the add-admin and edit-admin forms.
+export const validateAdminDetailsFields = ({
   email,
   name,
-  password,
   role,
-  status,
-}: AddAdminFields) => {
-  const errors: AddAdminFieldErrors = {};
+}: AdminDetailsFields) => {
+  const errors: AdminDetailsFieldErrors = {};
   const normalizedName = name.trim();
   const normalizedEmail = email.trim();
 
@@ -189,6 +194,23 @@ export const validateAddAdminFields = ({
   if (!role) {
     errors.role = "Choose a role.";
   }
+
+  return errors;
+};
+
+export const validateAddAdminFields = ({
+  confirmPassword,
+  email,
+  name,
+  password,
+  role,
+  status,
+}: AddAdminFields) => {
+  const errors: AddAdminFieldErrors = validateAdminDetailsFields({
+    email,
+    name,
+    role,
+  });
 
   if (!status) {
     errors.status = "Choose a status.";

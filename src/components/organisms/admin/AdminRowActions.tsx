@@ -4,10 +4,14 @@ import ActionMenu, { type ActionMenuItem } from "../../molecules/ActionMenu";
 import Tooltip from "../../molecules/Tooltip";
 import AdminStatusToggleButton from "./AdminStatusToggleButton";
 
-// Placeholders: editing and deleting admins aren't built yet, so choosing
-// either item only closes the menu. Give each an `onSelect` once they exist.
-const moreActionItems: ActionMenuItem[] = [
-  { icon: <EditIcon className="h-3.5 w-3.5" />, label: "Edit" },
+// Delete is a placeholder until deleting admins is built, so choosing it only
+// closes the menu. Give it an `onSelect` once it exists.
+const getMoreActionItems = (onEdit: () => void): ActionMenuItem[] => [
+  {
+    icon: <EditIcon className="h-3.5 w-3.5" />,
+    label: "Edit",
+    onSelect: onEdit,
+  },
   {
     icon: <TrashIcon className="h-3.5 w-3.5" />,
     label: "Delete",
@@ -22,6 +26,7 @@ type AdminRowActionsProps = {
   disabledReason?: string;
   isUpdating: boolean;
   name: string;
+  onEdit: () => void;
   /** Left out when the viewer can't change statuses, which hides the button. */
   onToggleStatus?: () => void;
   onView: () => void;
@@ -33,6 +38,7 @@ const AdminRowActions = ({
   disabledReason,
   isUpdating,
   name,
+  onEdit,
   onToggleStatus,
   onView,
   status,
@@ -65,7 +71,7 @@ const AdminRowActions = ({
     {canUseMoreActions ? (
       <ActionMenu
         className="-ml-1"
-        items={moreActionItems}
+        items={getMoreActionItems(onEdit)}
         label={`More actions for ${name}`}
       />
     ) : null}

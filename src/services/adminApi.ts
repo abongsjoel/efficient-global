@@ -91,6 +91,18 @@ type CreateAdminResponse = {
   message?: string;
 };
 
+export type UpdateAdminRequest = {
+  email: string;
+  id: string;
+  name: string;
+  role: string;
+};
+
+type UpdateAdminResponse = {
+  admin?: AdminListItem;
+  message?: string;
+};
+
 export type UpdateAdminStatusRequest = {
   id: string;
   status: string;
@@ -171,6 +183,43 @@ export const adminApi = createApi({
       }),
       invalidatesTags: [{ type: "Admins", id: "LIST" }],
     }),
+    updateAdmin: builder.mutation<UpdateAdminResponse, UpdateAdminRequest>({
+      query: ({ id, ...body }) => ({
+        url: `/admins/${encodeURIComponent(id)}`,
+        method: "PATCH",
+        body,
+      }),
+      // Swaps the returned row into the cached list so it updates right away,
+      // as updateAdminStatus does.
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const updatedAdmin = data.admin;
+
+          if (!updatedAdmin) {
+            return;
+          }
+
+          dispatch(
+            adminApi.util.updateQueryData("getAdmins", undefined, (admins) => {
+              const index = admins.findIndex((admin) => admin.id === id);
+
+              if (index !== -1) {
+                admins[index] = updatedAdmin;
+              }
+            }),
+          );
+        } catch {
+          // The caller reports the error.
+        }
+      },
+      // LIST also drops cached email-availability answers, since an email
+      // may have been freed up or taken.
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Admins", id },
+        { type: "Admins", id: "LIST" },
+      ],
+    }),
     updateAdminStatus: builder.mutation<
       UpdateAdminStatusResponse,
       UpdateAdminStatusRequest
@@ -249,5 +298,6 @@ export const {
   useGetAdminsQuery,
   useGetDeliveryRequestsQuery,
   useGetInformationRequestsQuery,
+  useUpdateAdminMutation,
   useUpdateAdminStatusMutation,
 } = adminApi;

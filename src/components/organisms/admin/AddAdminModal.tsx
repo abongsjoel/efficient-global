@@ -1,10 +1,11 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import Button from "../../atoms/Button";
-import Dropdown, { type DropdownOption } from "../../atoms/Dropdown";
+import Dropdown from "../../atoms/Dropdown";
 import Input from "../../atoms/Input";
 import PasswordVisibilityButton from "../../atoms/PasswordVisibilityButton";
 import { CloseIcon } from "../../icons";
 import PasswordRequirements from "../../molecules/PasswordRequirements";
+import { adminRoleOptions, adminStatusOptions } from "./adminFormOptions";
 import { adminRoles, adminStatuses } from "../../../constants/admin";
 import { useLazyCheckAdminEmailAvailabilityQuery } from "../../../services/adminApi";
 import {
@@ -47,18 +48,6 @@ const blurValidatedFields = [
 
 // A changed password can make an already-typed confirmation stop matching.
 const blurRelatedFields = { password: ["confirmPassword"] } as const;
-
-const roleOptions: DropdownOption[] = [
-  { label: "Super Admin", value: adminRoles.SUPER_ADMIN },
-  { label: "Manager", value: adminRoles.MANAGER },
-  { label: "Dispatcher", value: adminRoles.DISPATCHER },
-  { label: "Viewer", value: adminRoles.VIEWER },
-];
-
-const statusOptions: DropdownOption[] = [
-  { label: "Active", value: adminStatuses.ACTIVE },
-  { label: "Inactive", value: adminStatuses.INACTIVE },
-];
 
 const initialFields: AddAdminFields = {
   confirmPassword: "",
@@ -313,7 +302,7 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
             <Dropdown
               label="Role"
               name="role"
-              options={roleOptions}
+              options={adminRoleOptions}
               value={fields.role}
               error={errors.role}
               onChange={(event) =>
@@ -325,7 +314,7 @@ const AddAdminModal = ({ onClose, onSubmit }: AddAdminModalProps) => {
             <Dropdown
               label="Status"
               name="status"
-              options={statusOptions}
+              options={adminStatusOptions}
               value={fields.status}
               error={errors.status}
               onChange={(event) =>
