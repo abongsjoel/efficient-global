@@ -285,6 +285,25 @@ export const MailIcon = ({
   </svg>
 );
 
+// The viewBox is cropped to the dots' width, so the icon adds no blank space at
+// its sides. Size it narrow, e.g. `h-4 w-1`, rather than square.
+export const MoreVerticalIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-1")}
+    fill="currentColor"
+    viewBox="10 0 4 24"
+    {...props}
+  >
+    <circle cx="12" cy="5" r="2" />
+    <circle cx="12" cy="12" r="2" />
+    <circle cx="12" cy="19" r="2" />
+  </svg>
+);
+
 export const PasswordVisibilityIcon = ({
   className,
   isVisible,
