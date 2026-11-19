@@ -163,8 +163,8 @@ const getFieldErrors = (data: unknown): AddAdminFieldErrors | undefined => {
   return undefined;
 };
 
-// `statusAction` is the activate/deactivate button, left out for viewers who
-// can't change statuses.
+// `statusAction` is the activate/deactivate button, left out when the viewer
+// can't change this admin's status.
 const getAdminDetailsFields = (
   admin: AdminListItem,
   statusAction?: ReactNode,
@@ -414,9 +414,10 @@ const AdminTable = () => {
           selectedAdmin
             ? getAdminDetailsFields(
                 selectedAdmin,
-                canManageStatuses ? (
+                // Unlike the table, which keeps a disabled button to line up
+                // its rows, the modal only shows the button when it's usable.
+                !getStatusDisabledReason(selectedAdmin) ? (
                   <AdminStatusToggleButton
-                    disabledReason={getStatusDisabledReason(selectedAdmin)}
                     isUpdating={updatingAdminIds.includes(selectedAdmin.id)}
                     name={selectedAdmin.name}
                     status={selectedAdmin.status}
