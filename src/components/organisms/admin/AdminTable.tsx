@@ -290,12 +290,17 @@ const AdminTable = () => {
     );
 
     if (result.error) {
+      // 409 means someone already made this change, so it's a notice rather
+      // than a failure. The list refetches either way and shows the real status.
+      const isAlreadyChanged =
+        "status" in result.error && result.error.status === 409;
+
       setToast({
         message: getRtkQueryErrorMessage(
           result.error,
           `We could not update ${admin.name}'s status right now.`,
         ),
-        variant: "error",
+        variant: isAlreadyChanged ? "warning" : "error",
       });
       return;
     }

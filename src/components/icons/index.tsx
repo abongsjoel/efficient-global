@@ -202,6 +202,26 @@ export const EditIcon = ({
   </svg>
 );
 
+export const ExclamationIcon = ({
+  className,
+  ...props
+}: IconProps) => (
+  <svg
+    aria-hidden="true"
+    className={getIconClassName(className, "h-4 w-4")}
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2.5"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M12 6v8" />
+    <path d="M12 18h.01" />
+  </svg>
+);
+
 export const FilterIcon = ({
   className,
   ...props

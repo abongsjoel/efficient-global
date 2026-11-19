@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import Button from "../atoms/Button";
 import { cx } from "../atoms/formFieldStyles";
-import { CheckIcon, CloseIcon } from "../icons";
+import { CheckIcon, CloseIcon, ExclamationIcon } from "../icons";
 
-export type ToastVariant = "error" | "success";
+/** "warning" is for notices that aren't failures, e.g. nothing needed doing. */
+export type ToastVariant = "error" | "success" | "warning";
 
 type ToastProps = {
   autoDismissMs?: number;
@@ -15,12 +16,20 @@ type ToastProps = {
 const variantStyles: Record<ToastVariant, string> = {
   error: "border-red-200 bg-white text-slate-800",
   success: "border-primary-200/30 bg-white text-slate-800",
+  warning: "border-amber-200 bg-amber-50 text-slate-800",
 };
 
 const iconStyles: Record<ToastVariant, string> = {
   error: "bg-red-600 text-white",
   success: "bg-primary-200 text-white",
+  warning: "bg-amber-500 text-white",
 };
+
+const variantIcons = {
+  error: CloseIcon,
+  success: CheckIcon,
+  warning: ExclamationIcon,
+} satisfies Record<ToastVariant, unknown>;
 
 const Toast = ({
   autoDismissMs = 3500,
@@ -35,6 +44,7 @@ const Toast = ({
   }, [autoDismissMs, message, onDismiss]);
 
   const isError = variant === "error";
+  const VariantIcon = variantIcons[variant];
 
   return (
     <div
@@ -51,7 +61,7 @@ const Toast = ({
           iconStyles[variant],
         )}
       >
-        {isError ? <CloseIcon /> : <CheckIcon />}
+        <VariantIcon />
       </span>
 
       <p className="min-w-0 flex-1 text-sm font-medium leading-6">{message}</p>
