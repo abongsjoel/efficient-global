@@ -9,6 +9,7 @@ import type {
 } from "@reduxjs/toolkit/query";
 import { apiBaseUrl } from "../utils/api";
 import {
+  adminSessionEndedEvent,
   clearAdminSessionToken,
   getStoredAdminSessionToken,
 } from "../utils/adminSessionToken";
@@ -131,6 +132,7 @@ const adminBaseQuery: BaseQueryFn<
 
   if (result.error?.status === 401) {
     clearAdminSessionToken();
+    window.dispatchEvent(new Event(adminSessionEndedEvent));
   }
 
   return result;
@@ -178,9 +180,10 @@ export const adminApi = createApi({
         method: "PATCH",
         body: { status },
       }),
-      // Swaps the returned row into the cached list so the row flips without a
-      // refetch. A failure refetches instead, since the row may be stale (for
-      // example, already changed by another super admin).
+      // Swaps the returned row into the cached list so the row flips right
+      // away. The list is still refetched afterwards, which also replaces any
+      // background refresh that was in flight and would otherwise land with
+      // the old status. RTK holds that refetch until pending requests settle.
       async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
@@ -203,8 +206,7 @@ export const adminApi = createApi({
           // The caller reports the error.
         }
       },
-      invalidatesTags: (_result, error, { id }) =>
-        error ? [{ type: "Admins", id }] : [],
+      invalidatesTags: (_result, _error, { id }) => [{ type: "Admins", id }],
     }),
     getDeliveryRequests: builder.query<AdminDeliveryRequest[], void>({
       query: () => "/delivery-requests",

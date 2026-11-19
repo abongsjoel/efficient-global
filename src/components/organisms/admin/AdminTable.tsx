@@ -180,9 +180,23 @@ const getAdminDetailsFields = (
   { label: "Last updated", value: formatDateTime(admin.updatedAt) },
 ];
 
+// Keeps the list in step with changes other admins make: refreshed every 15
+// seconds while the tab is focused, and straight away on returning to the tab
+// or reconnecting. Background tabs don't poll.
+const adminListRefreshOptions = {
+  pollingInterval: 15_000,
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
+  skipPollingIfUnfocused: true,
+};
+
 const AdminTable = () => {
   const { admin: currentAdmin } = useAdminAuth();
-  const { data: admins = [], error, isLoading } = useGetAdminsQuery();
+  const { data, error, isLoading } = useGetAdminsQuery(
+    undefined,
+    adminListRefreshOptions,
+  );
+  const admins = data ?? [];
   const currentAdminId = currentAdmin?.id;
   const adminColumns = useMemo(
     () => getAdminColumns(currentAdminId),
@@ -342,10 +356,16 @@ const AdminTable = () => {
         columnVisibilityStorageKey="efficient_global_admins_table_columns_v1"
         columns={adminColumns}
         emptyMessage="No admins found."
-        errorMessage={getRtkQueryErrorMessage(
-          error,
-          "We could not load admins right now.",
-        )}
+        // A failed background refresh keeps the last list on screen instead of
+        // replacing it with an error; the next refresh tries again.
+        errorMessage={
+          data
+            ? ""
+            : getRtkQueryErrorMessage(
+                error,
+                "We could not load admins right now.",
+              )
+        }
         getRowKey={(admin) => admin.id}
         isLoading={isLoading}
         isRowMuted={(admin) => admin.status === adminStatuses.INACTIVE}

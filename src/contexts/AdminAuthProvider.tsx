@@ -14,6 +14,7 @@ import {
   updateAdminProfile as requestAdminProfileUpdate,
   updateAdminProfileImage as requestAdminProfileImageUpdate,
 } from "../utils/adminAuth";
+import { adminSessionEndedEvent } from "../utils/adminSessionToken";
 import { AdminAuthContext } from "./adminAuthContext";
 
 type AdminAuthProviderProps = {
@@ -40,6 +41,18 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
 
     return () => {
       isMounted = false;
+    };
+  }, []);
+
+  // An API call was rejected as unauthenticated, e.g. after this admin was
+  // deactivated elsewhere. The token is already cleared, so show the login page.
+  useEffect(() => {
+    const handleSessionEnded = () => setAdmin(null);
+
+    window.addEventListener(adminSessionEndedEvent, handleSessionEnded);
+
+    return () => {
+      window.removeEventListener(adminSessionEndedEvent, handleSessionEnded);
     };
   }, []);
 
