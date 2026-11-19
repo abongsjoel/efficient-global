@@ -16,6 +16,8 @@ const moreActionItems: ActionMenuItem[] = [
 ];
 
 type AdminRowActionsProps = {
+  /** Shows the "more actions" menu. Only super admins get it. */
+  canUseMoreActions: boolean;
   /** Disables the status button and is shown as its tooltip. */
   disabledReason?: string;
   isUpdating: boolean;
@@ -27,6 +29,7 @@ type AdminRowActionsProps = {
 };
 
 const AdminRowActions = ({
+  canUseMoreActions,
   disabledReason,
   isUpdating,
   name,
@@ -59,11 +62,13 @@ const AdminRowActions = ({
 
     {/* Pulled into the row's gap so the borderless dots sit as close to the
         status button as the bordered buttons sit to each other. */}
-    <ActionMenu
-      className="-ml-1"
-      items={moreActionItems}
-      label={`More actions for ${name}`}
-    />
+    {canUseMoreActions ? (
+      <ActionMenu
+        className="-ml-1"
+        items={moreActionItems}
+        label={`More actions for ${name}`}
+      />
+    ) : null}
   </div>
 );
 

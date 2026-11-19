@@ -230,8 +230,9 @@ const AdminTable = () => {
     admins.find((admin) => admin.id === selectedAdminId) ?? null;
   const isSelectedAdminCurrent = selectedAdmin?.id === currentAdminId;
   // Mirrors the backend, which only lets super admins add admins, and lets
-  // managers activate or deactivate dispatchers and viewers.
-  const canAddAdmins = currentAdmin?.role === adminRoles.SUPER_ADMIN;
+  // managers activate or deactivate dispatchers and viewers. The row's "more
+  // actions" menu is also super-admin only.
+  const isSuperAdmin = currentAdmin?.role === adminRoles.SUPER_ADMIN;
   const canManageStatuses = canManageAnyAdminStatus(currentAdmin?.role);
   // Stable, so the toast's auto-dismiss timer isn't restarted by re-renders.
   const dismissToast = useCallback(() => setToast(null), []);
@@ -336,7 +337,7 @@ const AdminTable = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      {canAddAdmins ? (
+      {isSuperAdmin ? (
         <div className="flex justify-end">
           <Button
             size="sm"
@@ -354,6 +355,7 @@ const AdminTable = () => {
           header: "Actions",
           render: (admin) => (
             <AdminRowActions
+              canUseMoreActions={isSuperAdmin}
               disabledReason={getStatusDisabledReason(admin)}
               isUpdating={updatingAdminIds.includes(admin.id)}
               name={admin.name}
